@@ -1,0 +1,4 @@
+interface:
+  display_name: "DS Lite Idea"
+  short_description: "Generate and select traceable research idea branches."
+  default_prompt: "$ds-lite-idea propose 2-3 candidate directions and choose one"

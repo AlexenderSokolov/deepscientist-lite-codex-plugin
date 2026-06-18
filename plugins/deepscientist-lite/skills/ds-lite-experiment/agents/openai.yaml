@@ -1,0 +1,4 @@
+interface:
+  display_name: "DS Lite Experiment"
+  short_description: "Run, record, and trace lightweight research experiments."
+  default_prompt: "$ds-lite-experiment make this experiment reproducible and record it"

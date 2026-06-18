@@ -1,0 +1,39 @@
+{
+  "name": "deepscientist-lite",
+  "version": "0.1.0",
+  "description": "Teaching-first DeepScientist Lite workflow plugin for Codex with file-led research maps, memory cards, artifacts, and a tiny adjacency-list state kernel.",
+  "author": {
+    "name": "DeepScientist Lite maintainers"
+  },
+  "homepage": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+  "repository": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+  "license": "Apache-2.0",
+  "keywords": [
+    "deepscientist",
+    "codex",
+    "research-agent",
+    "teaching",
+    "research-map",
+    "artifact-first"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "DeepScientist Lite",
+    "shortDescription": "Run a lightweight DeepScientist-style research workflow inside Codex.",
+    "longDescription": "DeepScientist Lite compresses the teachable core of DeepScientist into Codex skills, templates, and a small local state-graph script. It keeps research work file-led and artifact-first without requiring the DeepScientist daemon, Web/TUI, connectors, MCP servers, or local model deployment.",
+    "developerName": "DeepScientist Lite maintainers",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "$ds-lite-intake start a research project from this question",
+      "$ds-lite-scout audit the literature and baseline route",
+      "$ds-lite-experiment record this experiment in the research map"
+    ],
+    "brandColor": "#245A7A",
+    "screenshots": []
+  }
+}

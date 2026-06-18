@@ -1,0 +1,4 @@
+interface:
+  display_name: "DS Lite Analysis Write"
+  short_description: "Analyze evidence, write claims, and finalize handoff state."
+  default_prompt: "$ds-lite-analysis-write summarize the evidence and final claims"

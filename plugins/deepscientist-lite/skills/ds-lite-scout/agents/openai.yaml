@@ -1,0 +1,4 @@
+interface:
+  display_name: "DS Lite Scout"
+  short_description: "Clarify research questions, baselines, metrics, and feasibility."
+  default_prompt: "$ds-lite-scout scout baselines and benchmarks for this project"
