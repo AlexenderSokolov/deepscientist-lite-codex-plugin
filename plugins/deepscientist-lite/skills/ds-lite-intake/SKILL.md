@@ -10,7 +10,7 @@ Start with files, not chat memory. Build a small project contract that future Co
 ## Workflow
 
 1. Inspect existing project files first: README, notes, code, scripts, prior reports, `PROJECT.md`, `STATUS.md`, `RESEARCH_MAP.md`, and `research/state/graph.json` when present.
-2. If this is a new project, initialize the DS Lite protocol with `../../scripts/ds_lite_state.py init --root <project> --title "<title>" --question "<question>"`.
+2. If this is a new project, initialize the DS Lite protocol with `ds_lite_state.py init --root <project> --title "<title>" --question "<question>"`. Resolve `ds_lite_state.py` from the installed plugin directory first; if non-ASCII command arguments become corrupted on Windows, write UTF-8 files and use `--title-file` or `--question-file`.
 3. If this is an old project, do an intake audit: preserve existing conclusions, identify stale or unsupported claims, and create/update only the missing protocol files.
 4. Fill `PROJECT.md` with durable background, hypotheses, goal, inputs, constraints, acceptance criteria, workflow, code layout, and run commands.
 5. Update `STATUS.md` with current node, blockers, next action, and the date. Keep it short enough for a future session to read first.

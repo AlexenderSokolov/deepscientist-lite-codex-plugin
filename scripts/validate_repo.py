@@ -57,8 +57,8 @@ def validate_manifest(plugin_root: Path) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("name") != "deepscientist-lite":
         fail("plugin name must be deepscientist-lite")
-    if manifest.get("version") != "0.1.0":
-        fail("plugin version must be 0.1.0")
+    if manifest.get("version") != "0.1.1":
+        fail("plugin version must be 0.1.1")
     if manifest.get("skills") != "./skills/":
         fail("plugin skills path must be ./skills/")
     for forbidden in ("mcpServers", "apps", "hooks"):
@@ -107,6 +107,29 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         ],
         repo_root,
     )
+    unicode_root = Path(tempfile.mkdtemp(prefix="ds-lite-unicode-"))
+    title_file = unicode_root / "title.txt"
+    question_file = unicode_root / "question.txt"
+    title_file.write_text("中文标题", encoding="utf-8")
+    question_file.write_text("能否正确保存中文问题？", encoding="utf-8")
+    run(
+        [
+            sys.executable,
+            str(state_script),
+            "init",
+            "--root",
+            str(unicode_root),
+            "--title-file",
+            str(title_file),
+            "--question-file",
+            str(question_file),
+        ],
+        repo_root,
+    )
+    unicode_graph = json.loads((unicode_root / "research" / "state" / "graph.json").read_text(encoding="utf-8"))
+    unicode_summary = unicode_graph["nodes"]["intake-root"]["summary"]
+    if unicode_summary != "能否正确保存中文问题？":
+        fail("unicode question-file smoke failed")
     run(
         [
             sys.executable,
@@ -245,4 +268,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

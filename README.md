@@ -42,3 +42,26 @@ or:
 ```bash
 python scripts/validate_repo.py
 ```
+
+## GitHub Marketplace Test
+
+This repository is laid out as a Codex marketplace: `.agents/plugins/marketplace.json` points at `plugins/deepscientist-lite/`.
+
+```bash
+codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
+```
+
+If a fresh thread can find the plugin under `.codex/.tmp/marketplaces/deepscientist-lite` but does not expose `$ds-lite-*` skills, confirm that `~/.codex/config.toml` contains:
+
+```toml
+[plugins."deepscientist-lite@deepscientist-lite"]
+enabled = true
+```
+
+Then start a new Codex thread. Some Codex CLI builds expose marketplace commands but not a separate `codex plugin add` command, so this enabled plugin entry is the important part.
+
+On Windows, non-ASCII command-line arguments may be corrupted by shell encoding. For Chinese titles or questions, write UTF-8 text files and call:
+
+```powershell
+python path\to\ds_lite_state.py init --root . --title-file title.txt --question-file question.txt
+```

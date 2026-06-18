@@ -87,3 +87,26 @@ python scripts/validate_repo.py
 ```
 
 验证会检查 plugin manifest、skill frontmatter、TODO 残留，并在系统临时目录创建一个 smoke project 测试状态脚本。
+
+## 从 GitHub 安装测试
+
+本仓库是 Codex marketplace 布局：根目录含 `.agents/plugins/marketplace.json` 和 `plugins/deepscientist-lite/`。
+
+```powershell
+codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
+```
+
+若新线程只在 `.codex/.tmp/marketplaces/deepscientist-lite` 找到插件文件，但没有自动暴露 `$ds-lite-*` skills，请确认 `~/.codex/config.toml` 中存在：
+
+```toml
+[plugins."deepscientist-lite@deepscientist-lite"]
+enabled = true
+```
+
+然后重新开一个 Codex 线程测试。当前 Codex CLI 版本可能只暴露 `codex plugin marketplace ...`，不暴露单独的 `codex plugin add`，因此这个配置项是判断插件是否真正启用的关键。
+
+Windows 中文命令行参数有时会被 shell 编码破坏。遇到研究问题写入 `graph.json` 乱码时，把标题或问题放进 UTF-8 文本文件，并使用：
+
+```powershell
+python path\to\ds_lite_state.py init --root . --title-file title.txt --question-file question.txt
+```

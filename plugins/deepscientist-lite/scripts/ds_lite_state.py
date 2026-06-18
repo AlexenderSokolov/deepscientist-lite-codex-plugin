@@ -103,6 +103,12 @@ def new_graph(project_id: str, title: str, question: str) -> dict[str, Any]:
     }
 
 
+def read_optional_text(path_value: str) -> str:
+    if not path_value:
+        return ""
+    return Path(path_value).read_text(encoding="utf-8").strip()
+
+
 def load_graph(root: Path) -> dict[str, Any]:
     path = state_path(root)
     if not path.exists():
@@ -337,6 +343,8 @@ def cmd_init(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve()
     ensure_dirs(root)
     graph_file = state_path(root)
+    title_text = read_optional_text(args.title_file) or args.title or root.name
+    question_text = read_optional_text(args.question_file) or args.question or ""
     if graph_file.exists():
         graph = load_graph(root)
         if args.render:
@@ -344,9 +352,9 @@ def cmd_init(args: argparse.Namespace) -> int:
         emit({"ok": True, "status": "exists", "graph": str(graph_file)})
         return 0
 
-    title = args.title or root.name
+    title = title_text
     project_id = args.project_id or slugify(title, fallback="ds-lite-project")
-    graph = new_graph(project_id=project_id, title=title, question=args.question or "")
+    graph = new_graph(project_id=project_id, title=title, question=question_text)
     save_graph(root, graph)
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -360,7 +368,7 @@ TBD.
 
 ## Core Question
 
-{args.question or 'TBD.'}
+{question_text or 'TBD.'}
 
 ## Hypotheses
 
@@ -412,7 +420,7 @@ TBD.
 
 ## Current Summary
 
-{args.question or 'Project initialized.'}
+{question_text or 'Project initialized.'}
 
 ## Blockers
 
@@ -624,8 +632,10 @@ def build_parser() -> argparse.ArgumentParser:
     init = subparsers.add_parser("init", help="Initialize DS Lite files in a project.")
     add_root(init)
     init.add_argument("--title", default="", help="Project title.")
+    init.add_argument("--title-file", default="", help="UTF-8 text file containing the project title.")
     init.add_argument("--project-id", default="", help="Stable project id.")
     init.add_argument("--question", default="", help="Initial research question.")
+    init.add_argument("--question-file", default="", help="UTF-8 text file containing the initial research question.")
     init.add_argument("--render", action="store_true", default=True, help="Render RESEARCH_MAP.md.")
     init.set_defaults(func=cmd_init)
 
@@ -702,4 +712,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
