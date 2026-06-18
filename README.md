@@ -60,8 +60,26 @@ enabled = true
 
 Then start a new Codex thread. Some Codex CLI builds expose marketplace commands but not a separate `codex plugin add` command, so this enabled plugin entry is the important part.
 
+In Codex Desktop, plugin configuration may not be hot-reloaded by already running app sessions. After adding the enabled plugin entry, restart Codex Desktop and then start a fresh thread.
+
 On Windows, non-ASCII command-line arguments may be corrupted by shell encoding. For Chinese titles or questions, write UTF-8 text files and call:
 
 ```powershell
 python path\to\ds_lite_state.py init --root . --title-file title.txt --question-file question.txt
 ```
+
+## Current E2E Status
+
+Verified:
+
+- The private GitHub marketplace can be pulled with `codex plugin marketplace add`.
+- The marketplace cache contains `deepscientist-lite` 0.1.1.
+- `ds_lite_state.py` passes init, add-node, add-edge, trace, trace-artifact, validate, and render-map checks.
+- The one-stop file protocol creates project memory, status, research map, state graph, memory cards, artifacts, and run scripts.
+- Iteration preserves the first insufficient experiment and records branch, rollback, and supersedes edges.
+- `--title-file` and `--question-file` avoid Windows non-ASCII command-line corruption.
+
+Remaining runtime boundary:
+
+- Without restarting Codex Desktop, a newly written `[plugins."deepscientist-lite@deepscientist-lite"] enabled = true` entry may still not expose `$ds-lite-*` skills in new threads.
+- GitHub pull and script/protocol behavior are validated; automatic skill exposure still needs a Codex Desktop restart followed by a fresh-thread check.

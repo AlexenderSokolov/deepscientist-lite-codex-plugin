@@ -103,10 +103,26 @@ codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 enabled = true
 ```
 
-然后重新开一个 Codex 线程测试。当前 Codex CLI 版本可能只暴露 `codex plugin marketplace ...`，不暴露单独的 `codex plugin add`，因此这个配置项是判断插件是否真正启用的关键。
+然后重启 Codex Desktop，再重新开一个 Codex 线程测试。当前 Codex CLI 版本可能只暴露 `codex plugin marketplace ...`，不暴露单独的 `codex plugin add`；并且 Codex Desktop 运行态可能不会热加载新写入的 plugin 配置，因此“重启应用 + 新线程”是判断 skills 是否真正启用的可靠边界。
 
 Windows 中文命令行参数有时会被 shell 编码破坏。遇到研究问题写入 `graph.json` 乱码时，把标题或问题放进 UTF-8 文本文件，并使用：
 
 ```powershell
 python path\to\ds_lite_state.py init --root . --title-file title.txt --question-file question.txt
 ```
+
+## 当前 E2E 结论
+
+已验证通过：
+
+- GitHub 私有仓库可被 `codex plugin marketplace add` 拉取。
+- marketplace 缓存中包含 `deepscientist-lite` 0.1.1。
+- `ds_lite_state.py` 能完成 init、add-node、add-edge、trace、trace-artifact、validate、render-map。
+- 一条龙文件协议可以生成 PROJECT、STATUS、RESEARCH_MAP、graph、memory、artifacts 和 run 脚本。
+- 迭代场景可以保留第一次不足实验，并用 branch、rollback、supersedes 表达路线变化。
+- `--title-file` 和 `--question-file` 能避免 Windows 中文命令行参数乱码。
+
+当前运行态限制：
+
+- 在不重启 Codex Desktop 的情况下，即使 config 已补 `[plugins."deepscientist-lite@deepscientist-lite"] enabled = true`，新线程仍可能看不到 `$ds-lite-*` skills。
+- 因此 GitHub 拉取链路与脚本/协议链路已验证，插件 skills 自动暴露还需要经过 Codex Desktop 重启后的新线程复验。
