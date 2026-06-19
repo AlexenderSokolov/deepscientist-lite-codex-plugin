@@ -57,8 +57,8 @@ def validate_manifest(plugin_root: Path) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("name") != "deepscientist-lite":
         fail("plugin name must be deepscientist-lite")
-    if manifest.get("version") != "0.1.1":
-        fail("plugin version must be 0.1.1")
+    if manifest.get("version") != "0.1.2":
+        fail("plugin version must be 0.1.2")
     if manifest.get("skills") != "./skills/":
         fail("plugin skills path must be ./skills/")
     for forbidden in ("mcpServers", "apps", "hooks"):

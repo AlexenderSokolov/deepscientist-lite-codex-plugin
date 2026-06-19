@@ -126,3 +126,10 @@ python path\to\ds_lite_state.py init --root . --title-file title.txt --question-
 
 - 在不重启 Codex Desktop 的情况下，即使 config 已补 `[plugins."deepscientist-lite@deepscientist-lite"] enabled = true`，新线程仍可能看不到 `$ds-lite-*` skills。
 - 因此 GitHub 拉取链路与脚本/协议链路已验证，插件 skills 自动暴露还需要经过 Codex Desktop 重启后的新线程复验。
+
+## 0.1.2 update
+
+- `ds-lite-experiment` now asks comparison experiments to record hypothesis, baseline, metric, budget, seed, expected signal, and failure interpretation.
+- `ds-lite-analysis-write` now emphasizes claim tables, early/final budget separation, negative results, partial successes, and math exploration.
+- Added `experiment-comparison-template.md` and `math-exploration-template.md` references.
+
