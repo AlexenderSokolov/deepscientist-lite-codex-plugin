@@ -57,8 +57,8 @@ def validate_manifest(plugin_root: Path) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("name") != "deepscientist-lite":
         fail("plugin name must be deepscientist-lite")
-    if manifest.get("version") != "0.1.2":
-        fail("plugin version must be 0.1.2")
+    if manifest.get("version") != "0.1.3":
+        fail("plugin version must be 0.1.3")
     if manifest.get("skills") != "./skills/":
         fail("plugin skills path must be ./skills/")
     for forbidden in ("mcpServers", "apps", "hooks"):
@@ -238,6 +238,21 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         repo_root,
     )
     run([sys.executable, str(state_script), "trace", "--root", str(smoke_root), "--node", "experiment-node"], repo_root)
+    run(
+        [
+            sys.executable,
+            str(state_script),
+            "trace",
+            "--root",
+            str(smoke_root),
+            "--node",
+            "experiment-node",
+            "--format",
+            "markdown",
+        ],
+        repo_root,
+    )
+    run([sys.executable, str(state_script), "status", "--root", str(smoke_root), "--json"], repo_root)
     run(
         [
             sys.executable,

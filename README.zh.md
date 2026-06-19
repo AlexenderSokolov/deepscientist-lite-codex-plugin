@@ -133,3 +133,10 @@ python path\to\ds_lite_state.py init --root . --title-file title.txt --question-
 - `ds-lite-analysis-write` now emphasizes claim tables, early/final budget separation, negative results, partial successes, and math exploration.
 - Added `experiment-comparison-template.md` and `math-exploration-template.md` references.
 
+
+## 0.1.3 beta update
+
+- Added `trace --format markdown` for readable route handoff.
+- Added explicit `status --json` for automation-friendly status checks.
+- Added `references/airesearch-case-study.md` as a teaching case for Tree-BO v2/v3 experiments and negative-evidence tracking.
+

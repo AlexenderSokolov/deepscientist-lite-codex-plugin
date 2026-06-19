@@ -563,7 +563,20 @@ def cmd_trace(args: argparse.Namespace) -> int:
             for node_id in route
         ],
     }
-    emit(payload)
+    if args.format == "markdown":
+        print(f"# DS Lite Trace: {target}")
+        print("")
+        if route:
+            for index, node_id in enumerate(route, start=1):
+                node = graph["nodes"][node_id]
+                print(
+                    f"{index}. `{node_id}` - {node.get('kind', '')}: "
+                    f"{node.get('title', '')} [{node.get('status', '')}]"
+                )
+        else:
+            print("No route found from root to target node.")
+    else:
+        emit(payload)
     return 0 if route else 2
 
 
@@ -683,6 +696,7 @@ def build_parser() -> argparse.ArgumentParser:
     trace = subparsers.add_parser("trace", help="Trace route from root to a node.")
     add_root(trace)
     trace.add_argument("--node", default="", help="Target node id. Defaults to active node.")
+    trace.add_argument("--format", choices=("json", "markdown"), default="json", help="Output format.")
     trace.set_defaults(func=cmd_trace)
 
     trace_artifact = subparsers.add_parser("trace-artifact", help="Find nodes linked to an artifact path.")
@@ -700,6 +714,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     status = subparsers.add_parser("status", help="Print graph status.")
     add_root(status)
+    status.add_argument("--json", action="store_true", help="Print JSON status. This is the default output.")
     status.set_defaults(func=cmd_status)
     return parser
 
