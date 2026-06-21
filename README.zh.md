@@ -1,156 +1,58 @@
-# DeepScientist Lite Codex 插件
+﻿# DeepScientist Lite Codex 插件
 
-DeepScientist Lite 是一个教学入门型 Codex 插件。它不部署 DeepScientist daemon，不下载本地模型，不接 Web/TUI、connector 或 MCP，而是把 DeepScientist 最容易教学和复用的内核压缩成：
+[English README](README.md) · [文档](docs/README.md) · [教学区](teaching/README.zh.md) · [插件包](plugins/deepscientist-lite/)
 
-- 5 个 Codex skills
-- 一组项目模板
-- 一个无依赖 Python 邻接表状态脚本
-- 一套 artifact-first 的文件协议
+DeepScientist Lite 是一个轻量级 Codex 插件，用来学习和实践可回溯的科研工作流。它保留 DeepScientist 风格流程里最适合教学的部分：项目记忆、研究地图、artifact 记录、实验记录和路线回溯；但不要求用户部署完整 DeepScientist 平台。
 
-目标不是替代完整 DeepScientist，而是让学生在 Codex 里理解并实践自动化科研探索的基本结构：问题进入、文献与 baseline 初筛、idea 分支、实验记录、分析写作、状态回溯。
+它适合入门教学、组会演示、小型研究项目启动，以及让学生先理解“自动化科研为什么需要状态管理”。
 
-## 插件边界
+## 它能做什么
 
-保留：
+- 为新项目或旧项目建立 `PROJECT.md`、`STATUS.md` 和 `RESEARCH_MAP.md`。
+- 引导 Codex 按 intake、scout、idea、experiment、analysis/write 阶段推进。
+- 把想法、实验、失败和结论记录到 `research/artifacts/`。
+- 用 `research/state/graph.json` 保存轻量邻接表研究图。
+- 在不启动 daemon 的情况下回溯当前研究路线。
 
-- 阶段工作流：intake、scout、idea、experiment、analysis/write
-- Research Map：机器可读 `research/state/graph.json`，人类可读 `RESEARCH_MAP.md`
-- 记忆卡片：`research/memory/*.md`
-- 研究产物：`research/artifacts/*.md`
-- 可复现实验入口：`run_*.sh`
-- Git/worktree 思维：一个研究项目就是一个可回溯工作区
+## 它不做什么
 
-剔除：
+DeepScientist Lite 不启动 daemon，不提供 Web/TUI，不安装本地模型，不暴露 MCP server，不接聊天 connector，也不替代完整 DeepScientist 平台。它是一个教学优先的插件和文件协议。
 
-- DeepScientist daemon
-- Web/TUI/Canvas 运行时
-- connector 和 runner registry
-- BenchStore
-- 完整 artifact service
-- 长篇 mega-prompt
+## 安装
 
-## 目录
-
-```text
-plugins/deepscientist-lite/
-  .codex-plugin/plugin.json
-  skills/
-    ds-lite-intake/
-    ds-lite-scout/
-    ds-lite-idea/
-    ds-lite-experiment/
-    ds-lite-analysis-write/
-  scripts/ds_lite_state.py
-  references/
-  assets/templates/
-tools/validation/validate_repo.py
-docs/
-teaching/
-PACKAGE.md
-```
-
-## 状态图
-
-`research/state/graph.json` 是权威状态，结构为：
-
-```json
-{
-  "schema_version": "ds-lite.graph.v1",
-  "project": {"id": "", "title": ""},
-  "root_node_id": "",
-  "active_node_id": "",
-  "nodes": {},
-  "adjacency": {}
-}
-```
-
-节点记录公开摘要、状态、artifact 路径、memory 路径和证据路径。边记录 `next`、`branch`、`supports`、`blocks`、`supersedes`、`rollback` 关系。
-
-这个结构借鉴了 TraceableCodeAgent 的邻接表思想，但这里从零实现，且更偏科研流程：不记录隐藏 chain-of-thought，只记录可审计的公开证据。
-
-## 快速验证
-
-在仓库根目录运行：
+本仓库采用 Codex marketplace 布局：`.agents/plugins/marketplace.json` 指向 `plugins/deepscientist-lite/`。
 
 ```bash
-python tools/validation/validate_repo.py
-```
-
-Windows PowerShell 环境可运行：
-
-```powershell
-python tools\validation\validate_repo.py
-```
-
-也可以直接运行：
-
-```bash
-python tools/validation/validate_repo.py
-```
-
-验证会检查 plugin manifest、skill frontmatter、TODO 残留，并在系统临时目录创建一个 smoke project 测试状态脚本。
-
-## 从 GitHub 安装测试
-
-本仓库是 Codex marketplace 布局：根目录含 `.agents/plugins/marketplace.json` 和 `plugins/deepscientist-lite/`。
-
-```powershell
 codex plugin marketplace add <owner>/deepscientist-lite-codex-plugin
 ```
 
-若新线程只在 `.codex/.tmp/marketplaces/deepscientist-lite` 找到插件文件，但没有自动暴露 `$ds-lite-*` skills，请确认 `~/.codex/config.toml` 中存在：
+安装或升级后，如果新线程里没有看到 `$ds-lite-*` skills，先重启 Codex Desktop，再打开一个新线程测试。
 
-```toml
-[plugins."deepscientist-lite@deepscientist-lite"]
-enabled = true
+## 开始使用
+
+在一个研究项目目录里，可以让 Codex 使用这些技能：
+
+```text
+$ds-lite-intake 从这个问题启动一个 DS Lite 研究项目：...
+$ds-lite-scout 审计 baseline 和 benchmark 路线
+$ds-lite-experiment 把这次实验记录进 research map
+$ds-lite-analysis-write 总结证据、限制和下一步
 ```
 
-然后重启 Codex Desktop，再重新开一个 Codex 线程测试。当前 Codex CLI 版本可能只暴露 `codex plugin marketplace ...`，不暴露单独的 `codex plugin add`；并且 Codex Desktop 运行态可能不会热加载新写入的 plugin 配置，因此“重启应用 + 新线程”是判断 skills 是否真正启用的可靠边界。
+如果在 Windows 命令行里直接调用 `ds_lite_state.py`，中文标题或问题建议写入 UTF-8 文本文件，再使用 `--title-file` 和 `--question-file`，避免命令行编码破坏内容。
 
-Windows 中文命令行参数有时会被 shell 编码破坏。遇到研究问题写入 `graph.json` 乱码时，把标题或问题放进 UTF-8 文本文件，并使用：
+## 仓库结构
 
-```powershell
-python path\to\ds_lite_state.py init --root . --title-file title.txt --question-file question.txt
-```
-
-## 当前 E2E 结论
-
-已验证通过：
-
-- GitHub 私有仓库可被 `codex plugin marketplace add` 拉取。
-- marketplace 缓存中包含 `deepscientist-lite` 0.1.1。
-- `ds_lite_state.py` 能完成 init、add-node、add-edge、trace、trace-artifact、validate、render-map。
-- 一条龙文件协议可以生成 PROJECT、STATUS、RESEARCH_MAP、graph、memory、artifacts 和 run 脚本。
-- 迭代场景可以保留第一次不足实验，并用 branch、rollback、supersedes 表达路线变化。
-- `--title-file` 和 `--question-file` 能避免 Windows 中文命令行参数乱码。
-
-当前运行态限制：
-
-- 在不重启 Codex Desktop 的情况下，即使 config 已补 `[plugins."deepscientist-lite@deepscientist-lite"] enabled = true`，新线程仍可能看不到 `$ds-lite-*` skills。
-- 因此 GitHub 拉取链路与脚本/协议链路已验证，插件 skills 自动暴露还需要经过 Codex Desktop 重启后的新线程复验。
-
-## 0.1.2 update
-
-- `ds-lite-experiment` now asks comparison experiments to record hypothesis, baseline, metric, budget, seed, expected signal, and failure interpretation.
-- `ds-lite-analysis-write` now emphasizes claim tables, early/final budget separation, negative results, partial successes, and math exploration.
-- Added `experiment-comparison-template.md` and `math-exploration-template.md` references.
-
-
-## 0.1.3 beta update
-
-- Added `trace --format markdown` for readable route handoff.
-- Added explicit `status --json` for automation-friendly status checks.
-- Added `references/airesearch-case-study.md` as a teaching case for Tree-BO v2/v3 experiments and negative-evidence tracking.
-
-
-## Product positioning
-
-The plugin is the main product. Teaching cases and similar experiments are validation and teaching cases for traceable workflow; they are not the plugin itself and should not become release blockers unless they reveal a plugin workflow failure. See `plugins/deepscientist-lite/references/product-positioning-and-memory.md`, `known-issues.md`, and `release-checklist.md`.
-
-## 文档地图
-
+- `plugins/deepscientist-lite/`：可安装的 Codex 插件包。
+- `docs/README.md`：实现说明和维护文档索引。
+- `teaching/README.zh.md`：教学材料和演示脚本。
+- `tools/validation/`：维护者验证工具。
 - `PACKAGE.md`：打包结构和发布边界。
-- `docs/implementation.zh.md`：实现说明，不是 README。
-- `docs/sanitization-report.md`：脱敏处理报告。
-- `teaching/`：独立教学区和脱敏案例。
-- `tools/validation/`：内部验证工具。
+
+## 验证仓库
+
+维护者可以运行：
+
+```bash
+python tools/validation/validate_repo.py
+```

@@ -23,7 +23,7 @@ The sanitized paradigm-comparison teaching case demonstrates how DS Lite records
 
 ## Current Release Judgment
 
-`v0.1.3-beta` is suitable for private beta / teaching beta use. It is not yet a stable public release because fresh-thread skill exposure after Codex Desktop restart and cache-upgrade recovery still need external validation.
+`v0.1.4-beta` is suitable for private beta / teaching beta use. It is not yet a stable public release because fresh-thread skill exposure after Codex Desktop restart and cache-upgrade recovery still need external validation.
 
 ## Long-Term Memory Rules
 
@@ -31,3 +31,4 @@ The sanitized paradigm-comparison teaching case demonstrates how DS Lite records
 - Keep algorithm experiment details inside the case study or the host research project.
 - Do not add MCP, daemon, hooks, or Web/TUI unless the product goal explicitly changes.
 - Treat teaching-case results as evidence for teaching value, not as a release blocker unless they expose a plugin workflow failure.
+

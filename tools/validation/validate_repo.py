@@ -271,11 +271,55 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         fail("smoke project did not render RESEARCH_MAP.md")
 
 
+def validate_docs(repo_root: Path, plugin_root: Path) -> None:
+    required_paths = [
+        repo_root / "README.md",
+        repo_root / "README.zh.md",
+        repo_root / "docs" / "README.md",
+        repo_root / "docs" / "implementation.zh.md",
+        repo_root / "teaching" / "README.zh.md",
+        repo_root / "teaching" / "demo-script.zh.md",
+        repo_root / "teaching" / "lesson-plan.zh.md",
+        repo_root / "teaching" / "cases" / "paradigm-comparison-case.md",
+        repo_root / "PACKAGE.md",
+    ]
+    for item in required_paths:
+        if not item.exists():
+            fail(f"missing documentation file: {item}")
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    for required_link in ("README.zh.md", "docs/README.md", "teaching/README.zh.md", "plugins/deepscientist-lite/"):
+        if required_link not in readme:
+            fail(f"README.md missing link to {required_link}")
+    for forbidden in ("Current E2E Status", "0.1.2 update", "0.1.3 beta update", "sanitization", "product-positioning"):
+        if forbidden in readme:
+            fail(f"README.md contains maintainer/status content: {forbidden}")
+
+    runtime_refs = {path.name for path in (plugin_root / "references").glob("*.md")}
+    expected_refs = {
+        "state-graph-protocol.md",
+        "experiment-comparison-template.md",
+        "math-exploration-template.md",
+        "teaching-guide.zh.md",
+    }
+    if runtime_refs != expected_refs:
+        fail(f"runtime references mismatch: {sorted(runtime_refs)}")
+
+    if (repo_root / "docs" / "sanitization-report.md").exists():
+        fail("docs/sanitization-report.md should not be user-facing documentation")
+    for root_only in ("run_validate.sh", "run_validate.ps1"):
+        if (repo_root / root_only).exists():
+            fail(f"root validation wrapper should not exist: {root_only}")
+    if (repo_root / "scripts").exists():
+        fail("root scripts directory should not exist")
+
+
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
     plugin_root = repo_root / "plugins" / "deepscientist-lite"
     validate_manifest(plugin_root)
     validate_skills(plugin_root)
+    validate_docs(repo_root, plugin_root)
     validate_state_script(repo_root, plugin_root)
     print("OK: DeepScientist Lite plugin repository validation passed.")
     return 0

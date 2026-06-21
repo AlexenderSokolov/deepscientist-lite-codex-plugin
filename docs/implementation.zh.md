@@ -1,10 +1,14 @@
 ﻿# DeepScientist Lite 实现说明
 
-这份文档解释插件是怎么实现的。它不是 README，也不是宣传稿，而是给维护者、师兄和后续开发者看的实现说明。
+这份文档解释插件是怎么实现的。
 
 ## 1. 实现目标
 
 DeepScientist Lite 的目标是把完整 DeepScientist 中最适合教学和快速上手的部分抽出来，做成一个轻量 Codex 插件。它不部署 DeepScientist daemon，不下载本地模型，不声明 MCP、apps 或 hooks，也不提供 Web/TUI。它只提供一套文件化科研协议，让 Codex 能按阶段推进、记录证据、保留失败、回溯路线。
+
+quest 目录合同、阶段技能、记忆卡片、artifact 记录、bash 日志可以被保留成文件协议。
+
+daemon/API/UI/connector/runner registry 不进插件。
 
 插件本身是主产品。实验项目只是验证插件流程和做教学演示的案例，不是插件的核心交付。
 
@@ -97,24 +101,13 @@ RESEARCH_MAP.md
 
 ## 7. 教学区分离
 
-`teaching/` 是独立教学区，放课堂讲解、演示脚本和脱敏案例。它不进入插件运行时路径。
+`teaching/` 是独立教学区，放课堂讲解、演示脚本和教学案例。它不进入插件运行时路径。
 
 这样做是为了防止主次混乱：插件是产品，实验和案例只是说明插件为什么有用。案例可以更新，但不应该成为插件发布的硬依赖。
 
-## 8. 脱敏策略
 
-发布材料应避免包含：
 
-- 本机绝对路径；
-- Windows 用户名；
-- 具体私有硬件信息；
-- 访问凭据或密钥示例；
-- 私有仓库状态；
-- 未经验证的夸大实验结论。
-
-案例使用通用名称，例如 “paradigm-comparison teaching project”。实验结论只作为教学示例，不包装成插件自身能力。
-
-## 9. 验证工具
+## 8. 验证工具
 
 验证工具已移到：
 
@@ -131,3 +124,4 @@ python tools/validation/validate_repo.py
 它会检查 manifest、skill frontmatter、TODO 残留，并创建临时 smoke project 测试状态脚本。
 
 `run_validate.sh` 和 `run_validate.ps1` 只是可选包装脚本，所以放在 `tools/validation/`，不再放在仓库根目录。
+

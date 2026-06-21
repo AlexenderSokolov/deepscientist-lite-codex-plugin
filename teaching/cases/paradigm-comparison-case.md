@@ -1,49 +1,45 @@
-# Teaching Case: Tree Search vs Optimization Frontier
+﻿# Teaching Case: Tree Search vs Optimization Frontier
 
-This case study shows how a durable research-frontier system Lite can drive a real research loop without running the full a durable research-frontier system daemon.
+This case is a teaching example for DeepScientist Lite. It shows how the plugin records a research route with ideas, experiments, negative evidence, and follow-up questions. It is not a benchmark claim for the plugin itself.
 
-## Project Question
+## Question
 
-Compare two agentic research paradigms:
+The case compares three research-search patterns:
 
-- tree-style exploration, represented by a tree-search research agent style `Node` / `Journal` search;
-- durable optimization-frontier management, represented by a durable research-frontier system-style candidate and artifact tracking;
-- hybrid Tree-BO policies that use structure-level search plus within-structure parameter optimization.
+- tree-style exploration, where a project grows through parent-child attempts;
+- optimization-frontier management, where candidate routes and evidence are kept as durable artifacts;
+- hybrid Tree-BO policies, where a discrete structure line is chosen first and a parameter search happens inside that line.
 
-## DeepScientist Lite Role
+## What DeepScientist Lite Demonstrates
 
-DeepScientist Lite did not provide a model runner or a daemon. Its contribution was research-state discipline:
+DeepScientist Lite does not run the experiment and does not provide a model runner. Its role is to keep the process traceable:
 
-- `PROJECT.md` kept durable project memory;
-- `STATUS.md` exposed the active node and next action;
-- `research/state/graph.json` stored the adjacency-list route;
-- `RESEARCH_MAP.md` rendered the human-readable route;
-- `research/artifacts/*.md` preserved ideas, experiments, negative evidence, and claims.
+- `PROJECT.md` stores durable project memory;
+- `STATUS.md` keeps the active node and next action visible;
+- `research/state/graph.json` stores the route as an adjacency-list graph;
+- `RESEARCH_MAP.md` renders that route for humans;
+- `research/artifacts/*.md` keeps ideas, experiments, analysis, and negative results.
 
-## Route Summary
+## Example Route
 
-The active route reached:
+A compact route for teaching can look like this:
 
-1. intake of the existing the paradigm-comparison teaching project project;
-2. source-code scout of a tree-search research agent and a durable research-frontier system mechanisms;
-3. hybrid Tree-BO idea selection;
-4. CPU/GPU proxy baseline audits;
-5. fusion-policy v2 experiments;
-6. mathematical regret decomposition;
-7. hybrid Tree-BO v3 experiments.
+1. intake an existing research project;
+2. audit source mechanisms and baseline evidence;
+3. choose a hybrid Tree-BO idea;
+4. record CPU/GPU proxy results;
+5. write a math note for regret decomposition;
+6. preserve a partial success and a negative result;
+7. explain the next branch without overwriting the old route.
 
-## Main Evidence Pattern
+## Main Lesson
 
-The experiments are used here as a teaching case. They show that DeepScientist Lite can preserve a nuanced research route: a hybrid policy can improve some budget regimes, but the key scientific issue is budget allocation rather than the word "hybrid" itself.
+The useful teaching point is not “hybrid wins.” The useful point is that research often produces mixed evidence: one variant may improve early-budget behavior while hurting final convergence. DeepScientist Lite keeps that nuance visible instead of flattening it into a single success/failure label.
 
-- v2 improved GPU-light normalized regret AUC and CPU old-hybrid AUC, but weakened CPU final convergence.
-- v3 added a fixed late exploitation switch. It slightly repaired final convergence relative to v2, and reached zero final regret on GPU-light, but worsened AUC against v2.
-- A possible next teaching branch is v4: confidence-gap or plateau-triggered switching rather than a fixed half-budget switch. This is a case-study continuation, not a plugin release requirement.
+## How To Use This Case
 
-## Teaching Use
-
-Use this case when explaining why automated research needs state management. The goal is to teach traceable research workflow, not to claim that the plugin itself is an optimization algorithm. A chat transcript can propose many ideas, but a research system needs a recoverable route: what was tried, which evidence supported it, which results were negative, and why the next branch is justified.
+Use this case when explaining why automated research needs state management. A chat transcript can contain many ideas, but a research workflow needs recoverable files: what was tried, what evidence supported it, what failed, and why the next branch is justified.
 
 ## Boundary
 
-This is not full a durable research-frontier system. It has no daemon, no Web/TUI, no MCP artifact service, no automatic runner registry, and no long-running scheduler. It is a lightweight Codex plugin that teaches the core protocol before introducing the full platform.
+This case is not part of the runtime plugin package. It lives in `teaching/` so users can study the workflow without confusing the case with plugin functionality.

@@ -1,87 +1,58 @@
 ﻿# DeepScientist Lite Codex Plugin
 
-DeepScientist Lite is a teaching-first Codex plugin. It does not run the DeepScientist daemon, local models, Web/TUI, connectors, or MCP servers. Instead, it packages the teachable core of DeepScientist into Codex skills, templates, and a tiny adjacency-list state kernel.
+[中文说明](README.zh.md) · [Documentation](docs/README.md) · [Teaching materials](teaching/README.zh.md) · [Plugin package](plugins/deepscientist-lite/)
 
-It is meant for onboarding, demos, and lightweight research automation:
+DeepScientist Lite is a lightweight Codex plugin for learning and practicing a traceable research workflow. It keeps the useful core of a DeepScientist-style process—project memory, research maps, artifacts, experiment records, and route tracing—without asking users to deploy the full DeepScientist platform.
 
-- intake a research project
-- scout baselines and benchmarks
-- branch and select ideas
-- record experiments and failures
-- analyze evidence and write handoffs
-- keep all durable state in files
+It is designed for onboarding, teaching demos, and small research projects where the first goal is to make the research process clear and recoverable.
 
+## What It Does
 
-## Product Positioning
+- Starts or audits a research project with `PROJECT.md`, `STATUS.md`, and `RESEARCH_MAP.md`.
+- Guides Codex through intake, scout, idea, experiment, and analysis/write stages.
+- Records ideas, experiments, failures, and conclusions as files under `research/artifacts/`.
+- Maintains a small adjacency-list state graph in `research/state/graph.json`.
+- Lets users trace the active research route without running a daemon.
 
-The plugin is the main product. Teaching cases and similar experiments are validation and teaching cases that demonstrate traceable research workflow; they are not release blockers unless they expose a plugin workflow failure. See `plugins/deepscientist-lite/references/product-positioning-and-memory.md`, `known-issues.md`, and `release-checklist.md`.
+## What It Does Not Do
 
-## What Is Included
+DeepScientist Lite does not start a daemon, run a Web/TUI, install local models, expose MCP servers, connect chat channels, or replace the full DeepScientist platform. It is a teaching-first plugin and file protocol.
 
-- Plugin manifest at `plugins/deepscientist-lite/.codex-plugin/plugin.json`
-- Five skills under `plugins/deepscientist-lite/skills/`
-- State graph script at `plugins/deepscientist-lite/scripts/ds_lite_state.py`
-- Templates under `plugins/deepscientist-lite/assets/templates/`
-- Protocol and teaching references under `plugins/deepscientist-lite/references/`
+## Install From A Marketplace Repository
 
-## State Model
-
-`research/state/graph.json` is the machine-readable source of truth. `RESEARCH_MAP.md` is a rendered human view.
-
-The graph uses nodes plus adjacency lists to make research routes, branches, artifacts, and rollback paths inspectable without a daemon.
-
-## Validate
-
-```bash
-python tools/validation/validate_repo.py
-```
-
-Optional wrappers live under `tools/validation/` and are intentionally kept out of the repository root.
-
-## GitHub Marketplace Test
-
-This repository is laid out as a Codex marketplace: `.agents/plugins/marketplace.json` points at `plugins/deepscientist-lite/`.
+This repository follows the Codex marketplace layout: `.agents/plugins/marketplace.json` points to `plugins/deepscientist-lite/`.
 
 ```bash
 codex plugin marketplace add <owner>/deepscientist-lite-codex-plugin
 ```
 
-If a fresh thread can find the plugin under `.codex/.tmp/marketplaces/deepscientist-lite` but does not expose `$ds-lite-*` skills, confirm that `~/.codex/config.toml` contains:
+After installing or upgrading, restart Codex Desktop and open a fresh thread if the `$ds-lite-*` skills do not appear immediately.
 
-```toml
-[plugins."deepscientist-lite@deepscientist-lite"]
-enabled = true
+## Start Using It
+
+In a project folder, ask Codex to use one of the DS Lite skills, for example:
+
+```text
+$ds-lite-intake start a DS Lite research project from this question: ...
+$ds-lite-scout audit the baseline and benchmark route
+$ds-lite-experiment record this experiment in the research map
+$ds-lite-analysis-write summarize the evidence and limitations
 ```
 
-Then start a new Codex thread. Some Codex CLI builds expose marketplace commands but not a separate `codex plugin add` command, so this enabled plugin entry is the important part.
+For Chinese project titles or questions on Windows, prefer UTF-8 text files with `--title-file` and `--question-file` when calling `ds_lite_state.py` directly.
 
-In Codex Desktop, plugin configuration may not be hot-reloaded by already running app sessions. After adding the enabled plugin entry, restart Codex Desktop and then start a fresh thread.
+## Repository Map
 
-On Windows, non-ASCII command-line arguments may be corrupted by shell encoding. For Chinese titles or questions, write UTF-8 text files and call:
-
-```powershell
-python path\to\ds_lite_state.py init --root . --title-file title.txt --question-file question.txt
-```
-
-## Current E2E Status
-
-Verified:
-
-- The GitHub marketplace can be pulled with `codex plugin marketplace add`.
-- The marketplace cache contains `deepscientist-lite` 0.1.1.
-- `ds_lite_state.py` passes init, add-node, add-edge, trace, trace-artifact, validate, and render-map checks.
-- The one-stop file protocol creates project memory, status, research map, state graph, memory cards, artifacts, and run scripts.
-- Iteration preserves the first insufficient experiment and records branch, rollback, and supersedes edges.
-- `--title-file` and `--question-file` avoid Windows non-ASCII command-line corruption.
-
-Remaining runtime boundary:
-
-- Without restarting Codex Desktop, a newly written `[plugins."deepscientist-lite@deepscientist-lite"] enabled = true` entry may still not expose `$ds-lite-*` skills in new threads.
-- GitHub pull and script/protocol behavior are validated; automatic skill exposure still needs a Codex Desktop restart followed by a fresh-thread check.
-
-## Documentation Map
-
+- `plugins/deepscientist-lite/`: installable Codex plugin package.
+- `docs/README.md`: implementation and maintainer documentation index.
+- `teaching/README.zh.md`: teaching materials and demo scripts.
+- `tools/validation/`: maintainer validation tools.
 - `PACKAGE.md`: package layout and release boundary.
-- `docs/implementation.zh.md`: implementation details.
-- `teaching/`: standalone teaching material and sanitized cases.
-- `tools/validation/`: repository validation tools.
+
+## Validate The Repository
+
+For maintainers:
+
+```bash
+python tools/validation/validate_repo.py
+```

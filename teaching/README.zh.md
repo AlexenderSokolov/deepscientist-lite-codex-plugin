@@ -1,19 +1,20 @@
 ﻿# DeepScientist Lite 教学区
 
-这个目录只放教学材料，不放插件运行时文件。插件本体仍在 `plugins/deepscientist-lite/`。
+这里放的是讲解和演示材料。插件本体在 `plugins/deepscientist-lite/`，教学区不会参与插件运行时加载。
 
-## 教学目标
+## 适合怎么用
 
-- 用 20-30 分钟讲清 DeepScientist Lite 的定位。
-- 让学生理解为什么自动化科研需要状态、路线、artifact 和回溯。
-- 用一个脱敏案例演示：旧项目接入、idea 分支、实验记录、负结果保留、下一步路线。
+- 组会里用 20-30 分钟讲清 DeepScientist Lite 的设计思路。
+- 给新同学演示一个可回溯科研工作流应该长什么样。
+- 用教学案例说明：旧项目接入、idea 分支、实验记录、负结果保留、下一步路线。
 
 ## 文件
 
-- `lesson-plan.zh.md`：课堂或组会讲解流程。
-- `cases/paradigm-comparison-case.md`：脱敏后的范式比较案例。
-- `demo-script.zh.md`：现场演示脚本。
+- `lesson-plan.zh.md`：讲解提纲，适合老师、师兄或助教备课。
+- `demo-script.zh.md`：现场演示脚本，适合照着操作一遍。
+- `cases/paradigm-comparison-case.md`：教学案例，用来说明插件如何保留研究路线。
 
-## 边界
+## 提醒
 
-教学区可以使用实验案例，但实验不是插件本身。插件发布质量主要由安装、skill 触发、文件协议、状态图、脱敏和教学可解释性决定。
+教学案例只是帮助理解插件，不是插件本身，也不是插件发布质量的判据。判断插件是否可用，主要看安装、skill 触发、文件协议、状态图和回溯是否稳定。
+
