@@ -11,6 +11,11 @@ It is meant for onboarding, demos, and lightweight research automation:
 - analyze evidence and write handoffs
 - keep all durable state in files
 
+
+## Product Positioning
+
+The plugin is the main product. AIResearch and similar experiments are validation and teaching cases that demonstrate traceable research workflow; they are not release blockers unless they expose a plugin workflow failure. See `plugins/deepscientist-lite/references/product-positioning-and-memory.md`, `known-issues.md`, and `release-checklist.md`.
+
 ## What Is Included
 
 - Plugin manifest at `plugins/deepscientist-lite/.codex-plugin/plugin.json`

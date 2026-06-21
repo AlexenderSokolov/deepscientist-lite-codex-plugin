@@ -34,15 +34,15 @@ The active route reached:
 
 ## Main Evidence Pattern
 
-The experiments found that a hybrid policy can improve some budget regimes, but the key problem is budget allocation rather than the word "hybrid" itself.
+The experiments are used here as a teaching case. They show that DS Lite can preserve a nuanced research route: a hybrid policy can improve some budget regimes, but the key scientific issue is budget allocation rather than the word "hybrid" itself.
 
 - v2 improved GPU-light normalized regret AUC and CPU old-hybrid AUC, but weakened CPU final convergence.
 - v3 added a fixed late exploitation switch. It slightly repaired final convergence relative to v2, and reached zero final regret on GPU-light, but worsened AUC against v2.
-- The next defensible idea is v4: confidence-gap or plateau-triggered switching rather than a fixed half-budget switch.
+- A possible next teaching branch is v4: confidence-gap or plateau-triggered switching rather than a fixed half-budget switch. This is a case-study continuation, not a plugin release requirement.
 
 ## Teaching Use
 
-Use this case when explaining why automated research needs state management. A chat transcript can propose many ideas, but a research system needs a recoverable route: what was tried, which evidence supported it, which results were negative, and why the next branch is justified.
+Use this case when explaining why automated research needs state management. The goal is to teach traceable research workflow, not to claim that the plugin itself is an optimization algorithm. A chat transcript can propose many ideas, but a research system needs a recoverable route: what was tried, which evidence supported it, which results were negative, and why the next branch is justified.
 
 ## Boundary
 

@@ -140,3 +140,7 @@ python path\to\ds_lite_state.py init --root . --title-file title.txt --question-
 - Added explicit `status --json` for automation-friendly status checks.
 - Added `references/airesearch-case-study.md` as a teaching case for Tree-BO v2/v3 experiments and negative-evidence tracking.
 
+
+## Product positioning
+
+The plugin is the main product. AIResearch and similar experiments are validation and teaching cases for traceable workflow; they are not the plugin itself and should not become release blockers unless they reveal a plugin workflow failure. See `plugins/deepscientist-lite/references/product-positioning-and-memory.md`, `known-issues.md`, and `release-checklist.md`.
