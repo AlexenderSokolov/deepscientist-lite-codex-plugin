@@ -1,4 +1,4 @@
-# DeepScientist Lite Codex Plugin
+﻿# DeepScientist Lite Codex Plugin
 
 DeepScientist Lite is a teaching-first Codex plugin. It does not run the DeepScientist daemon, local models, Web/TUI, connectors, or MCP servers. Instead, it packages the teachable core of DeepScientist into Codex skills, templates, and a tiny adjacency-list state kernel.
 
@@ -14,7 +14,7 @@ It is meant for onboarding, demos, and lightweight research automation:
 
 ## Product Positioning
 
-The plugin is the main product. AIResearch and similar experiments are validation and teaching cases that demonstrate traceable research workflow; they are not release blockers unless they expose a plugin workflow failure. See `plugins/deepscientist-lite/references/product-positioning-and-memory.md`, `known-issues.md`, and `release-checklist.md`.
+The plugin is the main product. Teaching cases and similar experiments are validation and teaching cases that demonstrate traceable research workflow; they are not release blockers unless they expose a plugin workflow failure. See `plugins/deepscientist-lite/references/product-positioning-and-memory.md`, `known-issues.md`, and `release-checklist.md`.
 
 ## What Is Included
 
@@ -33,27 +33,17 @@ The graph uses nodes plus adjacency lists to make research routes, branches, art
 ## Validate
 
 ```bash
-bash run_validate.sh
+python tools/validation/validate_repo.py
 ```
 
-On Windows PowerShell:
-
-```powershell
-.\run_validate.ps1
-```
-
-or:
-
-```bash
-python scripts/validate_repo.py
-```
+Optional wrappers live under `tools/validation/` and are intentionally kept out of the repository root.
 
 ## GitHub Marketplace Test
 
 This repository is laid out as a Codex marketplace: `.agents/plugins/marketplace.json` points at `plugins/deepscientist-lite/`.
 
 ```bash
-codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
+codex plugin marketplace add <owner>/deepscientist-lite-codex-plugin
 ```
 
 If a fresh thread can find the plugin under `.codex/.tmp/marketplaces/deepscientist-lite` but does not expose `$ds-lite-*` skills, confirm that `~/.codex/config.toml` contains:
@@ -77,7 +67,7 @@ python path\to\ds_lite_state.py init --root . --title-file title.txt --question-
 
 Verified:
 
-- The private GitHub marketplace can be pulled with `codex plugin marketplace add`.
+- The GitHub marketplace can be pulled with `codex plugin marketplace add`.
 - The marketplace cache contains `deepscientist-lite` 0.1.1.
 - `ds_lite_state.py` passes init, add-node, add-edge, trace, trace-artifact, validate, and render-map checks.
 - The one-stop file protocol creates project memory, status, research map, state graph, memory cards, artifacts, and run scripts.
@@ -88,3 +78,10 @@ Remaining runtime boundary:
 
 - Without restarting Codex Desktop, a newly written `[plugins."deepscientist-lite@deepscientist-lite"] enabled = true` entry may still not expose `$ds-lite-*` skills in new threads.
 - GitHub pull and script/protocol behavior are validated; automatic skill exposure still needs a Codex Desktop restart followed by a fresh-thread check.
+
+## Documentation Map
+
+- `PACKAGE.md`: package layout and release boundary.
+- `docs/implementation.zh.md`: implementation details.
+- `teaching/`: standalone teaching material and sanitized cases.
+- `tools/validation/`: repository validation tools.

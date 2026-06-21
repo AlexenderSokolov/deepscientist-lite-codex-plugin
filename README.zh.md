@@ -43,8 +43,10 @@ plugins/deepscientist-lite/
   scripts/ds_lite_state.py
   references/
   assets/templates/
-scripts/validate_repo.py
-run_validate.sh
+tools/validation/validate_repo.py
+docs/
+teaching/
+PACKAGE.md
 ```
 
 ## 状态图
@@ -71,19 +73,19 @@ run_validate.sh
 在仓库根目录运行：
 
 ```bash
-bash run_validate.sh
+python tools/validation/validate_repo.py
 ```
 
 Windows PowerShell 环境可运行：
 
 ```powershell
-.\run_validate.ps1
+python tools\validation\validate_repo.py
 ```
 
 也可以直接运行：
 
 ```bash
-python scripts/validate_repo.py
+python tools/validation/validate_repo.py
 ```
 
 验证会检查 plugin manifest、skill frontmatter、TODO 残留，并在系统临时目录创建一个 smoke project 测试状态脚本。
@@ -93,7 +95,7 @@ python scripts/validate_repo.py
 本仓库是 Codex marketplace 布局：根目录含 `.agents/plugins/marketplace.json` 和 `plugins/deepscientist-lite/`。
 
 ```powershell
-codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
+codex plugin marketplace add <owner>/deepscientist-lite-codex-plugin
 ```
 
 若新线程只在 `.codex/.tmp/marketplaces/deepscientist-lite` 找到插件文件，但没有自动暴露 `$ds-lite-*` skills，请确认 `~/.codex/config.toml` 中存在：
@@ -143,4 +145,12 @@ python path\to\ds_lite_state.py init --root . --title-file title.txt --question-
 
 ## Product positioning
 
-The plugin is the main product. AIResearch and similar experiments are validation and teaching cases for traceable workflow; they are not the plugin itself and should not become release blockers unless they reveal a plugin workflow failure. See `plugins/deepscientist-lite/references/product-positioning-and-memory.md`, `known-issues.md`, and `release-checklist.md`.
+The plugin is the main product. Teaching cases and similar experiments are validation and teaching cases for traceable workflow; they are not the plugin itself and should not become release blockers unless they reveal a plugin workflow failure. See `plugins/deepscientist-lite/references/product-positioning-and-memory.md`, `known-issues.md`, and `release-checklist.md`.
+
+## 文档地图
+
+- `PACKAGE.md`：打包结构和发布边界。
+- `docs/implementation.zh.md`：实现说明，不是 README。
+- `docs/sanitization-report.md`：脱敏处理报告。
+- `teaching/`：独立教学区和脱敏案例。
+- `tools/validation/`：内部验证工具。

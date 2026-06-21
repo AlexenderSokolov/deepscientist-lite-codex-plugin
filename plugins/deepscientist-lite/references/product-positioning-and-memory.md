@@ -1,10 +1,10 @@
-# Product Positioning And Long-Term Memory
+﻿# Product Positioning And Long-Term Memory
 
 ## Primary Work
 
 DeepScientist Lite is a Codex plugin project. Its primary goal is to make the core DeepScientist research protocol teachable and usable without deploying the full DeepScientist platform.
 
-The plugin is the main product. Experiments such as AIResearch are validation and teaching cases, not the product itself.
+The plugin is the main product. Teaching cases and small experiments are validation material, not the product itself.
 
 ## What Counts As Plugin Progress
 
@@ -19,7 +19,7 @@ The plugin is the main product. Experiments such as AIResearch are validation an
 
 Experiments validate whether the plugin helps preserve research state, failures, and claims. They can be used as teaching demos, but they should not redefine the plugin as an algorithm benchmark repository.
 
-AIResearch is currently the main case study. It demonstrates how DS Lite records a real route: source audit, idea choice, experiment result, negative evidence, and next-step reasoning.
+The sanitized paradigm-comparison teaching case demonstrates how DS Lite records a real route: source audit, idea choice, experiment result, negative evidence, and next-step reasoning.
 
 ## Current Release Judgment
 
@@ -30,4 +30,4 @@ AIResearch is currently the main case study. It demonstrates how DS Lite records
 - Keep durable plugin decisions in this file, `known-issues.md`, `release-checklist.md`, README, and case studies.
 - Keep algorithm experiment details inside the case study or the host research project.
 - Do not add MCP, daemon, hooks, or Web/TUI unless the product goal explicitly changes.
-- Treat AIResearch results as evidence for teaching value, not as a release blocker unless they expose a plugin workflow failure.
+- Treat teaching-case results as evidence for teaching value, not as a release blocker unless they expose a plugin workflow failure.
