@@ -23,7 +23,7 @@ The sanitized paradigm-comparison teaching case demonstrates how DS Lite records
 
 ## Current Release Judgment
 
-`v0.2.0-beta.1` is the reliability-focused teaching beta. Graph v2 adds revisions, locked atomic writes, migration backups, portable external paths, semantic validation, and progression-aware tracing. Local Windows PowerShell, Git Bash, WSL DrvFS, and WSL ext4 validation passed on 2026-07-02; see the [Windows/WSL audit](v0.2-audit.zh.md). The remote Windows/Ubuntu CI matrix must still pass after upload, and stable release still requires independent installation reports, macOS verification, and repeatable cache-upgrade recovery.
+`v0.2.0-beta.1` is the reliability-focused teaching beta. Graph v2 adds revisions, locked atomic writes, migration backups, portable external paths, semantic validation, and progression-aware tracing. Local Windows PowerShell, Git Bash, WSL DrvFS, WSL ext4, and the remote Windows/Ubuntu CI matrix passed on 2026-07-02; see the [Windows/WSL audit](v0.2-audit.zh.md). Stable release still requires independent installation reports, macOS verification, and repeatable cache-upgrade recovery.
 
 ## Long-Term Memory Rules
 
