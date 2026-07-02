@@ -23,7 +23,7 @@ The sanitized paradigm-comparison teaching case demonstrates how DS Lite records
 
 ## Current Release Judgment
 
-`v0.1.4-beta` is suitable for private beta / teaching beta use. It is not yet a stable public release because fresh-thread skill exposure after Codex Desktop restart and cache-upgrade recovery still need external validation.
+`v0.2.0-beta.1` is the reliability-focused teaching beta. Graph v2 adds revisions, locked atomic writes, migration backups, portable external paths, semantic validation, and progression-aware tracing. Local Windows PowerShell, Git Bash, WSL DrvFS, and WSL ext4 validation passed on 2026-07-02; see the [Windows/WSL audit](v0.2-audit.zh.md). The remote Windows/Ubuntu CI matrix must still pass after upload, and stable release still requires independent installation reports, macOS verification, and repeatable cache-upgrade recovery.
 
 ## Long-Term Memory Rules
 

@@ -57,8 +57,8 @@ def validate_manifest(plugin_root: Path) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("name") != "deepscientist-lite":
         fail("plugin name must be deepscientist-lite")
-    if manifest.get("version") != "0.1.4":
-        fail("plugin version must be 0.1.4")
+    if manifest.get("version") != "0.2.0-beta.1":
+        fail("plugin version must be 0.2.0-beta.1")
     if manifest.get("skills") != "./skills/":
         fail("plugin skills path must be ./skills/")
     for forbidden in ("mcpServers", "apps", "hooks"):
@@ -107,6 +107,15 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         ],
         repo_root,
     )
+    for relative in (
+        "research/artifacts/scout-smoke.md",
+        "research/artifacts/idea-smoke.md",
+        "research/artifacts/experiment-smoke.md",
+        "outputs/metrics.json",
+    ):
+        path = smoke_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}\n" if path.suffix == ".json" else "# Smoke artifact\n", encoding="utf-8")
     unicode_root = Path(tempfile.mkdtemp(prefix="ds-lite-unicode-"))
     title_file = unicode_root / "title.txt"
     question_file = unicode_root / "question.txt"
@@ -265,7 +274,7 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         ],
         repo_root,
     )
-    run([sys.executable, str(state_script), "validate", "--root", str(smoke_root)], repo_root)
+    run([sys.executable, str(state_script), "validate", "--root", str(smoke_root), "--strict"], repo_root)
     run([sys.executable, str(state_script), "render-map", "--root", str(smoke_root)], repo_root)
     if not (smoke_root / "RESEARCH_MAP.md").exists():
         fail("smoke project did not render RESEARCH_MAP.md")
@@ -282,6 +291,13 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "teaching" / "lesson-plan.zh.md",
         repo_root / "teaching" / "cases" / "paradigm-comparison-case.md",
         repo_root / "PACKAGE.md",
+        repo_root / ".gitattributes",
+        repo_root / "PROJECT.md",
+        repo_root / "LICENSE",
+        repo_root / "NOTICE",
+        repo_root / "CHANGELOG.md",
+        repo_root / "docs" / "maintainers" / "graph-v2-migration.md",
+        repo_root / "docs" / "maintainers" / "v0.2-audit.zh.md",
     ]
     for item in required_paths:
         if not item.exists():

@@ -4,6 +4,8 @@
 
 DeepScientist Lite is a lightweight Codex plugin for learning and practicing a traceable research workflow. It keeps the useful core of a DeepScientist-style process—project memory, research maps, artifacts, experiment records, and route tracing—without asking users to deploy the full DeepScientist platform.
 
+> **Independent project:** DeepScientist Lite is an unofficial third-party plugin. It is not sponsored, certified, or endorsed by ResearAI. “DeepScientist” is used descriptively to identify the workflow that inspired this project; see [NOTICE](NOTICE).
+
 It is designed for onboarding, teaching demos, and small research projects where the first goal is to make the research process clear and recoverable.
 
 ## What It Does
@@ -20,10 +22,12 @@ DeepScientist Lite does not start a daemon, run a Web/TUI, install local models,
 
 ## Install From A Marketplace Repository
 
+Requirements: Codex and Python 3.10 or newer. The runtime state helper uses only the Python standard library.
+
 This repository follows the Codex marketplace layout: `.agents/plugins/marketplace.json` points to `plugins/deepscientist-lite/`.
 
 ```bash
-codex plugin marketplace add <owner>/deepscientist-lite-codex-plugin
+codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
 After installing or upgrading, restart Codex Desktop and open a fresh thread if the `$ds-lite-*` skills do not appear immediately.
@@ -41,6 +45,8 @@ $ds-lite-analysis-write summarize the evidence and limitations
 
 For Chinese project titles or questions on Windows, prefer UTF-8 text files with `--title-file` and `--question-file` when calling `ds_lite_state.py` directly.
 
+Graph v2 uses atomic writes, revision checks, and project-relative or symbolic external paths. Existing Graph v1 projects are migrated on the first write; read the [migration guide](docs/maintainers/graph-v2-migration.md) before upgrading projects that contain absolute paths.
+
 ## Repository Map
 
 - `plugins/deepscientist-lite/`: installable Codex plugin package.
@@ -54,5 +60,5 @@ For Chinese project titles or questions on Windows, prefer UTF-8 text files with
 For maintainers:
 
 ```bash
-python tools/validation/validate_repo.py
+bash tools/validation/run_validate.sh
 ```

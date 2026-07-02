@@ -2,13 +2,13 @@
 
 ## Current Node
 
-- Active node:
-- Stage:
-- Status:
+- Active node: `intake-root`
+- Stage: intake
+- Status: active
 
 ## Current Summary
 
-Short public summary of what is known now.
+$question
 
 ## Blockers
 
@@ -16,9 +16,8 @@ Short public summary of what is known now.
 
 ## Next Action
 
-The next concrete action Codex or the user should take.
+Run scouting to identify baselines, metrics, and the first validation route.
 
 ## Last Updated
 
-YYYY-MM-DD
-
+$date

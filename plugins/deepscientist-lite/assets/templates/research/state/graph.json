@@ -1,12 +1,16 @@
 {
-  "schema_version": "ds-lite.graph.v1",
+  "schema_version": "$schema_version",
+  "revision": 0,
   "project": {
-    "id": "",
-    "title": ""
+    "id": $project_id_json,
+    "title": $project_title_json
   },
-  "root_node_id": "",
-  "active_node_id": "",
-  "nodes": {},
-  "adjacency": {}
+  "root_node_id": "intake-root",
+  "active_node_id": "intake-root",
+  "nodes": {
+    "intake-root": $root_node_json
+  },
+  "adjacency": {
+    "intake-root": []
+  }
 }
-

@@ -14,7 +14,7 @@ Analysis and writing translate artifacts into claims. Treat unsupported claims a
 3. Separate early-budget behavior, final-budget behavior, and aggregate metrics such as AUC when they can disagree.
 4. For theoretical or mathematical exploration, read `../../references/math-exploration-template.md` and keep assumptions explicit.
 5. If evidence is sufficient, write `research/artifacts/analysis-<slug>.md`, `math-<slug>.md`, or `paper-<slug>.md`.
-6. Add an `analysis`, `write`, or `finalize` node from the active node. Link every artifact that supports the claim.
+6. Read the current revision, add an `analysis`, `write`, or `finalize` node from the active node, and link every supporting path with `link-path`. Pass `--expected-revision` on each state write.
 7. Update `PROJECT.md` only with durable conclusions, adopted workflow changes, or important rejected assumptions.
 8. Update `STATUS.md` with remaining checks or mark the project ready for handoff.
 
@@ -25,6 +25,7 @@ Analysis and writing translate artifacts into claims. Treat unsupported claims a
 - Keep final summaries source-grounded: every major claim should point to an artifact, run command, figure, or data path.
 - When metrics conflict, state the tradeoff instead of forcing a winner.
 - Use `../../references/teaching-guide.zh.md` when preparing a teaching explanation for a senior student or lab demo.
+- Use `update-node` and `set-status` for revisions; never edit `graph.json` directly. On exit code 4, reload and reconcile before retrying.
 
 ## Handoff
 

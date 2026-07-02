@@ -1,4 +1,4 @@
-# Project Title
+# $project_title
 
 ## Background
 
@@ -6,12 +6,11 @@ State the research background and why this project matters.
 
 ## Core Question
 
-State the research question in one or two sentences.
+$question
 
 ## Hypotheses
 
-- Hypothesis 1:
-- Hypothesis 2:
+- TBD.
 
 ## Inputs
 
@@ -36,14 +35,12 @@ State the research question in one or two sentences.
 
 ## Acceptance Criteria
 
-- Criterion 1:
-- Criterion 2:
+- TBD.
 
 ## Design Decisions
 
-- Current approach:
+- Use the DeepScientist Lite file protocol for lightweight research-state tracking.
 
 ## Deprecated Ideas
 
 - None yet.
-

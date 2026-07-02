@@ -1,7 +1,7 @@
 {
   "name": "deepscientist-lite",
-  "version": "0.1.4",
-  "description": "Teaching-first DeepScientist Lite workflow plugin for Codex with file-led research maps, memory cards, artifacts, and a tiny adjacency-list state kernel.",
+  "version": "0.2.0-beta.1",
+  "description": "Independent teaching-first research workflow plugin for Codex with file-led research maps, artifacts, and a transactional Graph v2 state kernel.",
   "author": {
     "name": "DeepScientist Lite maintainers"
   },
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "DeepScientist Lite",
     "shortDescription": "Run a lightweight DeepScientist-style research workflow inside Codex.",
-    "longDescription": "DeepScientist Lite compresses the teachable core of DeepScientist into Codex skills, templates, and a small local state-graph script. It keeps research work file-led and artifact-first without requiring the DeepScientist daemon, Web/TUI, connectors, MCP servers, or local model deployment.",
+    "longDescription": "DeepScientist Lite is an independent, unofficial plugin inspired by the DeepScientist research workflow. It provides Codex skills, templates, and a transactional local state graph without the DeepScientist daemon, Web/TUI, connectors, MCP servers, or local model deployment. It is not sponsored, certified, or endorsed by ResearAI.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
     "capabilities": [

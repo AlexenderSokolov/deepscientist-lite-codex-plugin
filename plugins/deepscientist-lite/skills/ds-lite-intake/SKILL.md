@@ -10,7 +10,7 @@ Start with files, not chat memory. Build a small project contract that future Co
 ## Workflow
 
 1. Inspect existing project files first: README, notes, code, scripts, prior reports, `PROJECT.md`, `STATUS.md`, `RESEARCH_MAP.md`, and `research/state/graph.json` when present.
-2. If this is a new project, initialize the DS Lite protocol with `ds_lite_state.py init --root <project> --title "<title>" --question "<question>"`. Resolve `ds_lite_state.py` from the installed plugin directory first; if non-ASCII command arguments become corrupted on Windows, write UTF-8 files and use `--title-file` or `--question-file`.
+2. If this is a new project, initialize the DS Lite protocol with `ds_lite_state.py init --root <project> --title "<title>" --question "<question>"`. Resolve `ds_lite_state.py` from the installed plugin directory first; for non-ASCII values on Windows, prefer UTF-8 files with `--title-file` or `--question-file`.
 3. If this is an old project, do an intake audit: preserve existing conclusions, identify stale or unsupported claims, and create/update only the missing protocol files.
 4. Fill `PROJECT.md` with durable background, hypotheses, goal, inputs, constraints, acceptance criteria, workflow, code layout, and run commands.
 5. Update `STATUS.md` with current node, blockers, next action, and the date. Keep it short enough for a future session to read first.
@@ -19,7 +19,9 @@ Start with files, not chat memory. Build a small project contract that future Co
 ## State Rules
 
 - Record public summaries, decisions, evidence paths, and artifacts. Do not write hidden chain-of-thought.
-- Prefer the state script for graph edits. If unavailable, follow `../../references/state-graph-protocol.md` exactly.
+- Use the state script for every graph mutation. If it is unavailable, continue only with ordinary project files, report graph synchronization as blocked, and do not edit `graph.json` directly.
+- Read the current revision with `status`; on exit code 4, reload state and reconcile instead of overwriting a concurrent change.
+- Represent project-external resources as `external://<alias>/<relative-path>` and resolve aliases through `DS_LITE_EXTERNAL_<ALIAS>` in the environment or run scripts.
 - Never overwrite existing user conclusions silently. Mark uncertainty and source paths instead.
 - Use `research/memory/*.md` for durable facts and `research/artifacts/*.md` for idea, baseline, experiment, analysis, and writing records.
 
