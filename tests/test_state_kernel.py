@@ -24,7 +24,7 @@ def run_cli(root: Path, *args: str, env: dict[str, str] | None = None) -> subpro
     merged_env = os.environ.copy()
     if env:
         merged_env.update(env)
-    return subprocess.run(command, cwd=REPO_ROOT, text=True, capture_output=True, env=merged_env)
+    return subprocess.run(command, cwd=REPO_ROOT, text=True, encoding="utf-8", capture_output=True, env=merged_env)
 
 
 def parse_output(result: subprocess.CompletedProcess[str]) -> dict:
@@ -105,6 +105,22 @@ class StateKernelTests(unittest.TestCase):
         self.assertEqual(graph["nodes"]["intake-root"]["summary"], "状态图是否可靠？")
         self.assertIn("# 中文项目", (self.root / "PROJECT.md").read_text(encoding="utf-8"))
         self.assertIn("- Revision: `0`", (self.root / "RESEARCH_MAP.md").read_text(encoding="utf-8"))
+
+        western_root = Path(tempfile.mkdtemp(prefix="ds lite western console "))
+        western = run_cli(
+            western_root,
+            "init",
+            "--title",
+            "中文项目",
+            "--question",
+            "状态图是否可靠？",
+            env={"PYTHONUTF8": "0", "PYTHONIOENCODING": "cp1252"},
+        )
+        self.assertEqual(western.returncode, 0, western.stderr)
+        western_graph = json.loads(
+            (western_root / "research" / "state" / "graph.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(western_graph["nodes"]["intake-root"]["summary"], "状态图是否可靠？")
 
     def test_mutation_api_and_revision_conflict(self) -> None:
         self.write_artifact("research/artifacts/scout.md")
@@ -353,7 +369,16 @@ class StateKernelTests(unittest.TestCase):
                 f"Branch {index}",
                 "--no-render",
             ]
-            processes.append(subprocess.Popen(command, cwd=REPO_ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+            processes.append(
+                subprocess.Popen(
+                    command,
+                    cwd=REPO_ROOT,
+                    text=True,
+                    encoding="utf-8",
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+            )
         results = [process.communicate(timeout=20) + (process.returncode,) for process in processes]
         for stdout, stderr, returncode in results:
             self.assertEqual(returncode, 0, f"stdout={stdout}\nstderr={stderr}")
@@ -375,6 +400,7 @@ class StateKernelTests(unittest.TestCase):
             [sys.executable, "-c", holder_code],
             cwd=REPO_ROOT,
             text=True,
+            encoding="utf-8",
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )

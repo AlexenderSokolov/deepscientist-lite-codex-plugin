@@ -51,6 +51,18 @@ MAP_REVISION_RE = re.compile(r"^- Revision: `([0-9]+)`$", re.MULTILINE)
 LOCK_TIMEOUT_SECONDS = float(os.environ.get("DS_LITE_LOCK_TIMEOUT", "10"))
 
 
+def configure_text_streams() -> None:
+    """Keep CLI output representable on Windows consoles with legacy code pages."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(errors="backslashreplace")
+        except (AttributeError, OSError):
+            pass
+
+
 class CliError(Exception):
     def __init__(self, message: str, code: int = 1, details: list[str] | None = None) -> None:
         super().__init__(message)
@@ -1307,4 +1319,5 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    configure_text_streams()
     raise SystemExit(main())

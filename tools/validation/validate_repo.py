@@ -22,7 +22,7 @@ def fail(message: str) -> None:
 
 
 def run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(cmd, cwd=str(cwd), text=True, capture_output=True)
+    result = subprocess.run(cmd, cwd=str(cwd), text=True, encoding="utf-8", capture_output=True)
     if result.returncode != 0:
         print(result.stdout)
         print(result.stderr, file=sys.stderr)

@@ -8,6 +8,7 @@
 - Enforce project-relative or symbolic external paths and expand semantic validation.
 - Make `assets/templates/` the initialization source of truth.
 - Add standard-library unit tests and Windows/Ubuntu CI.
+- Make CLI and validation subprocess output independent of the Windows system code page.
 - Add project memory, licensing, migration, attribution, and independent-project notices.
 
 ## 0.1.4

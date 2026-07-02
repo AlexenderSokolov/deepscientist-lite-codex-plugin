@@ -1,5 +1,6 @@
 $ErrorActionPreference = "Stop"
 $env:PYTHONDONTWRITEBYTECODE = "1"
+$env:PYTHONUTF8 = "1"
 $PythonBin = if ($env:PYTHON_BIN) { $env:PYTHON_BIN } else { "python" }
 
 & $PythonBin -m unittest discover -s tests -v

@@ -59,6 +59,7 @@
 - 保留 `DeepScientist Lite` 名称，但明确声明为独立、非官方第三方插件。
 - v0.2 不引入 MCP、daemon、Web/TUI、模型路由或长期 automation。
 - `run_validate.sh` 必须兼容只有 `python3` 的 Unix/WSL 环境；运行时脚本保持 LF。
+- CLI 文件内容固定使用 UTF-8；验证入口启用 Python UTF-8 模式，CLI 输出在旧 Windows 代码页下必须可安全转义，不能依赖宿主区域设置。
 - 状态内核模块化属于 v0.2 之后的内部重构，必须保持 Graph v2 与 CLI 兼容。
 
 ## 已废弃方案

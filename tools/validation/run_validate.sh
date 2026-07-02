@@ -2,6 +2,7 @@
 set -euo pipefail
 
 export PYTHONDONTWRITEBYTECODE=1
+export PYTHONUTF8=1
 
 if [[ -n "${PYTHON_BIN:-}" ]]; then
   PYTHON="$PYTHON_BIN"
