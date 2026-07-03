@@ -13,10 +13,10 @@ Experiments must be reproducible enough that another session can rerun or diagno
 2. Define the smallest useful test: hypothesis, baseline, command, inputs, metric, budget/seed setting, expected signal, success threshold, and failure interpretation.
 3. For comparison experiments, read `../../references/experiment-comparison-template.md` and use its headings unless the host project already has a stronger local template.
 4. Implement or repair code using the host project's conventions. Keep unrelated refactors out.
-5. Create or update the relevant `run_*.sh` entry so the experiment is replayable.
+5. Create or update the relevant `run_*.sh` entry with every command needed to replay that experiment from its documented environment.
 6. Run the experiment when practical. If compute, data, cluster paths, or credentials block execution, save the exact command and mark the experiment node `blocked`.
 7. Write `research/artifacts/experiment-<slug>.md` with command, environment, metrics, logs, outputs, failures, and next interpretation.
-8. Add or update an `experiment` node with artifact and evidence paths, then render the map.
+8. Read the current revision, then add or update an `experiment` node with `add-node`/`update-node`; attach outputs with `link-path`, update status with `set-status`, and pass `--expected-revision` on every write.
 
 ## Recording Rules
 
@@ -26,3 +26,4 @@ Experiments must be reproducible enough that another session can rerun or diagno
 - Attach output files, logs, figures, and scripts through `artifact_paths` or `evidence_paths`.
 - If an experiment invalidates an idea, add a `rollback` or `supersedes` edge instead of erasing the old route.
 - Keep `STATUS.md` honest: active node, what ran, what failed, and the next concrete action.
+- Never edit `graph.json` directly. On revision conflict, reload the graph and reconcile both sessions' evidence before retrying.

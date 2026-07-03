@@ -10,7 +10,15 @@ Codex Desktop may not expose newly installed or upgraded skills until the app is
 
 ## Windows non-ASCII command arguments
 
-PowerShell or console encoding can corrupt Chinese arguments passed directly to Python. For `ds_lite_state.py init`, prefer UTF-8 text files with `--title-file` and `--question-file`.
+PowerShell or console encoding can corrupt Chinese arguments passed directly to Python. Prefer the available UTF-8 `--*-file` options for title, question, summary, and reason values.
+
+## Graph v1 external paths
+
+Automatic migration stops when a v1 graph contains an absolute path outside the project. Run `migrate --external-map alias=ROOT`; do not manually replace the JSON path because the migration also creates the v1 backup and Graph v2 revision.
+
+## External aliases
+
+`validate` warns when an `external://alias/path` cannot be resolved. Set `DS_LITE_EXTERNAL_<ALIAS>` in the local environment or the relevant `run_*.sh`. Do not commit workstation absolute roots to graph state.
 
 ## Scope boundary
 
