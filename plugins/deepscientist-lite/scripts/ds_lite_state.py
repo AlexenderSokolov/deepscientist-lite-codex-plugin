@@ -24,6 +24,7 @@ NODE_KINDS = {
     "scout",
     "idea",
     "experiment",
+    "review",
     "analysis",
     "write",
     "decision",
@@ -49,6 +50,7 @@ PATH_FIELDS = ("artifact_paths", "memory_paths", "evidence_paths")
 EXTERNAL_URI_RE = re.compile(r"^external://([a-z][a-z0-9_-]*)/(.+)$")
 MAP_REVISION_RE = re.compile(r"^- Revision: `([0-9]+)`$", re.MULTILINE)
 LOCK_TIMEOUT_SECONDS = float(os.environ.get("DS_LITE_LOCK_TIMEOUT", "10"))
+EVIDENCE_SCHEMA = "ds-lite.evidence.v1"
 
 
 def configure_text_streams() -> None:
@@ -105,7 +107,7 @@ def template_root() -> Path:
 
 
 def ensure_dirs(root: Path) -> None:
-    for item in ("research/state", "research/memory", "research/artifacts"):
+    for item in ("research/state", "research/memory", "research/artifacts", "research/evidence"):
         (root / item).mkdir(parents=True, exist_ok=True)
 
 
@@ -410,6 +412,50 @@ def progression_cycle(graph: dict[str, Any]) -> list[str]:
     return []
 
 
+def evidence_manifest_paths(node: dict[str, Any]) -> list[str]:
+    return [
+        value
+        for value in node.get("evidence_paths", [])
+        if isinstance(value, str) and value.startswith("research/evidence/") and value.endswith("/manifest.json")
+    ]
+
+
+def validate_evidence_manifest(root: Path, node_id: str, node: dict[str, Any], path_value: str) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    resolved, problem = resolve_graph_path(root, path_value)
+    if problem:
+        warnings.append(f"node {node_id} evidence manifest cannot be resolved: {problem}")
+        return errors, warnings
+    if resolved is None or not resolved.exists():
+        return errors, warnings
+    try:
+        payload = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        errors.append(f"node {node_id} evidence manifest is invalid JSON: {path_value}: {exc}")
+        return errors, warnings
+    if not isinstance(payload, dict) or payload.get("schema_version") != EVIDENCE_SCHEMA:
+        errors.append(f"node {node_id} evidence manifest must use {EVIDENCE_SCHEMA}: {path_value}")
+        return errors, warnings
+    if payload.get("node_id") != node_id:
+        errors.append(f"node {node_id} evidence manifest references node {payload.get('node_id')}: {path_value}")
+    if payload.get("status") not in {"planned", "completed", "failed"}:
+        errors.append(f"node {node_id} evidence manifest has invalid status: {path_value}")
+    verification = payload.get("verification")
+    verification_status = verification.get("status") if isinstance(verification, dict) else ""
+    if verification_status not in {"pass", "warning", "fail", "not-run"}:
+        errors.append(f"node {node_id} evidence manifest has invalid verification status: {path_value}")
+    elif verification_status in {"not-run", "warning"}:
+        warnings.append(f"node {node_id} evidence manifest is not strictly verified: {path_value}")
+    elif verification_status == "fail":
+        message = f"node {node_id} evidence manifest verification failed: {path_value}"
+        if node.get("status") == "done":
+            errors.append(message)
+        else:
+            warnings.append(message)
+    return errors, warnings
+
+
 def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -496,6 +542,20 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
                     else:
                         warnings.append(message)
 
+        if node.get("kind") == "experiment":
+            manifests = evidence_manifest_paths(node)
+            if not manifests:
+                warnings.append(f"experiment node {node_id} has no Evidence Pack manifest")
+            for manifest_value in manifests:
+                manifest_errors, manifest_warnings = validate_evidence_manifest(root, node_id, node, manifest_value)
+                errors.extend(manifest_errors)
+                warnings.extend(manifest_warnings)
+        if node.get("kind") == "review":
+            if not node.get("artifact_paths"):
+                warnings.append(f"review node {node_id} has no review artifact")
+            if not evidence_manifest_paths(node):
+                warnings.append(f"review node {node_id} is not linked to an Evidence Pack manifest")
+
     if len(active_nodes) > 1:
         errors.append(f"multiple nodes have active status: {', '.join(sorted(active_nodes))}")
     root_id = graph.get("root_node_id", "")
@@ -511,6 +571,7 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
         errors.append("active_node_id does not match the node with active status")
 
     semantic_edges: set[tuple[str, str, str]] = set()
+    progression_parents: dict[str, set[str]] = {node_id: set() for node_id in nodes}
     for source, edges in adjacency.items():
         if source not in nodes:
             errors.append(f"adjacency source {source} is not a node")
@@ -531,6 +592,8 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
             if edge_key in semantic_edges:
                 errors.append(f"duplicate semantic edge: {source} -[{relation}]-> {target}")
             semantic_edges.add(edge_key)
+            if relation in PROGRESSION_RELATIONS and target in progression_parents:
+                progression_parents[target].add(source)
             for field in ("reason", "artifact_path"):
                 if field not in edge:
                     errors.append(f"edge {source}[{index}] missing {field}")
@@ -555,6 +618,11 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
             continue
         if not find_route(graph, root_id, node_id, mode="progression"):
             errors.append(f"node {node_id} is unreachable from root through progression edges")
+        node = nodes.get(node_id, {})
+        if node.get("kind") in {"analysis", "write"}:
+            parents = progression_parents.get(node_id, set())
+            if not any(nodes.get(parent, {}).get("kind") == "review" for parent in parents):
+                warnings.append(f"{node.get('kind')} node {node_id} has no direct progression parent of kind review")
     cycle = progression_cycle(graph)
     if cycle:
         errors.append("progression graph contains a cycle: " + " -> ".join(cycle))
@@ -809,6 +877,7 @@ def cmd_init(args: argparse.Namespace) -> int:
             ("STATUS.md", "STATUS.md"),
             ("run_research.sh", "run_research.sh"),
             ("run_experiment.sh", "run_experiment.sh"),
+            ("run_review.sh", "run_review.sh"),
             ("run_analysis.sh", "run_analysis.sh"),
         ):
             if write_if_missing(root / relative, render_template(template_name, values)):

@@ -1,0 +1,4 @@
+interface:
+  display_name: "DS Lite Review"
+  short_description: "Verify Evidence Packs and gate research claims."
+  default_prompt: "$ds-lite-review verify this experiment before analysis"

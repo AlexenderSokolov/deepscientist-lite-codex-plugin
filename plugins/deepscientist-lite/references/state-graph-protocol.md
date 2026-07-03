@@ -21,7 +21,7 @@
 Required fields:
 
 - `id`: stable node id
-- `kind`: `intake`, `scout`, `idea`, `experiment`, `analysis`, `write`, `decision`, or `finalize`
+- `kind`: `intake`, `scout`, `idea`, `experiment`, `review`, `analysis`, `write`, `decision`, or `finalize`
 - `status`: `proposed`, `active`, `blocked`, `done`, `superseded`, or `abandoned`
 - `title`: short human title
 - `summary`: public summary, not hidden reasoning
@@ -62,6 +62,16 @@ Allowed relations:
 - Render `RESEARCH_MAP.md` after graph edits.
 - Use `ds_lite_state.py` for every mutation. Do not edit `graph.json` directly.
 - Pass `--expected-revision` when coordinating multiple sessions. Reload and reconcile on exit code 4.
+- New experiment nodes should link `research/evidence/<run-id>/manifest.json`; absence is a compatibility warning and fails strict validation.
+- New analysis/write routes should have a direct progression parent of kind `review`.
+
+## Evidence Pack v1
+
+- `contract.json` declares command, inputs, metrics, thresholds, seeds, budget, expected outputs, and failure interpretation before execution.
+- `manifest.json` records execution status, logs, metrics, sanitized environment metadata, output paths, sizes, hashes, and verification results.
+- Project-local files require SHA-256. External files are only hashed when explicitly requested.
+- Verification failure blocks a done experiment; a failed process may still be valid evidence when its pack is intact.
+- Review is a separate workflow and artifact, not a guarantee of separate-model or infrastructure isolation.
 
 ## Route Semantics
 

@@ -2,7 +2,7 @@
 
 [中文说明](README.zh.md) · [Documentation](docs/README.md) · [Teaching materials](teaching/README.zh.md) · [Plugin package](plugins/deepscientist-lite/)
 
-DeepScientist Lite is a lightweight Codex plugin for learning and practicing a traceable research workflow. It keeps the useful core of a DeepScientist-style process—project memory, research maps, artifacts, experiment records, and route tracing—without asking users to deploy the full DeepScientist platform.
+DeepScientist Lite is a lightweight Codex plugin for learning and practicing a traceable, reviewable research workflow. It keeps project memory, research maps, artifacts, experiment contracts, Evidence Packs, review gates, and route tracing without asking users to deploy the full DeepScientist platform.
 
 > **Independent project:** DeepScientist Lite is an unofficial third-party plugin. It is not sponsored, certified, or endorsed by ResearAI. “DeepScientist” is used descriptively to identify the workflow that inspired this project; see [NOTICE](NOTICE).
 
@@ -11,8 +11,9 @@ It is designed for onboarding, teaching demos, and small research projects where
 ## What It Does
 
 - Starts or audits a research project with `PROJECT.md`, `STATUS.md`, and `RESEARCH_MAP.md`.
-- Guides Codex through intake, scout, idea, experiment, and analysis/write stages.
+- Guides Codex through intake, scout, idea, experiment, review, and analysis/write stages.
 - Records ideas, experiments, failures, and conclusions as files under `research/artifacts/`.
+- Packages logs, metrics, and output hashes under `research/evidence/` before claim review.
 - Maintains a small adjacency-list state graph in `research/state/graph.json`.
 - Lets users trace the active research route without running a daemon.
 
@@ -40,12 +41,13 @@ In a project folder, ask Codex to use one of the DS Lite skills, for example:
 $ds-lite-intake start a DS Lite research project from this question: ...
 $ds-lite-scout audit the baseline and benchmark route
 $ds-lite-experiment record this experiment in the research map
+$ds-lite-review review the Evidence Pack before analysis
 $ds-lite-analysis-write summarize the evidence and limitations
 ```
 
 For Chinese project titles or questions on Windows, prefer UTF-8 text files with `--title-file` and `--question-file` when calling `ds_lite_state.py` directly.
 
-Graph v2 uses atomic writes, revision checks, and project-relative or symbolic external paths. Existing Graph v1 projects are migrated on the first write; read the [migration guide](docs/maintainers/graph-v2-migration.md) before upgrading projects that contain absolute paths.
+Graph v2 uses atomic writes, revision checks, and project-relative or symbolic external paths. Evidence Pack v1 adds a separate standard-library CLI for contracts, manifests, SHA-256 records, and strict verification. Existing Graph v1 projects are migrated on the first write; read the [migration guide](docs/maintainers/graph-v2-migration.md) before upgrading projects that contain absolute paths.
 
 ## Repository Map
 

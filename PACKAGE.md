@@ -7,8 +7,9 @@ This repository is a Codex marketplace repository.
 - `.agents/plugins/marketplace.json`: marketplace index for Codex.
 - `plugins/deepscientist-lite/`: installable plugin package.
 - `plugins/deepscientist-lite/.codex-plugin/plugin.json`: plugin manifest.
-- `plugins/deepscientist-lite/skills/`: five runtime skills.
+- `plugins/deepscientist-lite/skills/`: six runtime skills, including the independent review workflow.
 - `plugins/deepscientist-lite/scripts/ds_lite_state.py`: no-dependency state graph helper.
+- `plugins/deepscientist-lite/scripts/ds_lite_evidence.py`: no-dependency Evidence Pack contract, finalize, and verification helper.
 - `plugins/deepscientist-lite/scripts/ds_lite_state_v1_legacy.py`: preserved v1 implementation for audit only; it is not the runtime entry point.
 - `plugins/deepscientist-lite/assets/templates/`: project file templates.
 - `plugins/deepscientist-lite/references/`: skill-facing protocol references only.
@@ -18,7 +19,7 @@ This repository is a Codex marketplace repository.
 - `docs/`: implementation and maintainer documentation.
 - `teaching/`: standalone teaching material and sanitized case walkthroughs.
 - `tools/validation/`: maintainer validation tools.
-- `tests/`: standard-library Graph v2 and CLI regression tests.
+- `tests/`: standard-library Graph v2, Evidence Pack, and CLI regression tests.
 - `.github/workflows/validate.yml`: Windows and Ubuntu validation matrix.
 
 ## Release Boundary

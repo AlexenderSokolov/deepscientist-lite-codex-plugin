@@ -25,10 +25,12 @@
 
 ## Demo 4：回溯路线
 
+先让 Codex 使用 `$ds-lite-review` 检查 experiment 的 Evidence Pack。展示完整性通过但指标未达阈值时，review 仍会阻塞分析。
+
 运行：
 
 ```bash
 python path/to/ds_lite_state.py trace --root . --format markdown
 ```
 
-展示当前路线如何从 intake 走到 analysis。最后强调：Lite 插件最重要的价值不是“自动得出结论”，而是让研究过程可以恢复、检查和教学。
+展示当前路线如何从 intake 经 experiment、review 走到 analysis。最后强调：Lite 插件最重要的价值不是“自动得出结论”，而是让研究过程可以恢复、检查和教学。

@@ -20,7 +20,11 @@ Record primary and secondary metrics. If budget matters, separate:
 
 ## Run Contract
 
-Record commands, seeds, budgets, output directory, environment, and expected files.
+Create a `ds-lite.experiment-contract.v1` JSON file before execution. Record commands, inputs, metrics and thresholds, seeds, budgets, output paths, sanitized environment metadata, and failure interpretation.
+
+## Evidence Pack
+
+Link the finalized `research/evidence/<run-id>/manifest.json`, strict verification result, stdout/stderr, metrics, and output hashes.
 
 ## Results
 
@@ -32,4 +36,4 @@ Say what it means if the experiment fails, partially succeeds, or only improves 
 
 ## Next Action
 
-Choose exactly one: exploit, revise, rollback, branch, run stronger validation, or stop.
+Route the experiment through `$ds-lite-review`, then choose exactly one: analyze, revise, rollback, branch, run stronger validation, or stop.

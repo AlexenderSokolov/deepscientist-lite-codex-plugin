@@ -9,18 +9,20 @@ Analysis and writing translate artifacts into claims. Treat unsupported claims a
 
 ## Workflow
 
-1. Read linked experiment artifacts, latest `RESEARCH_MAP.md`, `STATUS.md`, and result files.
-2. Build a claim table: claim, supporting artifact, metric or observation, limitation, confidence, and missing check.
-3. Separate early-budget behavior, final-budget behavior, and aggregate metrics such as AUC when they can disagree.
-4. For theoretical or mathematical exploration, read `../../references/math-exploration-template.md` and keep assumptions explicit.
-5. If evidence is sufficient, write `research/artifacts/analysis-<slug>.md`, `math-<slug>.md`, or `paper-<slug>.md`.
-6. Read the current revision, add an `analysis`, `write`, or `finalize` node from the active node, and link every supporting path with `link-path`. Pass `--expected-revision` on each state write.
-7. Update `PROJECT.md` only with durable conclusions, adopted workflow changes, or important rejected assumptions.
-8. Update `STATUS.md` with remaining checks or mark the project ready for handoff.
+1. Read the latest direct `review` predecessor, its review artifact, linked Evidence Pack, latest `RESEARCH_MAP.md`, `STATUS.md`, and result files.
+2. If no review exists, route the experiment to `$ds-lite-review`. If review is `fail`, `needs-human`, or blocked, do not promote the claim or create an active analysis/write node; record only the limitation and required follow-up.
+3. For a passing review, build a claim table: claim, supporting artifact, metric or observation, review lane, limitation, confidence, and missing check.
+4. Separate early-budget behavior, final-budget behavior, and aggregate metrics such as AUC when they can disagree.
+5. For theoretical or mathematical exploration, read `../../references/math-exploration-template.md` and keep assumptions explicit.
+6. If reviewed evidence is sufficient, write `research/artifacts/analysis-<slug>.md`, `math-<slug>.md`, or `paper-<slug>.md`.
+7. Read the current revision, add an `analysis`, `write`, or `finalize` node directly from the passing review node, and link every supporting artifact, manifest, and review path. Pass `--expected-revision` on each state write.
+8. Update `PROJECT.md` only with durable conclusions, adopted workflow changes, or important rejected assumptions.
+9. Update `STATUS.md` with remaining checks or mark the project ready for handoff.
 
 ## Writing Rules
 
 - Do not upgrade weak evidence into strong claims.
+- Treat review failure or unresolved human checks as workflow blockers, not prose caveats.
 - Preserve negative results and partial successes.
 - Keep final summaries source-grounded: every major claim should point to an artifact, run command, figure, or data path.
 - When metrics conflict, state the tradeoff instead of forcing a winner.

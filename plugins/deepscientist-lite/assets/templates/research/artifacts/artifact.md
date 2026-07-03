@@ -2,7 +2,7 @@
 
 ## Type
 
-idea | baseline | experiment | analysis | paper | decision
+idea | baseline | experiment | review | analysis | paper | decision
 
 ## Linked Node
 
@@ -25,4 +25,3 @@ What happened, including failures.
 ## Next Step
 
 What this artifact implies for the Research Map.
-

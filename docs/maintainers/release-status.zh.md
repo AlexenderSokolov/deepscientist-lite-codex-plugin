@@ -12,7 +12,7 @@ The plugin is the main product. Teaching cases and small experiments are validat
 - The file protocol is easy to initialize in a new or existing research project.
 - `ds_lite_state.py` keeps state traceable without hidden chain-of-thought.
 - Users can recover from install/cache/encoding failures.
-- A teacher can explain the workflow in 20-30 minutes.
+- A teacher can explain the core workflow in 20-30 minutes and run evidence/review labs in 45 or 90 minutes.
 - A student can run a one-stop project loop and inspect the route afterward.
 
 ## What Experiments Are For
@@ -23,7 +23,7 @@ The sanitized paradigm-comparison teaching case demonstrates how DS Lite records
 
 ## Current Release Judgment
 
-`v0.2.0-beta.1` is the reliability-focused teaching beta. Graph v2 adds revisions, locked atomic writes, migration backups, portable external paths, semantic validation, and progression-aware tracing. Local Windows PowerShell, Git Bash, WSL DrvFS, WSL ext4, and the remote Windows/Ubuntu CI matrix passed on 2026-07-02; see the [Windows/WSL audit](v0.2-audit.zh.md). Stable release still requires independent installation reports, macOS verification, and repeatable cache-upgrade recovery.
+`v0.3.0-beta.1` is the evidence-review teaching beta. It keeps Graph v2 and adds Evidence Pack v1, a sixth review skill, strict claim gates, and 45/90-minute teaching labs. Local Windows PowerShell, Git Bash, WSL DrvFS, WSL ext4, plugin, skill, and teaching-script checks passed on 2026-07-03; see the [v0.3 audit](v0.3-audit.zh.md). Remote CI, independent installation and teaching reports, macOS verification, and repeatable cache-upgrade recovery remain release evidence.
 
 ## Long-Term Memory Rules
 
@@ -31,4 +31,3 @@ The sanitized paradigm-comparison teaching case demonstrates how DS Lite records
 - Keep algorithm experiment details inside the case study or the host research project.
 - Do not add MCP, daemon, hooks, or Web/TUI unless the product goal explicitly changes.
 - Treat teaching-case results as evidence for teaching value, not as a release blocker unless they expose a plugin workflow failure.
-

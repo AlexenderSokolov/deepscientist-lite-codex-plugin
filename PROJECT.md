@@ -18,15 +18,16 @@
 - 可靠维护 intake、scout、idea、experiment、analysis/write 的最小科研闭环。
 - 防止并发覆盖、非原子写入、路径泄露和证据关系污染推进路线。
 - 保持 Windows 与 Unix-like 环境中的命令、中文和空格路径可用。
-- 为教学 Beta 提供可重复验证、迁移和发布流程。
+- 为教学 Beta 提供可重复验证、证据审查、迁移和发布流程。
 
 ## 工作流程
 
-1. 通过五个 `ds-lite-*` skills 读取项目合同、状态和证据。
+1. 通过六个 `ds-lite-*` skills 读取项目合同、状态和证据。
 2. 先写 artifact、memory 或可复现 `run_*.sh`，再调用状态 CLI。
 3. Graph 写操作在锁内检查 revision、校验语义并原子替换。
-4. 每次提交后重建 `RESEARCH_MAP.md`；地图可由 graph 修复。
-5. 使用统一验证脚本执行单元测试、仓库 smoke 和语法检查。
+4. 实验先生成 contract/Evidence Pack，再由独立 review 流程决定是否进入 analysis/write。
+5. 每次 graph 提交后重建 `RESEARCH_MAP.md`；地图可由 graph 修复。
+6. 使用统一验证脚本执行单元测试、仓库 smoke 和语法检查。
 
 ## 代码结构
 
@@ -48,19 +49,23 @@
 - Graph v2 写入具备跨平台锁、revision 检查和原子替换。
 - v1 可读且可迁移，原 graph 备份永久保留；外部绝对路径不会被静默写入 v2。
 - progression trace 不遍历 `supports`、`blocks` 或 `rollback`。
-- 五个技能只通过 CLI 修改 graph，并能处理 revision 冲突。
+- 六个技能只通过 CLI 修改 graph，并能处理 revision 冲突。
+- Evidence Pack 不保存凭据或本机绝对根目录，项目内证据可通过 SHA-256 复核。
+- 新的 experiment→analysis 路线经过 review；旧 Graph v2 仍可读并仅产生兼容警告。
 - Windows PowerShell、Git Bash、WSL DrvFS、WSL ext4，以及远程 Windows/Ubuntu CI 均通过统一验证入口。
 - manifest、技能、模板、文档和发布版本保持一致。
 
 ## 设计决策
 
-- 当前发布线：`0.2.0-beta.1`，Graph schema 为 `ds-lite.graph.v2`。
+- 当前发布线：`0.3.0-beta.1`，Graph schema 继续为 `ds-lite.graph.v2`，Evidence schema 为 `ds-lite.evidence.v1`。
 - 项目外资源使用 `external://alias/path`，绝对根目录由 `DS_LITE_EXTERNAL_<ALIAS>` 提供。
 - 保留 `DeepScientist Lite` 名称，但明确声明为独立、非官方第三方插件。
 - v0.2 不引入 MCP、daemon、Web/TUI、模型路由或长期 automation。
 - `run_validate.sh` 必须兼容只有 `python3` 的 Unix/WSL 环境；运行时脚本保持 LF。
 - CLI 文件内容固定使用 UTF-8；验证入口启用 Python UTF-8 模式，CLI 输出在旧 Windows 代码页下必须可安全转义，不能依赖宿主区域设置。
 - 状态内核模块化属于 v0.2 之后的内部重构，必须保持 Graph v2 与 CLI 兼容。
+- Review 是独立流程和 artifact，不宣称独立模型或物理隔离。
+- v0.3 不加入 MCP、subagents、HPC/云调度或完整树搜索；评分循环只作为 Graph 分支教学。
 
 ## 已废弃方案
 

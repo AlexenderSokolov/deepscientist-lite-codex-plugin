@@ -76,6 +76,28 @@ class StateKernelTests(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
+    def write_evidence_manifest(
+        self, node_id: str, run_id: str = "run-01", verification_status: str = "pass"
+    ) -> str:
+        relative = f"research/evidence/{run_id}/manifest.json"
+        path = self.root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "ds-lite.evidence.v1",
+                    "run_id": run_id,
+                    "node_id": node_id,
+                    "status": "completed",
+                    "verification": {"status": verification_status},
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return relative
+
     def add_node(self, node_id: str, parent: str = "intake-root", *, active: bool = False) -> subprocess.CompletedProcess[str]:
         relative = f"research/artifacts/{node_id}.md"
         self.write_artifact(relative)
@@ -105,6 +127,8 @@ class StateKernelTests(unittest.TestCase):
         self.assertEqual(graph["nodes"]["intake-root"]["summary"], "状态图是否可靠？")
         self.assertIn("# 中文项目", (self.root / "PROJECT.md").read_text(encoding="utf-8"))
         self.assertIn("- Revision: `0`", (self.root / "RESEARCH_MAP.md").read_text(encoding="utf-8"))
+        self.assertTrue((self.root / "research" / "evidence").is_dir())
+        self.assertTrue((self.root / "run_review.sh").is_file())
 
         western_root = Path(tempfile.mkdtemp(prefix="ds lite western console "))
         western = run_cli(
@@ -179,6 +203,99 @@ class StateKernelTests(unittest.TestCase):
         )
         self.assertEqual(conflict.returncode, 4)
         self.assertEqual(self.graph()["revision"], 3)
+
+    def test_legacy_experiment_without_evidence_pack_warns_and_strict_fails(self) -> None:
+        self.write_artifact("research/artifacts/experiment-legacy.md")
+        added = run_cli(
+            self.root,
+            "add-node",
+            "--id",
+            "experiment-legacy",
+            "--kind",
+            "experiment",
+            "--parent",
+            "intake-root",
+            "--title",
+            "Legacy experiment",
+            "--artifact-path",
+            "research/artifacts/experiment-legacy.md",
+            "--active",
+        )
+        self.assertEqual(added.returncode, 0, added.stderr)
+        regular = run_cli(self.root, "validate")
+        self.assertEqual(regular.returncode, 0, regular.stderr)
+        self.assertTrue(any("no Evidence Pack manifest" in item for item in parse_output(regular)["warnings"]))
+        strict = run_cli(self.root, "validate", "--strict")
+        self.assertEqual(strict.returncode, 1)
+
+    def test_review_node_supports_block_and_analysis_route(self) -> None:
+        self.write_artifact("research/artifacts/experiment-reviewed.md")
+        manifest = self.write_evidence_manifest("experiment-reviewed", "reviewed-run")
+        experiment = run_cli(
+            self.root,
+            "add-node",
+            "--id",
+            "experiment-reviewed",
+            "--kind",
+            "experiment",
+            "--parent",
+            "intake-root",
+            "--title",
+            "Reviewed experiment",
+            "--artifact-path",
+            "research/artifacts/experiment-reviewed.md",
+            "--evidence-path",
+            manifest,
+            "--active",
+        )
+        self.assertEqual(experiment.returncode, 0, experiment.stderr)
+        self.write_artifact("research/artifacts/review-reviewed.md")
+        review = run_cli(
+            self.root,
+            "add-node",
+            "--id",
+            "review-reviewed",
+            "--kind",
+            "review",
+            "--parent",
+            "experiment-reviewed",
+            "--title",
+            "Independent review pass",
+            "--artifact-path",
+            "research/artifacts/review-reviewed.md",
+            "--evidence-path",
+            manifest,
+            "--active",
+        )
+        self.assertEqual(review.returncode, 0, review.stderr)
+        blocked = run_cli(self.root, "set-status", "--node", "review-reviewed", "--status", "blocked")
+        self.assertEqual(blocked.returncode, 0, blocked.stderr)
+        resumed = run_cli(self.root, "set-status", "--node", "review-reviewed", "--status", "active")
+        self.assertEqual(resumed.returncode, 0, resumed.stderr)
+        self.write_artifact("research/artifacts/analysis-reviewed.md")
+        analysis = run_cli(
+            self.root,
+            "add-node",
+            "--id",
+            "analysis-reviewed",
+            "--kind",
+            "analysis",
+            "--parent",
+            "review-reviewed",
+            "--title",
+            "Reviewed analysis",
+            "--artifact-path",
+            "research/artifacts/analysis-reviewed.md",
+            "--active",
+        )
+        self.assertEqual(analysis.returncode, 0, analysis.stderr)
+        strict = run_cli(self.root, "validate", "--strict")
+        self.assertEqual(strict.returncode, 0, strict.stdout + strict.stderr)
+        trace = parse_output(run_cli(self.root, "trace", "--node", "analysis-reviewed"))
+        self.assertEqual(
+            [item["id"] for item in trace["route"]],
+            ["intake-root", "experiment-reviewed", "review-reviewed", "analysis-reviewed"],
+        )
 
     def test_progression_trace_ignores_supports_shortcut(self) -> None:
         self.assertEqual(self.add_node("scout").returncode, 0)

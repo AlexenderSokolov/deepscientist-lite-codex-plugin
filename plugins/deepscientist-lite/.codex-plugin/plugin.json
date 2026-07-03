@@ -1,7 +1,7 @@
 {
   "name": "deepscientist-lite",
-  "version": "0.2.0-beta.1",
-  "description": "Independent teaching-first research workflow plugin for Codex with file-led research maps, artifacts, and a transactional Graph v2 state kernel.",
+  "version": "0.3.0-beta.1",
+  "description": "Independent teaching-first research workflow plugin for Codex with Graph v2, verifiable Evidence Packs, and a review gate.",
   "author": {
     "name": "DeepScientist Lite maintainers"
   },
@@ -14,13 +14,14 @@
     "research-agent",
     "teaching",
     "research-map",
-    "artifact-first"
+    "artifact-first",
+    "evidence-review"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "DeepScientist Lite",
     "shortDescription": "Run a lightweight DeepScientist-style research workflow inside Codex.",
-    "longDescription": "DeepScientist Lite is an independent, unofficial plugin inspired by the DeepScientist research workflow. It provides Codex skills, templates, and a transactional local state graph without the DeepScientist daemon, Web/TUI, connectors, MCP servers, or local model deployment. It is not sponsored, certified, or endorsed by ResearAI.",
+    "longDescription": "DeepScientist Lite is an independent, unofficial teaching plugin inspired by the DeepScientist research workflow. It provides six Codex skills, verifiable local Evidence Packs, review artifacts, templates, and a transactional Graph v2 state kernel without daemon, Web/TUI, connectors, MCP servers, or local model deployment. It is not sponsored, certified, or endorsed by ResearAI.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
     "capabilities": [
@@ -31,7 +32,8 @@
     "defaultPrompt": [
       "$ds-lite-intake start a research project from this question",
       "$ds-lite-scout audit the literature and baseline route",
-      "$ds-lite-experiment record this experiment in the research map"
+      "$ds-lite-experiment package this experiment as verifiable evidence",
+      "$ds-lite-review review this experiment before analysis"
     ],
     "brandColor": "#245A7A",
     "screenshots": []

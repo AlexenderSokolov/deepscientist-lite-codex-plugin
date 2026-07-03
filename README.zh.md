@@ -2,7 +2,7 @@
 
 [English README](README.md) · [文档](docs/README.md) · [教学区](teaching/README.zh.md) · [插件包](plugins/deepscientist-lite/)
 
-DeepScientist Lite 是一个轻量级 Codex 插件，用来学习和实践可回溯的科研工作流。它保留 DeepScientist 风格流程里最适合教学的部分：项目记忆、研究地图、artifact 记录、实验记录和路线回溯；但不要求用户部署完整 DeepScientist 平台。
+DeepScientist Lite 是一个轻量级 Codex 插件，用来学习和实践可回溯、可审查的科研工作流。它保留 DeepScientist 风格流程里最适合教学的部分：项目记忆、研究地图、artifact、实验契约、Evidence Pack、审查门和路线回溯；但不要求用户部署完整 DeepScientist 平台。
 
 > **独立项目声明：** DeepScientist Lite 是非官方第三方插件，与 ResearAI 不存在赞助、认证或背书关系。“DeepScientist”仅用于说明本项目所借鉴的工作流来源，详见 [NOTICE](NOTICE)。
 
@@ -11,8 +11,9 @@ DeepScientist Lite 是一个轻量级 Codex 插件，用来学习和实践可回
 ## 它能做什么
 
 - 为新项目或旧项目建立 `PROJECT.md`、`STATUS.md` 和 `RESEARCH_MAP.md`。
-- 引导 Codex 按 intake、scout、idea、experiment、analysis/write 阶段推进。
+- 引导 Codex 按 intake、scout、idea、experiment、review、analysis/write 阶段推进。
 - 把想法、实验、失败和结论记录到 `research/artifacts/`。
+- 把日志、指标和输出哈希封装到 `research/evidence/`，先审查再提升结论。
 - 用 `research/state/graph.json` 保存轻量邻接表研究图。
 - 在不启动 daemon 的情况下回溯当前研究路线。
 
@@ -40,12 +41,13 @@ codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 $ds-lite-intake 从这个问题启动一个 DS Lite 研究项目：...
 $ds-lite-scout 审计 baseline 和 benchmark 路线
 $ds-lite-experiment 把这次实验记录进 research map
+$ds-lite-review 在分析前审查 Evidence Pack 和实验主张
 $ds-lite-analysis-write 总结证据、限制和下一步
 ```
 
 如果在 Windows 命令行里直接调用 `ds_lite_state.py`，中文标题或问题建议写入 UTF-8 文本文件，再使用 `--title-file` 和 `--question-file`，避免命令行编码破坏内容。
 
-Graph v2 提供原子写入、revision 冲突检查，以及项目相对路径/外部符号路径协议。旧 Graph v1 会在首次写操作时迁移；含绝对路径的项目请先阅读 [迁移指南](docs/maintainers/graph-v2-migration.md)。
+Graph v2 提供原子写入、revision 冲突检查，以及项目相对路径/外部符号路径协议。Evidence Pack v1 使用独立标准库 CLI 生成契约、manifest、SHA-256 和严格验证结果。旧 Graph v1 会在首次写操作时迁移；含绝对路径的项目请先阅读 [迁移指南](docs/maintainers/graph-v2-migration.md)。
 
 ## 仓库结构
 

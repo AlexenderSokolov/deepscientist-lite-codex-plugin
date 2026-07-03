@@ -12,6 +12,7 @@ EXPECTED_SKILLS = [
     "ds-lite-scout",
     "ds-lite-idea",
     "ds-lite-experiment",
+    "ds-lite-review",
     "ds-lite-analysis-write",
 ]
 
@@ -57,8 +58,8 @@ def validate_manifest(plugin_root: Path) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("name") != "deepscientist-lite":
         fail("plugin name must be deepscientist-lite")
-    if manifest.get("version") != "0.2.0-beta.1":
-        fail("plugin version must be 0.2.0-beta.1")
+    if manifest.get("version") != "0.3.0-beta.1":
+        fail("plugin version must be 0.3.0-beta.1")
     if manifest.get("skills") != "./skills/":
         fail("plugin skills path must be ./skills/")
     for forbidden in ("mcpServers", "apps", "hooks"):
@@ -88,6 +89,7 @@ def validate_skills(plugin_root: Path) -> None:
 
 def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
     state_script = plugin_root / "scripts" / "ds_lite_state.py"
+    evidence_script = plugin_root / "scripts" / "ds_lite_evidence.py"
     smoke_root = Path(tempfile.mkdtemp(prefix="ds-lite-smoke-"))
     print(f"Smoke project: {smoke_root}")
 
@@ -111,11 +113,57 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         "research/artifacts/scout-smoke.md",
         "research/artifacts/idea-smoke.md",
         "research/artifacts/experiment-smoke.md",
+        "research/artifacts/review-smoke.md",
+        "research/artifacts/analysis-smoke.md",
         "outputs/metrics.json",
+        "outputs/result.json",
+        "stdout.log",
+        "stderr.log",
     ):
         path = smoke_root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("{}\n" if path.suffix == ".json" else "# Smoke artifact\n", encoding="utf-8")
+    (smoke_root / "outputs" / "metrics.json").write_text('{"score": 0.9}\n', encoding="utf-8")
+    (smoke_root / "outputs" / "result.json").write_text('{"ok": true}\n', encoding="utf-8")
+    contract_path = smoke_root / "contract.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "ds-lite.experiment-contract.v1",
+                "run_id": "smoke-run",
+                "node_id": "experiment-node",
+                "hypothesis": "The smoke route should meet its deterministic score threshold.",
+                "command": "python smoke.py",
+                "cwd": ".",
+                "inputs": [],
+                "metrics": [{"name": "score", "direction": "max", "threshold": 0.8}],
+                "seeds": [0],
+                "budget": {"value": 1, "unit": "run"},
+                "expected_outputs": ["outputs/result.json"],
+                "failure_interpretation": "A missing output or score below 0.8 blocks analysis.",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    environment_path = smoke_root / "environment.json"
+    environment_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "ds-lite.environment.v1",
+                "python": sys.version.split()[0],
+                "platform": sys.platform,
+                "packages": [],
+                "container": "not-applicable",
+                "hardware": "validation runner",
+                "notes": "sanitized smoke environment",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     unicode_root = Path(tempfile.mkdtemp(prefix="ds-lite-unicode-"))
     title_file = unicode_root / "title.txt"
     question_file = unicode_root / "question.txt"
@@ -135,6 +183,35 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         ],
         repo_root,
     )
+    run(
+        [sys.executable, str(evidence_script), "init", "--root", str(smoke_root), "--run-id", "smoke-run", "--contract", str(contract_path)],
+        repo_root,
+    )
+    run(
+        [
+            sys.executable,
+            str(evidence_script),
+            "finalize",
+            "--root",
+            str(smoke_root),
+            "--run-id",
+            "smoke-run",
+            "--exit-code",
+            "0",
+            "--stdout",
+            str(smoke_root / "stdout.log"),
+            "--stderr",
+            str(smoke_root / "stderr.log"),
+            "--metrics",
+            str(smoke_root / "outputs" / "metrics.json"),
+            "--environment",
+            str(environment_path),
+            "--output",
+            "outputs/result.json",
+        ],
+        repo_root,
+    )
+    run([sys.executable, str(evidence_script), "verify", "--root", str(smoke_root), "--run-id", "smoke-run", "--strict"], repo_root)
     unicode_graph = json.loads((unicode_root / "research" / "state" / "graph.json").read_text(encoding="utf-8"))
     unicode_summary = unicode_graph["nodes"]["intake-root"]["summary"]
     if unicode_summary != "能否正确保存中文问题？":
@@ -209,6 +286,8 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
             "Record one reproducible experiment.",
             "--artifact-path",
             "research/artifacts/experiment-smoke.md",
+            "--evidence-path",
+            "research/evidence/smoke-run/manifest.json",
             "--active",
             "--render",
         ],
@@ -236,6 +315,54 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         [
             sys.executable,
             str(state_script),
+            "add-node",
+            "--root",
+            str(smoke_root),
+            "--id",
+            "review-node",
+            "--kind",
+            "review",
+            "--parent",
+            "experiment-node",
+            "--relation",
+            "next",
+            "--title",
+            "Review smoke evidence",
+            "--artifact-path",
+            "research/artifacts/review-smoke.md",
+            "--evidence-path",
+            "research/evidence/smoke-run/manifest.json",
+            "--active",
+        ],
+        repo_root,
+    )
+    run(
+        [
+            sys.executable,
+            str(state_script),
+            "add-node",
+            "--root",
+            str(smoke_root),
+            "--id",
+            "analysis-node",
+            "--kind",
+            "analysis",
+            "--parent",
+            "review-node",
+            "--relation",
+            "next",
+            "--title",
+            "Analyze reviewed smoke evidence",
+            "--artifact-path",
+            "research/artifacts/analysis-smoke.md",
+            "--active",
+        ],
+        repo_root,
+    )
+    run(
+        [
+            sys.executable,
+            str(state_script),
             "link-artifact",
             "--root",
             str(smoke_root),
@@ -246,7 +373,7 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         ],
         repo_root,
     )
-    run([sys.executable, str(state_script), "trace", "--root", str(smoke_root), "--node", "experiment-node"], repo_root)
+    run([sys.executable, str(state_script), "trace", "--root", str(smoke_root), "--node", "analysis-node"], repo_root)
     run(
         [
             sys.executable,
@@ -255,7 +382,7 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
             "--root",
             str(smoke_root),
             "--node",
-            "experiment-node",
+            "analysis-node",
             "--format",
             "markdown",
         ],
@@ -290,9 +417,21 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "teaching" / "demo-script.zh.md",
         repo_root / "teaching" / "lesson-plan.zh.md",
         repo_root / "teaching" / "cases" / "paradigm-comparison-case.md",
+        repo_root / "teaching" / "evidence-lab-45.zh.md",
+        repo_root / "teaching" / "scored-branch-lab-90.zh.md",
+        repo_root / "teaching" / "student-worksheet.zh.md",
+        repo_root / "teaching" / "instructor-rubric.zh.md",
+        repo_root / "teaching" / "answer-key.zh.md",
+        repo_root / "teaching" / "run_evidence_lab.sh",
+        repo_root / "docs" / "maintainers" / "v0.3-recommendation-assessment.zh.md",
+        repo_root / "docs" / "maintainers" / "v0.3-audit.zh.md",
         repo_root / "PACKAGE.md",
         repo_root / ".gitattributes",
         repo_root / "PROJECT.md",
+        plugin_root / "scripts" / "ds_lite_evidence.py",
+        plugin_root / "assets" / "templates" / "research" / "evidence" / "contract.json",
+        plugin_root / "assets" / "templates" / "research" / "evidence" / "environment.json",
+        plugin_root / "assets" / "templates" / "run_review.sh",
         repo_root / "LICENSE",
         repo_root / "NOTICE",
         repo_root / "CHANGELOG.md",
@@ -314,6 +453,7 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
     runtime_refs = {path.name for path in (plugin_root / "references").glob("*.md")}
     expected_refs = {
         "state-graph-protocol.md",
+        "evidence-pack-protocol.md",
         "experiment-comparison-template.md",
         "math-exploration-template.md",
         "teaching-guide.zh.md",

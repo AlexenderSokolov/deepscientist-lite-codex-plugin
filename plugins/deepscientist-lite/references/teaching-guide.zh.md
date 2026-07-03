@@ -11,6 +11,7 @@ DeepScientist Lite 是“DeepScientist 的教学/轻量内核”，不是另一�
 - 每个产物挂到 Research Map
 - 每条路线可以回溯
 - 每次实验要能复现
+- 每个新实验结论先通过独立 review
 
 它刻意不做完整平台能力：
 
@@ -29,6 +30,8 @@ Lite 插件适合：
 
 - 入门教学
 - 20-30 分钟演示
+- 45 分钟证据链实验
+- 90 分钟评分分支实验
 - 快速解释 DeepScientist 的核心机制
 - 在 Codex 项目模式中建立科研工作流
 - 不想安装完整平台但想使用核心协议的用户
@@ -64,6 +67,6 @@ Lite 插件适合：
 2. 生成 `PROJECT.md`、`STATUS.md`、`research/state/graph.json`
 3. 用 `ds-lite-scout` 形成 baseline/metric artifact
 4. 用 `ds-lite-idea` 建立 2-3 个分支
-5. 用 `ds-lite-experiment` 记录一次成功或失败实验
-6. 渲染 `RESEARCH_MAP.md`，展示路径回溯和 artifact 追踪
-
+5. 用 `ds-lite-experiment` 记录一次成功或失败实验并生成 Evidence Pack
+6. 用 `ds-lite-review` 区分完整性、指标、引用和方法对齐
+7. 渲染 `RESEARCH_MAP.md`，展示 experiment→review→analysis 路径

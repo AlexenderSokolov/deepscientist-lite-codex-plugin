@@ -10,12 +10,16 @@
 - Run the official plugin validator from the installed `plugin-creator` skill.
 - Install or upgrade from the GitHub marketplace source.
 - Restart Codex Desktop and open a fresh thread.
-- Verify the five `$ds-lite-*` skills are visible and triggerable.
+- Verify the six `$ds-lite-*` skills are visible and triggerable, including `$ds-lite-review`.
 - Run a blank-project intake smoke test.
 - Run an old-project intake-audit smoke test.
+- Run `bash teaching/run_evidence_lab.sh` and inspect the retained experiment→review→analysis project.
+- Tamper with one packed output and confirm `verify --strict` fails.
+- Confirm a failed or `needs-human` review cannot advance a new analysis/write route.
 - Migrate a Graph v1 fixture, confirm the read-only backup exists, and test a stale revision conflict.
 - Confirm no project-external absolute paths appear in the migrated graph.
 - Record any installation or cache failure in `known-issues.md`.
+- Confirm contract/environment JSON contains no credentials, process environment dump, or workstation absolute root.
 
 ## Stable public release
 
@@ -25,4 +29,3 @@
 - Verify Windows PowerShell, Git Bash, and a Unix-like shell path.
 - Add macOS verification before removing the beta label.
 - Keep the manifest free of MCP/apps/hooks unless a later version intentionally adds them.
-

@@ -11,6 +11,8 @@
 - `research/state/graph.json`：机器可读研究图，是状态来源。
 - `RESEARCH_MAP.md`：人类可读研究图，方便讲解和复盘。
 - `research/artifacts/*.md`：每一步的证据记录，包括想法、实验、分析和失败。
+- `research/evidence/<run-id>/`：实验契约、日志、指标、哈希和验证结果。
+- `review` 节点：在实验与分析之间区分“运行完成”和“结论可提升”。
 
 ## 3. 推荐讲解顺序
 
@@ -18,8 +20,10 @@
 2. 展示生成的项目记忆和状态图。
 3. 增加一个 scout 或 idea 节点。
 4. 记录一次小实验或负结果。
-5. 用 trace 回溯当前路线。
-6. 解释为什么这比聊天记录更适合长期科研。
+5. 对 Evidence Pack 执行严格验证并写 review artifact。
+6. 只让通过的 review 进入 analysis/write。
+7. 用 trace 回溯当前路线。
+8. 解释为什么这比聊天记录更适合长期科研。
 
 ## 4. 讲给师兄或学生的重点
 

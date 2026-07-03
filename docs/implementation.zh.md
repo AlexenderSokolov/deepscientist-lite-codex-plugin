@@ -2,7 +2,7 @@
 
 本文是 DeepScientist Lite 的主要中文设计文档，面向插件维护者、授课教师，以及希望深入理解实现方式的用户。它不是安装教程，也不是版本宣传稿；它要回答的是：插件为什么存在、当前代码实际做了什么、哪些能力只是设计目标、现在还存在哪些缺口，以及后续应按什么顺序完善。
 
-本文保留 `0.1.4` / Graph v1 的审视记录，并以 `0.2.0-beta.1` 和 `ds-lite.graph.v2` 作为当前实现基线；最近一次事实核对日期为 **2026-07-01**。当文档与实现不一致时，应依次以 manifest、skills、状态脚本和验证结果为准，再同步修正文档。
+本文保留 `0.1.4` / Graph v1 的审视记录，并以 `0.3.0-beta.1`、`ds-lite.graph.v2` 和 `ds-lite.evidence.v1` 作为当前实现基线；最近一次事实核对日期为 **2026-07-03**。当文档与实现不一致时，应依次以 manifest、skills、状态/证据脚本和验证结果为准，再同步修正文档。
 
 ## 阅读约定
 
@@ -46,7 +46,7 @@ DeepScientist Lite 适合：
 - 本地模型安装、模型路由和算力调度。
 - 自动创建 Git worktree、自动提交或自动合并研究分支。
 
-所谓“持续科研”，在当前版本中是由 **Codex 会话 + 项目文件 + 可复现脚本 + 可选 Codex automation** 共同实现的。插件本身不会在后台醒来，也不会在用户不知情时继续运行实验。automation 可以成为外部调度手段，但不是 `0.2.0-beta.1` 插件包的一部分。
+所谓“持续科研”，在当前版本中是由 **Codex 会话 + 项目文件 + 可复现脚本 + 可选 Codex automation** 共同实现的。插件本身不会在后台醒来，也不会在用户不知情时继续运行实验。automation 可以成为外部调度手段，但不是 `0.3.0-beta.1` 插件包的一部分。
 
 ## 3. 核心设计原则
 
@@ -80,7 +80,7 @@ idea、experiment、analysis 和写作结论应先形成 artifact，再挂接到
 
 ```mermaid
 flowchart TB
-    M["Marketplace 与 manifest"] --> S["五个 Codex skills"]
+    M["Marketplace 与 manifest"] --> S["六个 Codex skills"]
     S --> K["ds_lite_state.py 状态内核"]
     S --> F["PROJECT / STATUS / artifacts / memory"]
     K --> G["research/state/graph.json"]
@@ -151,7 +151,7 @@ sequenceDiagram
 
 ## 5. Manifest 与分发设计
 
-`plugin.json` 当前声明插件名 `deepscientist-lite`、版本 `0.2.0-beta.1`、Apache-2.0 许可证、仓库地址、非官方身份说明、UI 描述和 `skills: "./skills/"`。manifest 没有 `mcpServers`、`apps` 或 `hooks` 字段。
+`plugin.json` 当前声明插件名 `deepscientist-lite`、版本 `0.3.0-beta.1`、Apache-2.0 许可证、仓库地址、非官方身份说明、UI 描述和 `skills: "./skills/"`。manifest 没有 `mcpServers`、`apps` 或 `hooks` 字段。
 
 这种最小 manifest 有三个目的：
 
@@ -163,17 +163,18 @@ sequenceDiagram
 
 Manifest 和 marketplace 属于对外接口。修改插件名、skills 路径、版本或 source path 时，必须同时检查安装、缓存升级、新线程技能发现和文档中的安装命令。
 
-## 6. 五个 Skills 的职责与协作
+## 6. 六个 Skills 的职责与协作
 
-五个 skills 组成一个最小科研闭环，但不是必须线性执行的流水线。每个 `SKILL.md` 的 frontmatter 只包含 `name` 和 `description`，触发说明尽量覆盖真实用户表达；具体工作流、约束和交接要求写在正文中。
+六个 skills 组成一个最小科研闭环，但不是必须线性执行的流水线。每个 `SKILL.md` 的 frontmatter 只包含 `name` 和 `description`，触发说明尽量覆盖真实用户表达；具体工作流、约束和交接要求写在正文中。
 
 | Skill | 主要输入 | 主要动作 | 持久输出 | 常见状态变化 |
 | --- | --- | --- | --- | --- |
 | `ds-lite-intake` | 研究问题，或已有代码、笔记和结果 | 新项目初始化；旧项目审计；建立目标、约束和验收标准 | `PROJECT.md`、`STATUS.md`、graph、初始 Research Map | 创建 `intake-root`；保持已有结论不被静默覆盖 |
 | `ds-lite-scout` | 项目合同、当前节点、已有资料 | 澄清问题，检查文献、数据、baseline、benchmark、metric 和风险 | `scout-*.md` artifact | 通常以 `next` 进入 scout；证据不足时可标记 blocked |
 | `ds-lite-idea` | scout 证据、项目约束 | 比较 2 至 3 个可验证候选，选出最小有用实验 | `idea-*.md` artifact | 候选使用 `branch`；选中路线成为 active |
-| `ds-lite-experiment` | active idea、代码、运行脚本 | 实现、运行、修复或记录实验 | `experiment-*.md`、结果文件、`run_*.sh` | 成功继续推进；失败保留，并用 rollback 或 supersedes 表达变化 |
-| `ds-lite-analysis-write` | 实验 artifacts、结果文件和图状态 | 建立 claim table，分析置信度、限制和缺失检查，形成阶段总结或写作产物 | `analysis-*.md`、`math-*.md` 或 `paper-*.md` | 创建 analysis/write/finalize 节点，或指出证据不足 |
+| `ds-lite-experiment` | active idea、代码、运行脚本 | 先写契约，再运行并封装日志、指标、环境说明和输出哈希 | `experiment-*.md`、Evidence Pack、结果文件、`run_*.sh` | 成功和失败均保留，完成后交给 review |
+| `ds-lite-review` | experiment artifact、contract、manifest 和结果 | 运行确定性 verify，审查完整性、规范、引用和方法对齐 | `review-*.md` | pass 时成为 analysis 的父节点；fail/needs-human 时 blocked |
+| `ds-lite-analysis-write` | 通过的 review、实验 artifacts、结果文件和图状态 | 建立 claim table，分析置信度、限制和缺失检查，形成阶段总结或写作产物 | `analysis-*.md`、`math-*.md` 或 `paper-*.md` | 只从 passing review 创建 analysis/write/finalize 节点 |
 
 ### Skill 之间如何交接
 
@@ -182,6 +183,8 @@ skill 的交接不是通过内存对象完成，而是通过以下公开信息�
 - `STATUS.md` 给下一次会话一个短入口。
 - `active_node_id` 指出当前路线位置。
 - 节点关联的 artifact 提供本阶段事实。
+- Evidence Pack manifest 提供可机器复核的日志、指标和输出哈希。
+- Review artifact 公开记录为什么允许或阻止结论提升。
 - `PROJECT.md` 保存不应随一次实验频繁改变的项目合同。
 - `run_*.sh` 和 evidence path 提供可复现入口。
 
@@ -191,11 +194,11 @@ skill 的交接不是通过内存对象完成，而是通过以下公开信息�
 
 ### 行为约束的强度
 
-skills 是指令协议，不是事务系统。它们可以要求 Codex 先写 artifact 再改图，但当前没有钩子阻止模型跳过某一步，也没有后台服务检查 `STATUS.md`、artifact 和 graph 是否始终同步。这是轻量设计带来的核心权衡。
+skills 仍是指令协议，不是事务系统；但 Evidence Pack CLI 可以确定性检查契约、路径、必需文件、指标和哈希，Graph strict validation 会发现缺少 pack 或 review 的新路线。当前没有钩子阻止模型完全跳过 skill，也没有后台服务保证 `STATUS.md`、artifact 和 graph 跨文件原子同步。这仍是轻量设计的核心权衡。
 
 ## 7. 状态图内核与数据模型
 
-`ds_lite_state.py` 是一个只依赖 Python 标准库的命令行脚本。它负责建立和查询邻接表、关联 artifact、切换 active node、校验基础结构，并把 graph 渲染为 Markdown。它不负责理解论文、运行模型或判断研究结论是否正确。
+`ds_lite_state.py` 是只依赖 Python 标准库的图状态脚本。`ds_lite_evidence.py` 是独立的标准库证据脚本，负责 contract、finalize、SHA-256 和 verify；分离它们避免继续扩大状态内核。两者都不负责理解论文、运行模型或自动判定真实科学结论。
 
 机器可读权威状态是 `research/state/graph.json`；`RESEARCH_MAP.md` 是由脚本生成的人类可读投影，不应反向作为机器状态来源。
 
@@ -230,7 +233,7 @@ skills 是指令协议，不是事务系统。它们可以要求 Codex 先写 ar
 每个节点必须包含：
 
 - `id`：稳定且唯一的节点标识。
-- `kind`：`intake`、`scout`、`idea`、`experiment`、`analysis`、`write`、`decision` 或 `finalize`。
+- `kind`：`intake`、`scout`、`idea`、`experiment`、`review`、`analysis`、`write`、`decision` 或 `finalize`。
 - `status`：`proposed`、`active`、`blocked`、`done`、`superseded` 或 `abandoned`。
 - `title`：便于地图和交接阅读的短标题。
 - `summary`：可以公开审计的结果摘要，不是隐藏推理。
@@ -264,6 +267,12 @@ skills 是指令协议，不是事务系统。它们可以要求 Codex 先写 ar
 
 Graph schema、CLI 参数、skill 名称和项目文件职责都属于插件的兼容接口。v1→v2 通过带永久备份的迁移实现；未来修改字段或关系含义时也必须提升 schema 或提供迁移，而不是静默重解释已有 graph。
 
+### Evidence Pack v1 与 Review Gate
+
+每个新的 claim-bearing experiment 先用 `ds-lite.experiment-contract.v1` 声明假设、命令、输入、指标阈值、seed、预算、输出和失败解释。`ds_lite_evidence.py finalize` 将 UTF-8 日志、数值指标、白名单环境说明和输出路径写入 `ds-lite.evidence.v1` manifest，并为项目内文件计算 SHA-256；完整环境变量和凭据不会被自动采集。
+
+`verify --strict` 检查文件存在性、大小、哈希、必需指标、阈值和预期输出。进程退出失败与证据损坏是不同状态：失败实验仍可形成完整证据，但不能绕过 review。`ds-lite-review` 产生四通道 review artifact；新 analysis/write 路线应直接从通过的 review 节点推进。旧 Graph v2 不迁移 schema，缺少 pack 或 review 在普通验证中警告，在 strict 验证中失败。
+
 ## 8. 文件协议与长期记忆
 
 一个 DS Lite 项目通常包含：
@@ -276,6 +285,7 @@ Graph schema、CLI 参数、skill 名称和项目文件职责都属于插件的�
 | `research/state/graph.json` | 每次状态变更 | 节点、边、active/root 和证据路径 | 隐藏推理和大体积原始数据 |
 | `research/memory/*.md` | 发现长期事实时 | 有来源的稳定事实、约束、环境结论或方法决策 | 未经验证的临时猜测 |
 | `research/artifacts/*.md` | 每个研究阶段 | idea、baseline、experiment、analysis、decision 和写作记录 | 只有口号、没有证据的结论 |
+| `research/evidence/<run-id>/` | 每次 claim-bearing run | contract、manifest、日志、指标、白名单环境说明和哈希 | 凭据、完整环境变量、未经授权复制的外部数据 |
 | `run_*.sh` | 运行方法变化时 | 可重复执行的研究、实验或分析命令 | 只在某次终端中有效的隐式步骤 |
 
 ### 四种状态载体的关系
@@ -386,21 +396,22 @@ python tools/validation/validate_repo.py
 当前统一验证流程覆盖：
 
 - manifest 名称、版本、skills 路径和禁止字段。
-- 五个 skill 是否存在，frontmatter 是否只有 `name` 和 `description`。
+- 六个 skill 是否存在，frontmatter 是否只有 `name` 和 `description`。
 - TODO 残留和 description 的最低长度。
 - README 导航、文档目录和运行时 references 边界。
-- 临时项目中的完整 CLI smoke，以及 Graph v2 模板、revision、迁移、路径、并发、锁超时、路线语义和地图同步单元测试。
+- 临时项目中的 experiment→review→analysis smoke，以及 Graph v2、Evidence Pack、revision、迁移、路径、哈希、并发、锁超时、路线语义和地图同步单元测试。
 - Windows/Ubuntu 与 Python 3.10/当前 3.x 的 GitHub Actions 矩阵。
 
 `run_validate.sh` 和 `run_validate.ps1` 是单一验证入口，依次执行 unittest、仓库 smoke 和 Python 语法检查；它们按任务类别留在 `tools/validation/`。
 
-截至 2026-07-01，以下证据已经成立：
+截至 2026-07-03，以下 v0.3 本地实现证据已经成立；跨平台与远程矩阵需在本分支最终变更后重新记录：
 
 - 仓库验证器执行通过。
 - Codex 官方 `plugin-creator/scripts/validate_plugin.py` 在具备 PyYAML 的 Python 环境中执行通过。
-- 当前 Codex 环境已经发现五个 `$ds-lite-*` skills；更新后仍需新线程复验 `0.2.0-beta.1`。
-- manifest 已统一到 `0.2.0-beta.1`；发布 tag 只能在完整验收后创建。
+- 六个 `$ds-lite-*` skills 已进入插件结构；安装后仍需新线程复验 `0.3.0-beta.1` 的实际发现和触发。
+- manifest 已统一到 `0.3.0-beta.1`；发布 tag 只能在完整验收后创建。
 - Graph v2 单元测试覆盖并发无丢写、锁超时、revision 冲突、迁移和外部别名。
+- Evidence Pack 单元测试覆盖 UTF-8、空格路径、哈希、篡改、失败进程、重复 finalize、外部显式哈希和敏感字段拒绝。
 
 这些证据不能替代：
 
@@ -411,18 +422,20 @@ python tools/validation/validate_repo.py
 
 ## 13. 当前版本判断
 
-`v0.2.0-beta.1` 是面向 **teaching beta / private beta** 的可靠性版本。它补齐 Graph v1 的主要状态内核风险，但在获得独立安装、macOS、缓存升级和真实教学反馈前，仍不应被描述为 stable 或自动科研平台。
+`v0.3.0-beta.1` 是面向 **teaching beta / private beta** 的证据审查版本。它在 Graph v2 可靠性基础上补充可机器复核的 Evidence Pack、独立 review skill 和45/90分钟课程，但在获得独立安装、macOS、缓存升级和真实教学反馈前，仍不应被描述为 stable 或自动科研平台。
 
 ### 已经成立
 
 - Marketplace 和 plugin manifest 布局完整。
-- 五个 skills 可以被当前 Codex 环境发现。
+- 六个 skills 的结构和元数据可验证；安装态发现仍需手工验收。
 - 新项目可以初始化项目文件和状态图。
 - 可以通过完整写接口维护节点、边、三类路径和状态，并检测陈旧 revision。
 - Graph 可以校验结构与关键语义，以 progression 路径渲染 Mermaid/Markdown。
 - v1 可以安全迁移到 v2，永久保留备份并阻止外部绝对路径静默进入 graph。
 - graph 写入具备跨平台锁、原子替换和并发回归测试。
 - 比较实验、数学探索和教学讲解有专用参考模板。
+- 新实验可以先声明契约、封装证据并经过 review，再进入 analysis/write。
+- 教学区有可运行的 Evidence Pack 案例、45/90分钟课程、工作表、rubric 和答案。
 - 插件没有引入 daemon、MCP 或第三方 Python 运行依赖。
 
 ### 部分成立
@@ -450,7 +463,7 @@ python tools/validation/validate_repo.py
 
 ### 已解决：状态更新接口不完整
 
-Graph v2 提供 `update-node`、`set-status` 和通用 `link-path --type`；五个 skills 明确禁止直接编辑 graph，并规定 revision 冲突恢复方式。
+Graph v2 提供 `update-node`、`set-status` 和通用 `link-path --type`；六个 skills 明确禁止直接编辑 graph，并规定 revision 冲突恢复方式。
 
 ### 兼容保留：CLI 冗余参数
 
@@ -526,7 +539,7 @@ Codex 可以按 skills 正确写入 artifact 和 graph，但当前没有 hook、
 
 在宣布 stable 之前，至少应满足：
 
-1. 全新用户可以从 marketplace 安装，并在重启后的新线程发现五个 skills。
+1. 全新用户可以从 marketplace 安装，并在重启后的新线程发现六个 skills。
 2. 新项目和旧项目各完成一次 intake 到 analysis 的最小闭环，原有文件不被静默覆盖。
 3. Windows PowerShell、Git Bash 和一种 Unix-like 环境通过核心状态脚本测试。
 4. 真实中文、空格路径和项目外路径行为有明确测试与文档。
@@ -549,4 +562,3 @@ Codex 可以按 skills 正确写入 artifact 和 graph，但当前没有 hook、
 设计审视的目标不是让功能列表越来越长，而是让“可恢复、可审计、可教学的科研推进”越来越可靠。
 
 `run_validate.sh` 和 `run_validate.ps1` 是按验证任务类别维护的统一入口，所以放在 `tools/validation/`，不在仓库根目录重复放置。
-
