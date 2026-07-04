@@ -1,12 +1,14 @@
 ﻿# DeepScientist Lite Codex Plugin
 
-[中文说明](README.zh.md) · [Documentation](docs/README.md) · [Teaching materials](teaching/README.zh.md) · [Plugin package](plugins/deepscientist-lite/)
+[中文说明](README.zh.md) · [Chinese user guide](docs/user-guide.zh.md) · [Documentation](docs/README.md) · [Teaching materials](teaching/README.zh.md) · [Plugin package](plugins/deepscientist-lite/)
 
 DeepScientist Lite is a lightweight Codex plugin for learning and practicing a traceable, reviewable research workflow. It keeps project memory, research maps, artifacts, experiment contracts, Evidence Packs, review gates, and route tracing without asking users to deploy the full DeepScientist platform.
 
 > **Independent project:** DeepScientist Lite is an unofficial third-party plugin. It is not sponsored, certified, or endorsed by ResearAI. “DeepScientist” is used descriptively to identify the workflow that inspired this project; see [NOTICE](NOTICE).
 
 It is designed for onboarding, teaching demos, and small research projects where the first goal is to make the research process clear and recoverable.
+
+The [Chinese user guide](docs/user-guide.zh.md) explains the six skills, Graph revisions, Evidence Packs, review boundaries, path aliases, and cross-session recovery with user-facing examples. The teaching area separates deterministic lab preparation from the judgments students or Codex must make.
 
 ## What It Does
 

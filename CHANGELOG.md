@@ -6,6 +6,8 @@
 - Add the `ds-lite-review` skill and `review` Graph v2 node kind between experiment and analysis.
 - Gate new analysis/write work on a passing review without breaking existing Graph v2 files.
 - Add 45/90-minute evidence-chain and scored-branch teaching labs, worksheets, rubric, and answer key.
+- Replace outline-only teaching material with a cross-platform six-lab runner, student/reference modes, guided prompts, observable failures, and beginner-facing course notes.
+- Rewrite the Chinese quick start and add a user guide plus writing rules that explain mechanisms without overstating what Graph, Evidence Packs, or review can prove.
 - Document which platform recommendations were adopted, deferred, or rejected to preserve the Lite boundary.
 
 ## 0.2.0-beta.1

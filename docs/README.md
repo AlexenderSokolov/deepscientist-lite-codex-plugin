@@ -4,8 +4,9 @@ This folder explains how the plugin is built and maintained. Start with the root
 
 ## For Users And Teachers
 
+- [中文用户指南](user-guide.zh.md): a beginner-facing explanation of the six skills, file roles, Graph revisions, Evidence Packs, review boundaries, path aliases, and session recovery.
 - [设计、实现、现状与演进审视](implementation.zh.md): the primary Chinese design document, covering product intent, architecture, code composition, state protocol, verified status, technical debt, and the improvement roadmap.
-- [Teaching materials](../teaching/README.zh.md): 20–30, 45, and 90-minute lesson paths, runnable evidence lab, worksheets, rubric, and cases.
+- [Teaching materials](../teaching/README.zh.md): runnable 20/30/45/90-minute courses, guided and one-prompt modes, worksheets, rubric, and reference answers.
 
 ## For Maintainers
 
@@ -16,6 +17,7 @@ This folder explains how the plugin is built and maintained. Start with the root
 - [v0.3 evidence/review audit](maintainers/v0.3-audit.zh.md): local validation matrix, WSL evidence, known boundaries, and remaining manual gates.
 - [Release checklist](maintainers/release-checklist.md): checks before beta or stable releases.
 - [Release status](maintainers/release-status.zh.md): current positioning and long-term maintenance notes.
+- [Writing guide](maintainers/writing-guide.zh.md): Chinese terminology, claim strength, examples, and version-fact maintenance rules.
 
 ## Runtime References
 

@@ -1,7 +1,7 @@
 {
   "name": "deepscientist-lite",
   "version": "0.3.0-beta.1",
-  "description": "Independent teaching-first research workflow plugin for Codex with Graph v2, verifiable Evidence Packs, and a review gate.",
+  "description": "Keep a Codex research project recoverable: record goals, routes, experiments, evidence, reviews, and next steps in local files.",
   "author": {
     "name": "DeepScientist Lite maintainers"
   },
@@ -20,8 +20,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "DeepScientist Lite",
-    "shortDescription": "Run a lightweight DeepScientist-style research workflow inside Codex.",
-    "longDescription": "DeepScientist Lite is an independent, unofficial teaching plugin inspired by the DeepScientist research workflow. It provides six Codex skills, verifiable local Evidence Packs, review artifacts, templates, and a transactional Graph v2 state kernel without daemon, Web/TUI, connectors, MCP servers, or local model deployment. It is not sponsored, certified, or endorsed by ResearAI.",
+    "shortDescription": "Keep research goals, experiments, evidence, and next steps easy to recover and review.",
+    "longDescription": "DeepScientist Lite is an independent, unofficial Codex plugin for teaching and small research projects. Six skills help users define a project, scout evidence, compare ideas, record reproducible experiments, review claims, and write bounded conclusions. Local project files preserve the current route and supporting evidence across sessions. The plugin does not run a daemon, deploy models, expose an MCP server, or prove that a scientific claim is true. It is not sponsored, certified, or endorsed by ResearAI.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
     "capabilities": [
@@ -30,10 +30,10 @@
       "Write"
     ],
     "defaultPrompt": [
-      "$ds-lite-intake start a research project from this question",
-      "$ds-lite-scout audit the literature and baseline route",
-      "$ds-lite-experiment package this experiment as verifiable evidence",
-      "$ds-lite-review review this experiment before analysis"
+      "$ds-lite-intake turn this research question into a project with clear goals and a next step",
+      "$ds-lite-scout check the available evidence, baselines, metrics, and risks",
+      "$ds-lite-experiment define the contract first, then record this run and its evidence",
+      "$ds-lite-review check whether this experiment is ready to support an analysis"
     ],
     "brandColor": "#245A7A",
     "screenshots": []

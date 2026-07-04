@@ -1,4 +1,4 @@
 interface:
   display_name: "DS Lite Analysis Write"
-  short_description: "Analyze evidence, write claims, and finalize handoff state."
-  default_prompt: "$ds-lite-analysis-write summarize the evidence and final claims"
+  short_description: "Turn passing reviews into bounded claims, limitations, and a clear handoff."
+  default_prompt: "$ds-lite-analysis-write summarize only the reviewed evidence, its limits, and the next step"

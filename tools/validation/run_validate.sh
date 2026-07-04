@@ -20,6 +20,8 @@ fi
 "$PYTHON" -m py_compile \
   plugins/deepscientist-lite/scripts/ds_lite_evidence.py \
   plugins/deepscientist-lite/scripts/ds_lite_state.py \
+  teaching/lab_runner.py \
   tools/validation/validate_repo.py \
   tests/test_evidence_pack.py \
-  tests/test_state_kernel.py
+  tests/test_state_kernel.py \
+  tests/test_teaching_labs.py

@@ -17,7 +17,7 @@ This repository is a Codex marketplace repository.
 ## Non-Runtime Material
 
 - `docs/`: implementation and maintainer documentation.
-- `teaching/`: standalone teaching material and sanitized case walkthroughs.
+- `teaching/`: standalone courses, the standard-library lab runner, cross-platform wrappers, worksheets, and sanitized fixtures; none are loaded as plugin runtime.
 - `tools/validation/`: maintainer validation tools.
 - `tests/`: standard-library Graph v2, Evidence Pack, and CLI regression tests.
 - `.github/workflows/validate.yml`: Windows and Ubuntu validation matrix.

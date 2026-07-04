@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -412,19 +413,29 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "README.md",
         repo_root / "README.zh.md",
         repo_root / "docs" / "README.md",
+        repo_root / "docs" / "user-guide.zh.md",
         repo_root / "docs" / "implementation.zh.md",
         repo_root / "teaching" / "README.zh.md",
         repo_root / "teaching" / "demo-script.zh.md",
         repo_root / "teaching" / "lesson-plan.zh.md",
+        repo_root / "teaching" / "instructor-guide.zh.md",
         repo_root / "teaching" / "cases" / "paradigm-comparison-case.md",
+        repo_root / "teaching" / "quickstart-20.zh.md",
         repo_root / "teaching" / "evidence-lab-45.zh.md",
         repo_root / "teaching" / "scored-branch-lab-90.zh.md",
+        repo_root / "teaching" / "route-lab-30.zh.md",
+        repo_root / "teaching" / "path-lab-30.zh.md",
+        repo_root / "teaching" / "revision-lab-30.zh.md",
         repo_root / "teaching" / "student-worksheet.zh.md",
         repo_root / "teaching" / "instructor-rubric.zh.md",
         repo_root / "teaching" / "answer-key.zh.md",
         repo_root / "teaching" / "run_evidence_lab.sh",
+        repo_root / "teaching" / "lab_runner.py",
+        repo_root / "teaching" / "run_lab.sh",
+        repo_root / "teaching" / "run_lab.ps1",
         repo_root / "docs" / "maintainers" / "v0.3-recommendation-assessment.zh.md",
         repo_root / "docs" / "maintainers" / "v0.3-audit.zh.md",
+        repo_root / "docs" / "maintainers" / "writing-guide.zh.md",
         repo_root / "PACKAGE.md",
         repo_root / ".gitattributes",
         repo_root / "PROJECT.md",
@@ -443,7 +454,7 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
             fail(f"missing documentation file: {item}")
 
     readme = (repo_root / "README.md").read_text(encoding="utf-8")
-    for required_link in ("README.zh.md", "docs/README.md", "teaching/README.zh.md", "plugins/deepscientist-lite/"):
+    for required_link in ("README.zh.md", "docs/user-guide.zh.md", "docs/README.md", "teaching/README.zh.md", "plugins/deepscientist-lite/"):
         if required_link not in readme:
             fail(f"README.md missing link to {required_link}")
     for forbidden in ("Current E2E Status", "0.1.2 update", "0.1.3 beta update", "sanitization", "product-positioning"):
@@ -469,6 +480,66 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
     if (repo_root / "scripts").exists():
         fail("root scripts directory should not exist")
 
+    public_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in [
+            repo_root / "README.zh.md",
+            repo_root / "docs" / "user-guide.zh.md",
+            repo_root / "teaching" / "README.zh.md",
+            repo_root / "teaching" / "quickstart-20.zh.md",
+            repo_root / "teaching" / "evidence-lab-45.zh.md",
+            repo_root / "teaching" / "scored-branch-lab-90.zh.md",
+        ]
+    )
+    for overclaim in ("完美逆向", "绝对可追溯", "完整推理链条", "彻底杜绝虚假", "零幻觉"):
+        if overclaim in public_text:
+            fail(f"public documentation contains an overstated claim: {overclaim}")
+
+    markdown_files = [repo_root / "README.md", repo_root / "README.zh.md"]
+    markdown_files.extend((repo_root / "docs").rglob("*.md"))
+    markdown_files.extend((repo_root / "teaching").rglob("*.md"))
+    markdown_files.extend((plugin_root / "references").rglob("*.md"))
+    for markdown in markdown_files:
+        text = markdown.read_text(encoding="utf-8-sig")
+        for target in re.findall(r"\[[^\]]+\]\(([^)]+)\)", text):
+            if target.startswith(("http://", "https://", "#", "codex://", "mailto:")):
+                continue
+            relative = target.split("#", 1)[0]
+            if relative and not (markdown.parent / relative).resolve().exists():
+                fail(f"broken local Markdown link in {markdown}: {target}")
+
+
+def validate_teaching_runner(repo_root: Path) -> None:
+    lab_runner = repo_root / "teaching" / "lab_runner.py"
+    parent = Path(tempfile.mkdtemp(prefix="ds-lite-teaching-smoke-"))
+    output = parent / "workspace with spaces"
+    run(
+        [
+            sys.executable,
+            str(lab_runner),
+            "--lab",
+            "quickstart",
+            "--mode",
+            "student",
+            "--output",
+            str(output),
+        ],
+        repo_root,
+    )
+    if (output / "REFERENCE_ANSWER.md").exists():
+        fail("student teaching mode must not create a reference answer")
+    graph = json.loads((output / "project" / "research" / "state" / "graph.json").read_text(encoding="utf-8"))
+    if graph.get("active_node_id") != "idea-file-handoff":
+        fail("quickstart teaching smoke did not reach the expected idea node")
+    if sys.platform != "win32":
+        compatibility_output = parent / "compatibility evidence workspace"
+        run(
+            ["bash", str(repo_root / "teaching" / "run_evidence_lab.sh"), str(compatibility_output)],
+            repo_root,
+        )
+        if not (compatibility_output / "project" / "research" / "evidence" / "evidence-demo" / "manifest.json").exists():
+            fail("run_evidence_lab.sh compatibility entry did not produce an Evidence Pack")
+
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
@@ -476,6 +547,7 @@ def main() -> int:
     validate_manifest(plugin_root)
     validate_skills(plugin_root)
     validate_docs(repo_root, plugin_root)
+    validate_teaching_runner(repo_root)
     validate_state_script(repo_root, plugin_root)
     print("OK: DeepScientist Lite plugin repository validation passed.")
     return 0

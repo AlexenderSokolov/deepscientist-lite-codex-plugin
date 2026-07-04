@@ -1,4 +1,4 @@
 interface:
   display_name: "DS Lite Scout"
-  short_description: "Clarify research questions, baselines, metrics, and feasibility."
-  default_prompt: "$ds-lite-scout scout baselines and benchmarks for this project"
+  short_description: "Check evidence, baselines, metrics, feasibility, and unresolved risks."
+  default_prompt: "$ds-lite-scout check the evidence, baselines, metrics, and risks before we choose a direction"

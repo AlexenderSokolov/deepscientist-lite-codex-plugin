@@ -28,6 +28,7 @@
 4. 实验先生成 contract/Evidence Pack，再由独立 review 流程决定是否进入 analysis/write。
 5. 每次 graph 提交后重建 `RESEARCH_MAP.md`；地图可由 graph 修复。
 6. 使用统一验证脚本执行单元测试、仓库 smoke 和语法检查。
+7. 用户文档按“README 快速上手—用户指南理解机制—实现文档维护细节”分层；教学课程用标准库 runner 准备确定性现场。
 
 ## 代码结构
 
@@ -36,6 +37,7 @@
 - `tools/validation/`：仓库级验证器与 shell/PowerShell 入口。
 - `docs/`：设计、迁移、已知问题和发布维护资料。
 - `teaching/`：不进入运行时包的课程与演示材料。
+- `teaching/lab_runner.py`：跨平台课程准备器；student 模式不预写审查结论，reference 模式只生成明确标记的教师答案。
 
 ## 运行流程
 
@@ -43,6 +45,7 @@
 - PowerShell：`powershell -ExecutionPolicy Bypass -File tools/validation/run_validate.ps1`
 - 单元测试：`python -m unittest discover -s tests -v`
 - 仓库 smoke：`python tools/validation/validate_repo.py`
+- 教学课程：`python teaching/lab_runner.py --lab quickstart --mode student --output <path>`
 
 ## 验收标准
 
@@ -54,6 +57,7 @@
 - 新的 experiment→analysis 路线经过 review；旧 Graph v2 仍可读并仅产生兼容警告。
 - Windows PowerShell、Git Bash、WSL DrvFS、WSL ext4，以及远程 Windows/Ubuntu CI 均通过统一验证入口。
 - manifest、技能、模板、文档和发布版本保持一致。
+- 六类教学实验可在 student/reference 模式运行；公开文档不把 Graph 说成推理链快照，不把 Evidence Pack 完整性说成科学真实性。
 
 ## 设计决策
 
@@ -66,6 +70,7 @@
 - 状态内核模块化属于 v0.2 之后的内部重构，必须保持 Graph v2 与 CLI 兼容。
 - Review 是独立流程和 artifact，不宣称独立模型或物理隔离。
 - v0.3 不加入 MCP、subagents、HPC/云调度或完整树搜索；评分循环只作为 Graph 分支教学。
+- 教学 runner 只负责确定性准备和协议故障，不冒充 Codex skill 或领域审查；课程默认保留所有输出，不覆盖已有目录。
 
 ## 已废弃方案
 
