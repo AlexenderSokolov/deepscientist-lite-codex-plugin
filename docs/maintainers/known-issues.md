@@ -10,7 +10,7 @@ Codex Desktop may not expose newly installed or upgraded skills until the app is
 
 ## Local marketplace registration without plugin installation
 
-Some Codex CLI builds can register a non-default local marketplace but expose no `plugin add` command. A new thread may therefore continue loading an older cached plugin even though `marketplace add` succeeded. Verify the exact version and source inside a new thread; do not treat a config entry as installation evidence. Use a Codex build or plugin UI that supports explicit installation, and preserve the old cache until the new source is confirmed.
+`codex plugin marketplace add` registers a source. Installation is a separate action in the `/plugins` browser, and the exact surface can vary by Codex build. A new thread may continue loading an older cached plugin even when source registration succeeds. Verify the exact version, source, UI description, and six discovered skills in a fresh session; never treat a marketplace config entry as installation evidence. Preserve the old cache until the new source is confirmed.
 
 ## Windows non-ASCII command arguments
 

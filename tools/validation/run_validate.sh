@@ -21,7 +21,10 @@ fi
   plugins/deepscientist-lite/scripts/ds_lite_evidence.py \
   plugins/deepscientist-lite/scripts/ds_lite_state.py \
   teaching/lab_runner.py \
+  tools/validation/prepare_codex_acceptance.py \
+  tools/validation/audit_codex_acceptance.py \
   tools/validation/validate_repo.py \
+  tests/test_acceptance_tools.py \
   tests/test_evidence_pack.py \
   tests/test_state_kernel.py \
   tests/test_teaching_labs.py

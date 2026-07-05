@@ -73,7 +73,7 @@
 - 教学 runner 只负责确定性准备和协议故障，不冒充 Codex skill 或领域审查；课程默认保留所有输出，不覆盖已有目录。
 - 教学 runner 完成场景准备后必须从最终 Graph 同步 `STATUS.md` 的 active node 与 revision，不能把初始化状态留给学生当作“故障”。
 - 生成的 `run_*.sh` 不保存项目绝对根目录或 Codex cache 路径；本机运行时通过 `PYTHON_BIN`、`DS_LITE_EVIDENCE_CLI`、`DS_LITE_PLUGIN_ROOT` 等环境变量解析。
-- 本地 marketplace 写入配置不等于插件已经安装；缓存验收以新线程实际报告的版本、来源和 UI 文案为准。
+- 本地 marketplace 写入配置只代表来源已注册；安装须在 `/plugins` 等宿主提供的插件浏览界面中明确完成。缓存验收以新线程实际报告的版本、来源、UI 文案和六技能发现为准。
 
 ## 已废弃方案
 

@@ -435,6 +435,7 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "teaching" / "run_lab.ps1",
         repo_root / "docs" / "maintainers" / "v0.3-recommendation-assessment.zh.md",
         repo_root / "docs" / "maintainers" / "v0.3-audit.zh.md",
+        repo_root / "docs" / "maintainers" / "v0.3-hardening-log.zh.md",
         repo_root / "docs" / "maintainers" / "writing-guide.zh.md",
         repo_root / "PACKAGE.md",
         repo_root / ".gitattributes",
@@ -448,6 +449,10 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "CHANGELOG.md",
         repo_root / "docs" / "maintainers" / "graph-v2-migration.md",
         repo_root / "docs" / "maintainers" / "v0.2-audit.zh.md",
+        repo_root / "tools" / "validation" / "prepare_codex_acceptance.py",
+        repo_root / "tools" / "validation" / "audit_codex_acceptance.py",
+        repo_root / "tools" / "validation" / "run_codex_acceptance.sh",
+        repo_root / "tools" / "validation" / "run_codex_acceptance.ps1",
     ]
     for item in required_paths:
         if not item.exists():

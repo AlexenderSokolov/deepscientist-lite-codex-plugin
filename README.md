@@ -33,7 +33,7 @@ This repository follows the Codex marketplace layout: `.agents/plugins/marketpla
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-After installing or upgrading, restart Codex Desktop and open a fresh thread if the `$ds-lite-*` skills do not appear immediately.
+This command adds a plugin source; it does not by itself prove that the plugin is installed. Open `/plugins`, select this marketplace, and install `deepscientist-lite`. After installing or upgrading, restart Codex Desktop and use a fresh thread to verify the plugin version and all six `$ds-lite-*` skills.
 
 ## Start Using It
 

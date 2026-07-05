@@ -18,7 +18,7 @@ DeepScientist Lite 用一组 Codex 技能和普通项目文件解决这些交接
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-安装或升级后，请重启 Codex Desktop，并打开一个新线程。插件缓存不会保证在旧线程里立即刷新。
+这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace，再安装 `deepscientist-lite`。安装或升级后重启 Codex Desktop，并打开一个新线程，核对插件版本和六个技能；旧线程不会自动刷新插件缓存。
 
 ### 2. 从一个真实问题开始
 
