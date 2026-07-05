@@ -246,6 +246,23 @@ class LabBuilder:
 
         graph = read_json(self.project / "research" / "state" / "graph.json")
         active = graph["nodes"][graph["active_node_id"]]
+        trace = self.state("trace", "--node", active["id"], "--mode", "progression", "--format", "json")
+        active_route = [item["id"] for item in json.loads(trace.stdout)["route"]]
+        route_nodes = set(active_route)
+        progression_relations = {"next", "branch", "supersedes"}
+        active_successors = {
+            edge.get("to")
+            for edge in graph.get("adjacency", {}).get(active["id"], [])
+            if edge.get("relation") in progression_relations
+        }
+        blocked_nodes = {
+            node_id
+            for node_id, node in graph["nodes"].items()
+            if node.get("status") == "blocked"
+        }
+        current_route_blockers = sorted(blocked_nodes & route_nodes)
+        blocked_followups = sorted(blocked_nodes & active_successors)
+        off_route_blockers = sorted(blocked_nodes - route_nodes - set(blocked_followups))
         next_actions = {
             "quickstart": "Explain the four core file roles, then ask Codex to recover the project from files.",
             "evidence": "Review the Evidence Pack without rerunning or repairing the experiment.",
@@ -254,12 +271,30 @@ class LabBuilder:
             "paths": "Set DS_LITE_EXTERNAL_DATASET on this machine, then run strict validation.",
             "revision": "Reconstruct the stale write, reload, reconcile, and retry sequence from the saved evidence.",
         }
-        blocker = (
-            f"- Active node `{active['id']}` is blocked; inspect its artifact and evidence before continuing."
-            if active["status"] == "blocked"
-            else "- None."
-        )
+        def format_nodes(node_ids: list[str]) -> str:
+            return ", ".join(f"`{node_id}`" for node_id in node_ids) if node_ids else "None."
+
+        followup_prefix = ""
+        if blocked_followups:
+            followup_prefix = f"Resolve or explicitly supersede {format_nodes(blocked_followups)} before claim promotion. "
         summary = active.get("summary") or active["title"]
+        self.result.update(
+            {
+                "status_active_node": active["id"],
+                "status_revision": graph["revision"],
+                "state_handoff": {
+                    "schema_version": "ds-lite.teaching-handoff.v1",
+                    "active_node_id": active["id"],
+                    "active_node_kind": active["kind"],
+                    "active_node_status": active["status"],
+                    "revision": graph["revision"],
+                    "active_route": active_route,
+                    "current_route_blockers": current_route_blockers,
+                    "blocked_followups": blocked_followups,
+                    "off_route_blockers": off_route_blockers,
+                },
+            }
+        )
         write_text(
             self.project / "STATUS.md",
             f"""# Status
@@ -277,11 +312,13 @@ class LabBuilder:
 
 ## Blockers
 
-{blocker}
+- Current route: {format_nodes(current_route_blockers)}
+- Blocked follow-ups from the active node: {format_nodes(blocked_followups)}
+- Preserved off-route blocks: {format_nodes(off_route_blockers)}
 
 ## Next Action
 
-{next_actions[self.lab]}
+{followup_prefix}{next_actions[self.lab]}
 
 ## Last Updated
 

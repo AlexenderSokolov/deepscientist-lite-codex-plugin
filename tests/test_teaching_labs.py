@@ -47,6 +47,21 @@ class TeachingLabTests(unittest.TestCase):
     def setUp(self) -> None:
         self.root = Path(tempfile.mkdtemp(prefix="ds-lite-teaching-中文-"))
 
+    def assert_state_handoff(self, output: Path) -> dict:
+        graph = read_json(output / "project" / "research" / "state" / "graph.json")
+        result = read_json(output / "lab-result.json")
+        status = (output / "project" / "STATUS.md").read_text(encoding="utf-8")
+        handoff = result["state_handoff"]
+        self.assertEqual(result["status_active_node"], graph["active_node_id"])
+        self.assertEqual(result["status_revision"], graph["revision"])
+        self.assertEqual(handoff["schema_version"], "ds-lite.teaching-handoff.v1")
+        self.assertEqual(handoff["active_node_id"], graph["active_node_id"])
+        self.assertEqual(handoff["revision"], graph["revision"])
+        self.assertEqual(handoff["active_route"][-1], graph["active_node_id"])
+        self.assertIn(f"Active node: `{graph['active_node_id']}`", status)
+        self.assertIn(f"Revision: {graph['revision']}", status)
+        return result
+
     def test_quickstart_student_stops_before_reference_answer(self) -> None:
         output = self.root / "quick start"
         result = run_lab(output, "quickstart")
@@ -55,6 +70,7 @@ class TeachingLabTests(unittest.TestCase):
         graph = read_json(output / "project" / "research" / "state" / "graph.json")
         self.assertEqual(graph["active_node_id"], "idea-file-handoff")
         self.assertNotIn("review", {node["kind"] for node in graph["nodes"].values()})
+        self.assert_state_handoff(output)
 
     def test_existing_output_is_never_overwritten(self) -> None:
         output = self.root / "keep me"
@@ -76,7 +92,7 @@ class TeachingLabTests(unittest.TestCase):
                 output = self.root / f"evidence {case}"
                 result = run_lab(output, "evidence", case=case)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-                summary = read_json(output / "lab-result.json")
+                summary = self.assert_state_handoff(output)
                 self.assertEqual(
                     (
                         summary["verification_exit_code"],
@@ -95,6 +111,7 @@ class TeachingLabTests(unittest.TestCase):
         self.assertTrue((output / "REFERENCE_ANSWER.md").exists())
         graph = read_json(output / "project" / "research" / "state" / "graph.json")
         self.assertEqual(graph["active_node_id"], "analysis-evidence-demo")
+        self.assert_state_handoff(output)
         env = os.environ.copy()
         env["PYTHONUTF8"] = "1"
         env["PYTHONDONTWRITEBYTECODE"] = "1"
@@ -113,7 +130,7 @@ class TeachingLabTests(unittest.TestCase):
         output = self.root / "branches"
         result = run_lab(output, "branches", mode="reference")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        summary = read_json(output / "lab-result.json")
+        summary = self.assert_state_handoff(output)
         self.assertEqual(summary["expected_selection"], "B")
         self.assertEqual(summary["branches"]["a"]["verify_exit_code"], 1)
         self.assertEqual(summary["branches"]["c"]["verify_exit_code"], 0)
@@ -121,12 +138,29 @@ class TeachingLabTests(unittest.TestCase):
         self.assertEqual(graph["nodes"]["review-branch-a"]["status"], "blocked")
         self.assertEqual(graph["nodes"]["review-branch-c"]["status"], "blocked")
         self.assertEqual(graph["active_node_id"], "analysis-branch-selection")
+        self.assertEqual(
+            summary["state_handoff"]["off_route_blockers"],
+            ["experiment-branch-a", "review-branch-a", "review-branch-c"],
+        )
+
+    def test_reference_failed_review_keeps_experiment_actionable(self) -> None:
+        output = self.root / "reference threshold miss"
+        result = run_lab(output, "evidence", mode="reference", case="threshold-miss")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        summary = self.assert_state_handoff(output)
+        graph = read_json(output / "project" / "research" / "state" / "graph.json")
+        self.assertEqual(graph["active_node_id"], "experiment-evidence-demo")
+        self.assertEqual(graph["nodes"]["review-evidence-demo"]["status"], "blocked")
+        self.assertEqual(summary["state_handoff"]["blocked_followups"], ["review-evidence-demo"])
+        status = (output / "project" / "STATUS.md").read_text(encoding="utf-8")
+        self.assertIn("Blocked follow-ups from the active node: `review-evidence-demo`", status)
+        self.assertNotIn("analysis-evidence-demo", graph["nodes"])
 
     def test_route_progression_ignores_supports_shortcut(self) -> None:
         output = self.root / "route"
         result = run_lab(output, "route")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        summary = read_json(output / "lab-result.json")
+        summary = self.assert_state_handoff(output)
         progression = [node["id"] for node in summary["progression_route"]["route"]]
         all_edges = [node["id"] for node in summary["all_edges_route"]["route"]]
         self.assertEqual(progression, ["intake-root", "scout-route", "idea-route", "decision-route"])
@@ -140,7 +174,7 @@ class TeachingLabTests(unittest.TestCase):
         output = self.root / "paths 空格"
         result = run_lab(output, "paths")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        summary = read_json(output / "lab-result.json")
+        summary = self.assert_state_handoff(output)
         self.assertEqual(summary["absolute_path_exit_code"], 1)
         self.assertFalse(summary["graph_contains_machine_root"])
         graph_text = (output / "project" / "research" / "state" / "graph.json").read_text(encoding="utf-8")
@@ -152,7 +186,7 @@ class TeachingLabTests(unittest.TestCase):
         output = self.root / "revision"
         result = run_lab(output, "revision")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        summary = read_json(output / "lab-result.json")
+        summary = self.assert_state_handoff(output)
         self.assertEqual(summary["stale_write_exit_code"], 4)
         self.assertEqual(summary["reloaded_revision"], summary["initial_revision"] + 1)
         self.assertEqual(summary["final_revision"], summary["reloaded_revision"] + 1)

@@ -176,6 +176,8 @@ intake → scout → idea → experiment → review → analysis
 
 它不表示每个研究项目都必须线性推进。你可以建立分支、保留失败、回滚到旧想法，也可以在证据不足时停在 blocked 状态。
 
+失败审查有一个容易混淆的细节：review 节点应当是 `blocked`，但不能同时设为 active。active 应留在仍可操作的 experiment，或转到一个明确的补救节点；`STATUS.md` 再列出 blocked review 和最小补做动作。这样“不能提升结论”和“现在还能做什么”不会混成同一件事。
+
 ## 9. 下一步练习
 
 - [20分钟快速体验](../teaching/quickstart-20.zh.md)
