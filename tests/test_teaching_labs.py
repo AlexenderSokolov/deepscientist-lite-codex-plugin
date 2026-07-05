@@ -131,6 +131,10 @@ class TeachingLabTests(unittest.TestCase):
         all_edges = [node["id"] for node in summary["all_edges_route"]["route"]]
         self.assertEqual(progression, ["intake-root", "scout-route", "idea-route", "decision-route"])
         self.assertEqual(all_edges, ["intake-root", "decision-route"])
+        status = (output / "project" / "STATUS.md").read_text(encoding="utf-8")
+        self.assertIn("Active node: `decision-route`", status)
+        self.assertIn("Stage: decision", status)
+        self.assertIn("Revision: 5", status)
 
     def test_paths_use_unicode_relative_and_external_aliases(self) -> None:
         output = self.root / "paths 空格"

@@ -9,6 +9,9 @@
 - Replace outline-only teaching material with a cross-platform six-lab runner, student/reference modes, guided prompts, observable failures, and beginner-facing course notes.
 - Rewrite the Chinese quick start and add a user guide plus writing rules that explain mechanisms without overstating what Graph, Evidence Packs, or review can prove.
 - Document which platform recommendations were adopted, deferred, or rejected to preserve the Lite boundary.
+- Keep generated teaching `STATUS.md` synchronized with the final Graph active node and revision.
+- Require portable review/experiment shell scripts that resolve plugin tooling through environment variables instead of persisting workstation or Codex cache paths.
+- Record real Codex skill-trigger acceptance evidence and the remaining local-marketplace cache blocker.
 
 ## 0.2.0-beta.1
 

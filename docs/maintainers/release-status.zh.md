@@ -23,7 +23,7 @@ The sanitized paradigm-comparison teaching case demonstrates how DS Lite records
 
 ## Current Release Judgment
 
-`v0.3.0-beta.1` is the evidence-review teaching beta. It keeps Graph v2 and Evidence Pack v1, and now adds beginner-facing Chinese documentation plus six runnable teaching labs with separate student/reference modes. Local Windows PowerShell, Git Bash, WSL DrvFS, WSL ext4, plugin, skill, and 31-test checks passed on 2026-07-04. Draft PR #2 also passed the updated Windows/Ubuntu × Python 3.10/3.x matrix. See the [v0.3 audit](v0.3-audit.zh.md). Independent installation and teaching reports, macOS verification, and repeatable cache-upgrade recovery remain release evidence.
+`v0.3.0-beta.1` is the evidence-review teaching beta. It keeps Graph v2 and Evidence Pack v1, and now adds beginner-facing Chinese documentation plus six runnable teaching labs with separate student/reference modes. Local Windows PowerShell, Git Bash, WSL DrvFS, WSL ext4, plugin, skill, and repository checks passed on 2026-07-04. Draft PR #2 also passed the updated Windows/Ubuntu × Python 3.10/3.x matrix. Real Codex threads subsequently discovered all six skills and correctly handled clean, tampered, threshold-miss, three-branch, route, path, and revision cases. However, the isolated local marketplace did not materialize its cachebuster version, and thread-level `systemError` blocked the main route after experiment. See the [v0.3 audit](v0.3-audit.zh.md) and [Codex acceptance audit](v0.3-codex-acceptance.zh.md). Explicit cache installation, completion of the main review/analysis recovery route, independent teaching reports, macOS verification, and repeatable cache-upgrade recovery remain release evidence.
 
 ## Long-Term Memory Rules
 

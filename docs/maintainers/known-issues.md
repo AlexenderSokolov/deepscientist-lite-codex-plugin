@@ -8,6 +8,10 @@ Codex Desktop may not expose newly installed or upgraded skills until the app is
 
 `codex plugin marketplace upgrade deepscientist-lite` can fail with an access-denied error while Codex Desktop is using the plugin cache. Close or restart Codex Desktop, then retry the upgrade.
 
+## Local marketplace registration without plugin installation
+
+Some Codex CLI builds can register a non-default local marketplace but expose no `plugin add` command. A new thread may therefore continue loading an older cached plugin even though `marketplace add` succeeded. Verify the exact version and source inside a new thread; do not treat a config entry as installation evidence. Use a Codex build or plugin UI that supports explicit installation, and preserve the old cache until the new source is confirmed.
+
 ## Windows non-ASCII command arguments
 
 PowerShell or console encoding can corrupt Chinese arguments passed directly to Python. Prefer the available UTF-8 `--*-file` options for title, question, summary, and reason values.

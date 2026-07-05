@@ -14,7 +14,7 @@ Experiments must be reproducible enough that another session can rerun or diagno
 3. Read `../../references/evidence-pack-protocol.md`. For comparison experiments, also read `../../references/experiment-comparison-template.md` and use its headings unless the host project already has a stronger local template.
 4. Create `research/artifacts/experiment-contract-<slug>.json` from the plugin Evidence Pack contract template. Do not include credentials, tokens, passwords, or a process environment dump.
 5. Validate and initialize the pack before execution: `python <plugin>/scripts/ds_lite_evidence.py init --root <project> --run-id <run-id> --contract <contract-file>`.
-6. Implement or repair code using the host project's conventions. Keep unrelated refactors out. Create or update the relevant `run_*.sh` with the complete replay command, log capture, metrics output, and Evidence Pack finalize/verify commands.
+6. Implement or repair code using the host project's conventions. Keep unrelated refactors out. Create or update the relevant `run_*.sh` with the complete replay command, log capture, metrics output, and Evidence Pack finalize/verify commands. Derive the project root from the script location, use `PYTHON_BIN` with `python3`/`python` fallback, and resolve the Evidence CLI through `DS_LITE_EVIDENCE_CLI` or `DS_LITE_PLUGIN_ROOT`; never persist the current Codex cache path or workstation project root in the script.
 7. Run the experiment when practical. Save stdout, stderr, numeric `metrics.json`, a sanitized `ds-lite.environment.v1` JSON description, and declared outputs. If compute, data, cluster paths, or credentials block execution, keep the initialized pack, save the exact command, and mark the experiment node `blocked`.
 8. Finalize and verify completed or failed runs with `ds_lite_evidence.py finalize` followed by `verify --strict`. A failed process is still valid evidence when its pack is intact.
 9. Write `research/artifacts/experiment-<slug>.md` with the contract, command, environment, metrics, logs, outputs, failures, manifest path, and next interpretation.
@@ -31,3 +31,4 @@ Experiments must be reproducible enough that another session can rerun or diagno
 - If an experiment invalidates an idea, add a `rollback` or `supersedes` edge instead of erasing the old route.
 - Keep `STATUS.md` honest: active node, what ran, what failed, and the next concrete action.
 - Never edit `graph.json` directly. On revision conflict, reload the graph and reconcile both sessions' evidence before retrying.
+- Keep generated shell scripts LF-encoded. On Windows, distinguish a launcher/preflight failure from a claim-bearing experiment attempt and record both honestly; do not spend a second declared run merely to hide an invocation error.

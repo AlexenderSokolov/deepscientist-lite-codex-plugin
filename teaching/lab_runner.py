@@ -241,9 +241,58 @@ class LabBuilder:
         self.evidence("finalize", *args)
         return self.evidence("verify", "--run-id", run_id, "--strict", expected=(0, 1))
 
+    def sync_status(self) -> None:
+        """Project the final teaching state into STATUS.md for handoff exercises."""
+
+        graph = read_json(self.project / "research" / "state" / "graph.json")
+        active = graph["nodes"][graph["active_node_id"]]
+        next_actions = {
+            "quickstart": "Explain the four core file roles, then ask Codex to recover the project from files.",
+            "evidence": "Review the Evidence Pack without rerunning or repairing the experiment.",
+            "branches": "Review A, B, and C, then select only a passing and policy-compliant route.",
+            "route": "Compare progression and all-edge traces; explain why supports and rollback do not redefine the active route.",
+            "paths": "Set DS_LITE_EXTERNAL_DATASET on this machine, then run strict validation.",
+            "revision": "Reconstruct the stale write, reload, reconcile, and retry sequence from the saved evidence.",
+        }
+        blocker = (
+            f"- Active node `{active['id']}` is blocked; inspect its artifact and evidence before continuing."
+            if active["status"] == "blocked"
+            else "- None."
+        )
+        summary = active.get("summary") or active["title"]
+        write_text(
+            self.project / "STATUS.md",
+            f"""# Status
+
+## Current Node
+
+- Active node: `{active['id']}`
+- Stage: {active['kind']}
+- Status: {active['status']}
+- Revision: {graph['revision']}
+
+## Current Summary
+
+{summary}
+
+## Blockers
+
+{blocker}
+
+## Next Action
+
+{next_actions[self.lab]}
+
+## Last Updated
+
+{datetime.now(timezone.utc).date().isoformat()}
+""",
+        )
+
     def build(self) -> None:
         self.create_workspace()
         getattr(self, f"build_{self.lab}")()
+        self.sync_status()
         self.result["project"] = "project"
         write_json(self.workspace / "lab-result.json", self.result)
         write_text(self.workspace / "COMMANDS.md", "# 本次准备实际调用的命令\n\n" + "\n\n".join(self.command_log))
