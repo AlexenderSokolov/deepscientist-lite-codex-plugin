@@ -456,14 +456,25 @@ def validate_evidence_manifest(root: Path, node_id: str, node: dict[str, Any], p
     return errors, warnings
 
 
-def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) -> tuple[list[str], list[str]]:
+def validate_graph(
+    root: Path,
+    graph: dict[str, Any],
+    check_paths: bool = True,
+    warning_nodes: list[str | None] | None = None,
+) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
+
+    def warn(message: str, node_id: str | None = None) -> None:
+        warnings.append(message)
+        if warning_nodes is not None:
+            warning_nodes.append(node_id)
+
     schema = graph.get("schema_version")
     if schema not in {SCHEMA_V1, SCHEMA_VERSION}:
         errors.append(f"schema_version must be {SCHEMA_V1} or {SCHEMA_VERSION}")
     if schema == SCHEMA_V1:
-        warnings.append("graph uses ds-lite.graph.v1; migrate before the next state change")
+        warn("graph uses ds-lite.graph.v1; migrate before the next state change")
     if schema == SCHEMA_VERSION:
         revision = graph.get("revision")
         if not isinstance(revision, int) or revision < 0:
@@ -533,28 +544,29 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
                     continue
                 resolved, path_problem = resolve_graph_path(root, value)
                 if path_problem:
-                    warnings.append(f"node {node_id} external path cannot be resolved: {path_problem}")
+                    warn(f"node {node_id} external path cannot be resolved: {path_problem}", node_id)
                     continue
                 if resolved is not None and not resolved.exists():
                     message = f"node {node_id} {list_field} path does not exist: {value}"
                     if list_field in {"artifact_paths", "memory_paths"} or node.get("status") == "done":
                         errors.append(message)
                     else:
-                        warnings.append(message)
+                        warn(message, node_id)
 
         if node.get("kind") == "experiment":
             manifests = evidence_manifest_paths(node)
             if not manifests:
-                warnings.append(f"experiment node {node_id} has no Evidence Pack manifest")
+                warn(f"experiment node {node_id} has no Evidence Pack manifest", node_id)
             for manifest_value in manifests:
                 manifest_errors, manifest_warnings = validate_evidence_manifest(root, node_id, node, manifest_value)
                 errors.extend(manifest_errors)
-                warnings.extend(manifest_warnings)
+                for manifest_warning in manifest_warnings:
+                    warn(manifest_warning, node_id)
         if node.get("kind") == "review":
             if not node.get("artifact_paths"):
-                warnings.append(f"review node {node_id} has no review artifact")
+                warn(f"review node {node_id} has no review artifact", node_id)
             if not evidence_manifest_paths(node):
-                warnings.append(f"review node {node_id} is not linked to an Evidence Pack manifest")
+                warn(f"review node {node_id} is not linked to an Evidence Pack manifest", node_id)
 
     if len(active_nodes) > 1:
         errors.append(f"multiple nodes have active status: {', '.join(sorted(active_nodes))}")
@@ -609,7 +621,7 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
                 if check_paths:
                     resolved, path_problem = resolve_graph_path(root, artifact_path)
                     if path_problem:
-                        warnings.append(f"edge {source}[{index}] external path cannot be resolved: {path_problem}")
+                        warn(f"edge {source}[{index}] external path cannot be resolved: {path_problem}", source)
                     elif resolved is not None and not resolved.exists():
                         errors.append(f"edge {source}[{index}] artifact_path does not exist: {artifact_path}")
 
@@ -622,7 +634,7 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
         if node.get("kind") in {"analysis", "write"}:
             parents = progression_parents.get(node_id, set())
             if not any(nodes.get(parent, {}).get("kind") == "review" for parent in parents):
-                warnings.append(f"{node.get('kind')} node {node_id} has no direct progression parent of kind review")
+                warn(f"{node.get('kind')} node {node_id} has no direct progression parent of kind review", node_id)
     cycle = progression_cycle(graph)
     if cycle:
         errors.append("progression graph contains a cycle: " + " -> ".join(cycle))
@@ -1133,18 +1145,37 @@ def cmd_trace_artifact(args: argparse.Namespace) -> int:
 def cmd_validate(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve()
     graph = load_graph(root)
-    errors, warnings = validate_graph(root, graph, check_paths=True)
+    warning_nodes: list[str | None] = []
+    errors, all_warnings = validate_graph(root, graph, check_paths=True, warning_nodes=warning_nodes)
     if map_is_stale(root, graph):
-        warnings.append("RESEARCH_MAP.md is missing or stale; run render-map")
+        all_warnings.append("RESEARCH_MAP.md is missing or stale; run render-map")
+        warning_nodes.append(None)
+
+    active_id = graph.get("active_node_id", "")
+    active_route = find_route(graph, graph.get("root_node_id", ""), active_id, mode="progression") if active_id else []
+    route_nodes = set(active_route)
+    warnings: list[str] = []
+    off_route_warnings: list[str] = []
+    for message, node_id in zip(all_warnings, warning_nodes):
+        if args.scope == "active-route" and node_id is not None and node_id not in route_nodes:
+            off_route_warnings.append(message)
+        else:
+            warnings.append(message)
+
     ok = not errors and (not args.strict or not warnings)
     emit(
         {
             "ok": ok,
             "strict": args.strict,
+            "scope": args.scope,
             "schema_version": graph.get("schema_version"),
             "revision": graph.get("revision", 0),
+            "active_node_id": active_id,
+            "active_route": active_route,
             "errors": errors,
             "warnings": warnings,
+            "off_route_warnings": off_route_warnings,
+            "warning_count": len(all_warnings),
             "graph": str(state_path(root)),
         }
     )
@@ -1351,6 +1382,12 @@ def build_parser() -> argparse.ArgumentParser:
     validate = subparsers.add_parser("validate", help="Validate graph structure, semantics, paths, and map freshness.")
     add_root(validate)
     validate.add_argument("--strict", action="store_true")
+    validate.add_argument(
+        "--scope",
+        choices=("all", "active-route"),
+        default="all",
+        help="Apply strict warning failure globally (default) or only to the current progression route.",
+    )
     validate.set_defaults(func=cmd_validate)
 
     render = subparsers.add_parser("render-map", help="Atomically render RESEARCH_MAP.md and migrate v1 when needed.")

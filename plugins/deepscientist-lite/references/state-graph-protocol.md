@@ -78,6 +78,7 @@ Allowed relations:
 - Progression routes use only `next`, `branch`, and `supersedes`.
 - `supports` and `blocks` express evidence or dependencies; `rollback` records a return but does not redefine the root-to-active progression route.
 - `trace` defaults to progression mode. Use `trace --mode all` only when every relationship should be considered.
+- Use `validate --strict --scope active-route` to gate the current route. Structural errors remain global, while warnings from preserved alternative branches are reported under `off_route_warnings`. Default `validate --strict` still gates every branch.
 
 ## Migration And Writes
 

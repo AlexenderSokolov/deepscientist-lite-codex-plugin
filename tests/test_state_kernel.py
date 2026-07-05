@@ -311,6 +311,64 @@ class StateKernelTests(unittest.TestCase):
         strict = run_cli(self.root, "validate", "--strict")
         self.assertEqual(strict.returncode, 1)
 
+    def test_active_route_strict_keeps_off_route_evidence_warning_visible(self) -> None:
+        self.write_artifact("research/artifacts/experiment-a.md")
+        self.write_artifact("research/artifacts/idea-b.md")
+        failed_branch = run_cli(
+            self.root,
+            "add-node",
+            "--id",
+            "experiment-a",
+            "--kind",
+            "experiment",
+            "--parent",
+            "intake-root",
+            "--relation",
+            "branch",
+            "--title",
+            "Failed branch A",
+            "--artifact-path",
+            "research/artifacts/experiment-a.md",
+        )
+        self.assertEqual(failed_branch.returncode, 0, failed_branch.stderr)
+        active_branch = run_cli(
+            self.root,
+            "add-node",
+            "--id",
+            "idea-b",
+            "--kind",
+            "idea",
+            "--parent",
+            "intake-root",
+            "--relation",
+            "branch",
+            "--title",
+            "Compliant branch B",
+            "--artifact-path",
+            "research/artifacts/idea-b.md",
+            "--active",
+        )
+        self.assertEqual(active_branch.returncode, 0, active_branch.stderr)
+
+        global_result = run_cli(self.root, "validate", "--strict")
+        self.assertEqual(global_result.returncode, 1, global_result.stdout + global_result.stderr)
+        global_payload = parse_output(global_result)
+        self.assertEqual(global_payload["scope"], "all")
+        self.assertIn("experiment node experiment-a has no Evidence Pack manifest", global_payload["warnings"])
+        self.assertEqual(global_payload["off_route_warnings"], [])
+
+        route_result = run_cli(self.root, "validate", "--strict", "--scope", "active-route")
+        self.assertEqual(route_result.returncode, 0, route_result.stdout + route_result.stderr)
+        route_payload = parse_output(route_result)
+        self.assertTrue(route_payload["ok"])
+        self.assertEqual(route_payload["active_route"], ["intake-root", "idea-b"])
+        self.assertEqual(route_payload["warnings"], [])
+        self.assertIn(
+            "experiment node experiment-a has no Evidence Pack manifest",
+            route_payload["off_route_warnings"],
+        )
+        self.assertEqual(route_payload["warning_count"], 1)
+
     def test_review_node_supports_block_and_analysis_route(self) -> None:
         self.write_artifact("research/artifacts/experiment-reviewed.md")
         manifest = self.write_evidence_manifest("experiment-reviewed", "reviewed-run")

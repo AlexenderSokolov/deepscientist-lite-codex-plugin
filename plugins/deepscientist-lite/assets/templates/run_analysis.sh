@@ -8,6 +8,7 @@ source "$$SCRIPT_DIR/tools/ds_lite_runtime.sh"
 
 PYTHON="$$(ds_lite_python)"
 STATE_CLI="$$(ds_lite_cli state)"
+"$$PYTHON" "$$STATE_CLI" validate --root "$$DS_LITE_PROJECT_ROOT" --strict --scope active-route
 ARGS=(trace --root "$$DS_LITE_PROJECT_ROOT" --mode progression --format markdown)
 if [[ $$# -gt 1 ]]; then
   echo "Usage: bash run_analysis.sh [node-id]" >&2

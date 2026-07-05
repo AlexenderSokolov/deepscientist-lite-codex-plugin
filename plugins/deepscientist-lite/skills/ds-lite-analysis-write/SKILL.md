@@ -18,6 +18,7 @@ Analysis and writing translate artifacts into claims. Treat unsupported claims a
 7. Read the current revision, add an `analysis`, `write`, or `finalize` node directly from the passing review node, and link every supporting artifact, manifest, and review path. Pass `--expected-revision` on each state write.
 8. Update `PROJECT.md` only with durable conclusions, adopted workflow changes, or important rejected assumptions.
 9. Update `STATUS.md` with remaining checks or mark the project ready for handoff.
+10. Before handoff, run state `validate --strict --scope active-route`. Report `off_route_warnings` as preserved branch debt; do not delete failed branches to make the gate green.
 
 ## Writing Rules
 

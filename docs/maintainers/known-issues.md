@@ -30,6 +30,10 @@ Evidence Pack verification proves that declared files exist, required metrics ar
 
 The contract and environment schemas reject sensitive field names, but the CLI cannot reliably detect secrets embedded inside free-form commands, logs, notes, or result files. Sanitize those files before finalizing a pack and never place credentials on a recorded command line.
 
+## Strict validation scope
+
+Default `validate --strict` audits warnings from the whole graph, so a deliberately preserved failed branch can keep it non-zero. `validate --strict --scope active-route` applies the warning gate only to the current progression route and reports other node warnings separately as `off_route_warnings`. Structural, path-integrity, and graph-semantic errors remain global in both modes.
+
 ## External evidence hashing
 
 External files are not hashed by default because they may be large or sensitive. Use `finalize --hash-external` only after confirming the intended external resource and cost. The graph and manifest retain the symbolic `external://` path, never the workstation root.

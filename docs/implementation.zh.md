@@ -319,7 +319,7 @@ Graph schema、CLI 参数、skill 名称和项目文件职责都属于插件的�
 | `migrate` | 写/预览 | 预览或执行 v1→v2 迁移，保留原图备份并处理外部别名 |
 | `trace` | 读 | 按 progression 或 all 模式从 root 回溯，输出 JSON 或 Markdown |
 | `trace-artifact` | 读 | 查找 artifact、memory 或 evidence 列表中包含指定路径的节点 |
-| `validate` | 读 | 检查结构、active、可达性、progression 环、重复边、时间、路径和地图 revision |
+| `validate` | 读 | 检查结构、active、可达性、progression 环、重复边、时间、路径和地图 revision；strict 可按全图或当前路线判定警告 |
 | `render-map` | 写 | 根据 graph 重写 `RESEARCH_MAP.md` |
 | `status` | 读 | 输出项目、active node、节点数和边数的 JSON 摘要 |
 

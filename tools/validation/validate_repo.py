@@ -402,7 +402,19 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
         ],
         repo_root,
     )
-    run([sys.executable, str(state_script), "validate", "--root", str(smoke_root), "--strict"], repo_root)
+    run(
+        [
+            sys.executable,
+            str(state_script),
+            "validate",
+            "--root",
+            str(smoke_root),
+            "--strict",
+            "--scope",
+            "active-route",
+        ],
+        repo_root,
+    )
     run([sys.executable, str(state_script), "render-map", "--root", str(smoke_root)], repo_root)
     if not (smoke_root / "RESEARCH_MAP.md").exists():
         fail("smoke project did not render RESEARCH_MAP.md")
