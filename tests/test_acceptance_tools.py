@@ -60,6 +60,14 @@ class CodexAcceptanceToolTests(unittest.TestCase):
         self.assertFalse(audit["installation_verified"])
         self.assertFalse(audit["skill_discovery_verified"])
 
+        invalid_launcher = self.parent / "not-an-executable.txt"
+        invalid_launcher.write_text("not executable\n", encoding="utf-8")
+        probed = self.run_tool(AUDIT, "--root", str(output), "--codex-bin", str(invalid_launcher))
+        probed_payload = json.loads(probed.stdout)
+        self.assertTrue(probed_payload["package_valid"])
+        self.assertFalse(probed_payload["host_supported"])
+        self.assertEqual(probed_payload["host_probes"][0]["status"], "unavailable")
+
     def test_prepare_refuses_existing_output(self) -> None:
         output = self.parent / "existing"
         output.mkdir()

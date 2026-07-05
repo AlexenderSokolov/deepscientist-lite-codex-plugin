@@ -48,6 +48,8 @@ def probe(command: list[str], timeout: float = 15.0) -> dict[str, Any]:
         return {"command": command, "status": "unavailable", "returncode": None, "output": "executable not found"}
     except subprocess.TimeoutExpired:
         return {"command": command, "status": "timeout", "returncode": None, "output": f"timed out after {timeout:g}s"}
+    except OSError as exc:
+        return {"command": command, "status": "unavailable", "returncode": None, "output": str(exc)}
     output = ((completed.stdout or "") + (completed.stderr or "")).strip()
     return {
         "command": command,

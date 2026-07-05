@@ -18,7 +18,9 @@ $AuditArgs = @(
     "--root", $Output,
     "--record", (Join-Path $Output "acceptance-audit.json")
 )
-$CodexCommand = Get-Command codex -ErrorAction SilentlyContinue
+$CodexCommand = Get-Command codex -All -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandType -eq "Application" } |
+    Select-Object -First 1
 if ($CodexCommand) {
     $AuditArgs += @("--codex-bin", $CodexCommand.Source)
 }

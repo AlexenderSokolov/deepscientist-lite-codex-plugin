@@ -27,9 +27,16 @@ OUTPUT="$1"
 "$PYTHON" "$SCRIPT_DIR/prepare_codex_acceptance.py" --repo-root "$REPO_ROOT" --output "$OUTPUT"
 
 AUDIT_ARGS=(--root "$OUTPUT" --record "$OUTPUT/acceptance-audit.json")
-if command -v codex >/dev/null 2>&1; then
-  AUDIT_ARGS+=(--codex-bin "$(command -v codex)")
-fi
+case "$(uname -s 2>/dev/null || true)" in
+  MINGW*|MSYS*|CYGWIN*)
+    echo "Skipping automatic Codex probe under Windows POSIX shell; verify installation from /plugins." >&2
+    ;;
+  *)
+    if command -v codex >/dev/null 2>&1; then
+      AUDIT_ARGS+=(--codex-bin "$(command -v codex)")
+    fi
+    ;;
+esac
 "$PYTHON" "$SCRIPT_DIR/audit_codex_acceptance.py" "${AUDIT_ARGS[@]}"
 
 echo "Package prepared and structurally audited. Installation still requires /plugins in a new Codex session."

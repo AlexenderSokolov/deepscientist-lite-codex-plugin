@@ -74,6 +74,9 @@
 - 教学 runner 完成场景准备后必须从最终 Graph 同步 `STATUS.md` 的 active node 与 revision，不能把初始化状态留给学生当作“故障”。
 - 生成的 `run_*.sh` 不保存项目绝对根目录或 Codex cache 路径；本机运行时通过 `PYTHON_BIN`、`DS_LITE_EVIDENCE_CLI`、`DS_LITE_PLUGIN_ROOT` 等环境变量解析。
 - 本地 marketplace 写入配置只代表来源已注册；安装须在 `/plugins` 等宿主提供的插件浏览界面中明确完成。缓存验收以新线程实际报告的版本、来源、UI 文案和六技能发现为准。
+- Codex 验收工具只能创建新隔离目录并做只读宿主探测；`package_valid`、`host_supported`、`installation_verified` 和技能发现必须分别记录。
+- 默认 `validate --strict` 继续审计全图；当前路线交接可使用 `--scope active-route`，但结构与路径完整性错误始终全局生效，非当前路线警告必须保留在输出中。
+- 教学产物使用 `ds-lite.teaching-handoff.v1` 核对 Graph、STATUS、active route 与 revision；该投影不改变 Graph 作为机器权威来源的地位。
 
 ## 已废弃方案
 

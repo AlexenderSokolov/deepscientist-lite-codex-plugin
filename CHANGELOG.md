@@ -12,6 +12,10 @@
 - Keep generated teaching `STATUS.md` synchronized with the final Graph active node and revision.
 - Require portable review/experiment shell scripts that resolve plugin tooling through environment variables instead of persisting workstation or Codex cache paths.
 - Record real Codex skill-trigger acceptance evidence and the remaining local-marketplace cache blocker.
+- Add fresh-output-only Codex acceptance preparation and audit tools that separate marketplace registration, installation, and skill discovery evidence.
+- Generate portable project shell entry points from a shared runtime resolver instead of placeholder scripts or saved cache paths.
+- Add `validate --strict --scope active-route`, keeping structural errors global while reporting preserved branch warnings separately.
+- Add `ds-lite.teaching-handoff.v1` so Graph, STATUS, active route, revision, and blocked follow-ups can be checked together.
 
 ## 0.2.0-beta.1
 
