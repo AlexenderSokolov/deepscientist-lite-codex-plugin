@@ -57,6 +57,8 @@ flowchart LR
 
 你应当看到：experiment artifact、`run_*.sh` 和 `research/evidence/<run-id>/`。
 
+初始化生成的四个 `run_*.sh` 共用 `tools/ds_lite_runtime.sh`。脚本从自身位置找到项目根目录，通过 `PYTHON_BIN` 选择 Python，通过 `DS_LITE_STATE_CLI`、`DS_LITE_EVIDENCE_CLI` 或 `DS_LITE_PLUGIN_ROOT` 找到插件脚本。它们不会扫描 Codex 缓存，也不会把某台电脑的绝对路径写入项目。换机器时只需重新设置环境变量，不要改写 Graph 或把缓存目录提交到仓库。
+
 它不能保证：进程退出码为 0 就说明结果有效。退出码只描述进程是否正常结束。
 
 ### Review：把“跑完了”和“能下结论”分开

@@ -444,6 +444,7 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         plugin_root / "assets" / "templates" / "research" / "evidence" / "contract.json",
         plugin_root / "assets" / "templates" / "research" / "evidence" / "environment.json",
         plugin_root / "assets" / "templates" / "run_review.sh",
+        plugin_root / "assets" / "templates" / "tools" / "ds_lite_runtime.sh",
         repo_root / "LICENSE",
         repo_root / "NOTICE",
         repo_root / "CHANGELOG.md",

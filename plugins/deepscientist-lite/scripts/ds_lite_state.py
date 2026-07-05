@@ -879,6 +879,7 @@ def cmd_init(args: argparse.Namespace) -> int:
             ("run_experiment.sh", "run_experiment.sh"),
             ("run_review.sh", "run_review.sh"),
             ("run_analysis.sh", "run_analysis.sh"),
+            ("tools/ds_lite_runtime.sh", "tools/ds_lite_runtime.sh"),
         ):
             if write_if_missing(root / relative, render_template(template_name, values)):
                 created.append(relative)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -24,13 +25,41 @@ def run_cli(root: Path, *args: str, env: dict[str, str] | None = None) -> subpro
     merged_env = os.environ.copy()
     if env:
         merged_env.update(env)
-    return subprocess.run(command, cwd=REPO_ROOT, text=True, encoding="utf-8", capture_output=True, env=merged_env)
+    return subprocess.run(
+        command,
+        cwd=REPO_ROOT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        env=merged_env,
+    )
 
 
 def parse_output(result: subprocess.CompletedProcess[str]) -> dict:
     if not result.stdout.strip():
         raise AssertionError(f"command produced no JSON stdout\nstderr: {result.stderr}")
     return json.loads(result.stdout)
+
+
+def portable_bash() -> str | None:
+    """Prefer Git Bash on Windows; System32 bash may launch an unrelated WSL host."""
+    if sys.platform == "win32":
+        completed = subprocess.run(
+            ["git", "--exec-path"],
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            capture_output=True,
+        )
+        if completed.returncode == 0:
+            git_exec = Path(completed.stdout.strip())
+            if len(git_exec.parents) >= 3:
+                candidate = git_exec.parents[2] / "bin" / "bash.exe"
+                if candidate.is_file():
+                    return str(candidate)
+        return None
+    return shutil.which("bash")
 
 
 def make_v1_graph(root: Path, evidence_path: str = "PROJECT.md") -> None:
@@ -129,6 +158,60 @@ class StateKernelTests(unittest.TestCase):
         self.assertIn("- Revision: `0`", (self.root / "RESEARCH_MAP.md").read_text(encoding="utf-8"))
         self.assertTrue((self.root / "research" / "evidence").is_dir())
         self.assertTrue((self.root / "run_review.sh").is_file())
+        self.assertTrue((self.root / "tools" / "ds_lite_runtime.sh").is_file())
+
+        generated_scripts = [
+            self.root / "run_research.sh",
+            self.root / "run_experiment.sh",
+            self.root / "run_review.sh",
+            self.root / "run_analysis.sh",
+            self.root / "tools" / "ds_lite_runtime.sh",
+        ]
+        forbidden_fragments = (
+            ".codex/plugins/cache",
+            ".codex\\plugins\\cache",
+            "C:/Users/",
+            "C:\\Users\\",
+            str(REPO_ROOT),
+            str(REPO_ROOT).replace("\\", "/"),
+        )
+        for script in generated_scripts:
+            content = script.read_text(encoding="utf-8")
+            self.assertTrue(content.startswith("#!/usr/bin/env bash\n"), script)
+            for forbidden in forbidden_fragments:
+                self.assertNotIn(forbidden, content, script)
+
+        bash = portable_bash()
+        if bash:
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "PYTHON_BIN": Path(sys.executable).as_posix(),
+                    "DS_LITE_PLUGIN_ROOT": (REPO_ROOT / "plugins" / "deepscientist-lite").as_posix(),
+                }
+            )
+            for script in generated_scripts:
+                checked = subprocess.run(
+                    [bash, "-n", script.as_posix()],
+                    cwd=self.root,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    capture_output=True,
+                    env=environment,
+                )
+                self.assertEqual(checked.returncode, 0, checked.stderr)
+            replayed = subprocess.run(
+                [bash, (self.root / "run_research.sh").as_posix(), "status", "--json"],
+                cwd=self.root,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                capture_output=True,
+                env=environment,
+            )
+            self.assertEqual(replayed.returncode, 0, replayed.stderr)
+            self.assertEqual(json.loads(replayed.stdout)["active_node_id"], "intake-root")
 
         western_root = Path(tempfile.mkdtemp(prefix="ds lite western console "))
         western = run_cli(

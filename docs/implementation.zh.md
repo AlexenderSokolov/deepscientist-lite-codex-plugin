@@ -309,7 +309,7 @@ Graph schema、CLI 参数、skill 名称和项目文件职责都属于插件的�
 
 | 命令 | 类型 | 当前行为 |
 | --- | --- | --- |
-| `init` | 写 | 建立目录、graph、PROJECT、STATUS、Research Map 和三个 `run_*.sh`；已有 graph 时返回 `exists` |
+| `init` | 写 | 建立目录、graph、PROJECT、STATUS、Research Map、四个 `run_*.sh` 和共享运行时；已有 graph 时返回 `exists` |
 | `add-node` | 写 | 创建节点，可同时建立父边、关联路径、设为 active 并选择渲染 |
 | `update-node` | 写 | 更新节点 title、summary 或 kind，支持 UTF-8 文件输入 |
 | `add-edge` | 写 | 在已有节点间添加一条指定关系的有向边 |
