@@ -20,6 +20,7 @@ EXPECTED_SKILLS = {
     "ds-lite-experiment",
     "ds-lite-review",
     "ds-lite-analysis-write",
+    "ds-lite-iterate",
 }
 
 
@@ -126,7 +127,7 @@ def audit(root: Path, codex_bin: str | None) -> tuple[dict[str, Any], bool, bool
         if not host_supported:
             warnings.append("Codex host does not expose the expected marketplace preflight commands; installation remains unverified")
     else:
-        warnings.append("Codex host was not probed; installation and six-skill discovery remain manual gates")
+        warnings.append("Codex host was not probed; installation and seven-skill discovery remain manual gates")
 
     result = {
         "schema_version": SCHEMA_VERSION,
@@ -141,7 +142,7 @@ def audit(root: Path, codex_bin: str | None) -> tuple[dict[str, Any], bool, bool
         "host_probes": host_probes,
         "observations_required": [
             "plugin version and source shown in a new Codex session",
-            "all six skills are discoverable",
+            "all seven skills are discoverable",
             "manual workflow and failure-case file evidence",
         ],
     }

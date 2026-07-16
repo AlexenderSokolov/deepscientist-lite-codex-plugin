@@ -8,12 +8,13 @@ DeepScientist Lite is a lightweight Codex plugin for learning and practicing a t
 
 It is designed for onboarding, teaching demos, and small research projects where the first goal is to make the research process clear and recoverable.
 
-The [Chinese user guide](docs/user-guide.zh.md) explains the six skills, Graph revisions, Evidence Packs, review boundaries, path aliases, and cross-session recovery with user-facing examples. The teaching area separates deterministic lab preparation from the judgments students or Codex must make.
+The [Chinese user guide](docs/user-guide.zh.md) explains the seven skills, Graph revisions, Mission Board, Evidence Packs, review boundaries, path aliases, and cross-session recovery with user-facing examples. The teaching area separates deterministic lab preparation from the judgments students or Codex must make.
 
 ## What It Does
 
 - Starts or audits a research project with `PROJECT.md`, `STATUS.md`, and `RESEARCH_MAP.md`.
-- Guides Codex through intake, scout, idea, experiment, review, and analysis/write stages.
+- Guides Codex through intake, scout, idea, experiment, review, analysis/write, and one bounded iterate step.
+- Renders a user-visible Mission Board with `mission` and `render-status` so `STATUS.md` shows what happened, what is next, and where rollback is possible.
 - Records ideas, experiments, failures, and conclusions as files under `research/artifacts/`.
 - Packages logs, metrics, and output hashes under `research/evidence/` before claim review.
 - Maintains a small adjacency-list state graph in `research/state/graph.json`.
@@ -33,7 +34,7 @@ This repository follows the Codex marketplace layout: `.agents/plugins/marketpla
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-This command adds a plugin source; it does not by itself prove that the plugin is installed. Open `/plugins`, select this marketplace, and install `deepscientist-lite`. After installing or upgrading, restart Codex Desktop and use a fresh thread to verify the plugin version and all six `$ds-lite-*` skills.
+This command adds a plugin source; it does not by itself prove that the plugin is installed. Open `/plugins`, select this marketplace, and install `deepscientist-lite`. After installing or upgrading, restart Codex Desktop and use a fresh thread to verify the plugin version and all seven `$ds-lite-*` skills.
 
 ## Start Using It
 
@@ -45,6 +46,7 @@ $ds-lite-scout audit the baseline and benchmark route
 $ds-lite-experiment record this experiment in the research map
 $ds-lite-review review the Evidence Pack before analysis
 $ds-lite-analysis-write summarize the evidence and limitations
+$ds-lite-iterate advance exactly one visible research iteration and stop
 ```
 
 For Chinese project titles or questions on Windows, prefer UTF-8 text files with `--title-file` and `--question-file` when calling `ds_lite_state.py` directly.

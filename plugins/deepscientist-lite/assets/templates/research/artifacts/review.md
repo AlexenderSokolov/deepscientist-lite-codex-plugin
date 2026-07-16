@@ -19,6 +19,15 @@
 
 pass | fail | needs-human
 
+## Typed Result
+
+- Work unit id:
+- Profile id:
+- Sidecar: `research/artifacts/review-<slug>.json`
+- Verdict: pass | fail | needs-human
+- Claim assessment: none | inconclusive | refuted | supportable
+- Evidence digest:
+
 ## Required Follow-up
 
 Name the smallest check or correction needed before analysis can promote the claim.

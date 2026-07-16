@@ -1,0 +1,4 @@
+interface:
+  display_name: "DS Lite Iterate"
+  short_description: "Advance one visible worker iteration and stop at a checkpoint."
+  default_prompt: "$ds-lite-iterate read the mission board, choose one bounded next action, record the frontier decision, update STATUS, and stop"

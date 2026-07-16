@@ -7,7 +7,7 @@ This repository is a Codex marketplace repository.
 - `.agents/plugins/marketplace.json`: marketplace index for Codex.
 - `plugins/deepscientist-lite/`: installable plugin package.
 - `plugins/deepscientist-lite/.codex-plugin/plugin.json`: plugin manifest.
-- `plugins/deepscientist-lite/skills/`: six runtime skills, including the independent review workflow.
+- `plugins/deepscientist-lite/skills/`: seven runtime skills, including independent review and one-iteration worker handoff workflows.
 - `plugins/deepscientist-lite/scripts/ds_lite_state.py`: no-dependency state graph helper.
 - `plugins/deepscientist-lite/scripts/ds_lite_evidence.py`: no-dependency Evidence Pack contract, finalize, and verification helper.
 - `plugins/deepscientist-lite/scripts/ds_lite_state_v1_legacy.py`: preserved v1 implementation for audit only; it is not the runtime entry point.

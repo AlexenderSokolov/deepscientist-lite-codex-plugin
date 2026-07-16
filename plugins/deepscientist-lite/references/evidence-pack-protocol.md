@@ -8,7 +8,9 @@ Evidence Pack v1 records what an experiment promised, what executed, and whether
 - Manifest: `ds-lite.evidence.v1`
 - Sanitized environment description: `ds-lite.environment.v1`
 
-Contracts require run/node ids, hypothesis, command, project-relative cwd, inputs, metric definitions, seeds, budget, expected outputs, and failure interpretation. Metric directions are `max`, `min`, `target`, or `observe`.
+Contracts require run/node ids, hypothesis, command, project-relative cwd, inputs, metric definitions, seeds, budget, expected outputs, and failure interpretation. Metric directions are `max`, `min`, `target`, or `observe`; a missing or wrong direction is a protocol failure, not a harmless display bug.
+
+When a comparison depends on budget, the contract and experiment artifact must distinguish smoke checks, early-budget metrics, final-budget metrics, and aggregate metrics such as AUC. The budget field is the declared cap for the current run; GPU jobs, long runs, dependency installs, cluster jobs, and external data access require user or supervisor approval unless the project has an explicit budget policy.
 
 Environment JSON accepts only: `schema_version`, `python`, `platform`, `packages`, `container`, `hardware`, and `notes`. Never add tokens, passwords, credentials, API keys, or a full process environment.
 
@@ -41,3 +43,9 @@ python <plugin>/scripts/ds_lite_evidence.py verify \
 ## Review Boundary
 
 An intact pack can describe a failed process. Threshold misses appear as verification warnings and fail strict verification. `$ds-lite-review` uses the pack plus source checks to decide `pass`, `fail`, or `needs-human`; it must not rewrite evidence to manufacture a passing result.
+
+Mission only promotes a manifest to `has-evidence` when the active `ds-lite.work-unit.v1` declares that exact ref and the `experiment-run` profile's `ds-lite.evidence.v1` validator passes. Ordinary artifacts, logs, project files, and arbitrary non-empty `evidence_paths` do not satisfy a claim requirement.
+
+Review writes a separate `ds-lite.review-result.v1` sidecar. `verdict` controls the review gate; `claim_assessment` independently records `none`, `inconclusive`, `refuted`, or `supportable`. The result counts only when its work unit, profile, review/experiment nodes, evidence refs, validator, and digest match. Markdown alone never promotes a route to `reviewed`.
+
+If a metric direction, aggregation, or threshold interpretation is corrected after a run, record a protocol-breaking correction artifact and preserve the old node through `rollback` or `supersedes`. Do not mutate old evidence to make later claims look consistent.

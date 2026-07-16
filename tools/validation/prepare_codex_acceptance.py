@@ -99,13 +99,13 @@ def manual_guide(marketplace_name: str, version: str) -> str:
 
 1. 在 Codex CLI 中执行 `codex plugin marketplace add <此目录>`，只添加 marketplace 来源。
 2. 重启 Codex，在 `/plugins` 中选择 `{marketplace_name}`，再安装 `deepscientist-lite`。
-3. 新建线程，确认界面显示副本版本，并能发现六个技能。
+3. 新建线程，确认界面显示副本版本，并能发现七个技能。
 
 “marketplace 已添加”不等于“插件已安装”。如果当前 Codex 构建没有 `/plugins` 或相应插件浏览能力，记录为宿主能力缺失，不要删除旧缓存或伪造安装成功。
 
 ## 建议执行顺序
 
-- `projects/manual-main/`：从零测试 intake → scout → idea → experiment → review → analysis。
+- `projects/manual-main/`：从零测试 intake → scout → idea → experiment → review → analysis，并额外触发一次 `$ds-lite-iterate`。
 - `fixtures/evidence-clean/`、`evidence-tampered/`、`evidence-threshold-miss/`：分别测试通过、哈希篡改和阈值失败。
 - `fixtures/branches/`：检查 A 退化、B 稳定、C 标签泄漏三条路线。
 - `fixtures/route/`、`paths/`、`revision/`：检查路线、路径和 revision 协议。
@@ -186,7 +186,7 @@ def prepare(repo_root: Path, output: Path, cachebuster: str, marketplace_name: s
             "version": version,
             "path": f"plugins/{PLUGIN_NAME}",
             "installation": "not-verified",
-            "expected_skill_count": 6,
+            "expected_skill_count": 7,
         },
         "fixtures": fixture_paths,
         "manual_project": "projects/manual-main",

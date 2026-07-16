@@ -18,7 +18,7 @@ DeepScientist Lite 用一组 Codex 技能和普通项目文件解决这些交接
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace，再安装 `deepscientist-lite`。安装或升级后重启 Codex Desktop，并打开一个新线程，核对插件版本和六个技能；旧线程不会自动刷新插件缓存。
+这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace，再安装 `deepscientist-lite`。安装或升级后重启 Codex Desktop，并打开一个新线程，核对插件版本和七个技能；旧线程不会自动刷新插件缓存。
 
 ### 2. 从一个真实问题开始
 
@@ -42,6 +42,8 @@ $ds-lite-experiment 为选中的路线先写实验契约，再运行或保存可
 $ds-lite-review 在进入分析前检查证据包、指标、引用和方法是否对得上。
 
 $ds-lite-analysis-write 只基于通过审查的证据总结结果、限制和下一步。
+
+$ds-lite-iterate 读取 Mission Board，只推进一轮有界研究动作，记录 frontier decision，更新 STATUS 后停止。
 ```
 
 ### 3. 看懂生成的文件
@@ -51,7 +53,7 @@ $ds-lite-analysis-write 只基于通过审查的证据总结结果、限制和�
 | 位置 | 它回答的问题 |
 | --- | --- |
 | `PROJECT.md` | 这个项目为什么做，目标和验收标准是什么？ |
-| `STATUS.md` | 现在做到哪里，卡在哪里，下一步是什么？ |
+| `STATUS.md` | Mission Board：现在做到哪里、刚发生什么、下一步是什么、哪里可回退？ |
 | `RESEARCH_MAP.md` | 已经走过哪些路线，当前路线如何到达？ |
 | `research/artifacts/` | 每一步具体做了什么，有什么公开依据？ |
 
@@ -61,6 +63,7 @@ $ds-lite-analysis-write 只基于通过审查的证据总结结果、限制和�
 
 - **换会话不丢线索**：Codex 可以从项目文件恢复目标、当前节点和下一步。
 - **失败也有去处**：失败实验和未选路线不会被成功结果覆盖。
+- **进度看得见**：`mission` 和 `render-status` 把 Graph 投影成任务板，避免把 artifact 当成用户体验。
 - **实验先约定再解释**：指标、阈值、seed、预算和失败条件在运行前写入契约。
 - **高分不自动通关**：文件完整、指标达标和结论可用是三个不同判断。
 - **图可以检查和重建**：机器状态保存在 `graph.json`，人读的地图可以重新渲染。
@@ -70,6 +73,7 @@ $ds-lite-analysis-write 只基于通过审查的证据总结结果、限制和�
 - 不证明论文结论为真，也不保证消除错误引用或“幻觉”。
 - 不启动 daemon、Web/TUI、MCP server、聊天 connector 或本地模型。
 - 不在 Codex 关闭后继续运行任务。
+- 不把 `$ds-lite-iterate` 变成无限自动循环；一次调用只推进一轮并停在 checkpoint。
 - 不替代人工审查、领域知识、数据治理和研究伦理判断。
 - Review 是一个单独的检查步骤和记录，不代表使用了另一模型或隔离执行环境。
 

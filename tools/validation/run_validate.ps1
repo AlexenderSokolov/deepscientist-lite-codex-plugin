@@ -11,6 +11,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 & $PythonBin -m py_compile `
   plugins\deepscientist-lite\scripts\ds_lite_evidence.py `
+  plugins\deepscientist-lite\scripts\ds_lite_protocol.py `
   plugins\deepscientist-lite\scripts\ds_lite_state.py `
   teaching\lab_runner.py `
   tools\validation\prepare_codex_acceptance.py `

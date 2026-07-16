@@ -48,7 +48,8 @@ class CodexAcceptanceToolTests(unittest.TestCase):
 
         acceptance = read_json(output / "acceptance.json")
         self.assertEqual(acceptance["schema_version"], "ds-lite.codex-acceptance.v1")
-        self.assertEqual(acceptance["plugin"]["version"], "0.3.0-beta.1+codex.test-20260705")
+        self.assertEqual(acceptance["plugin"]["version"], "0.4.0-beta.2+codex.test-20260705")
+        self.assertEqual(acceptance["plugin"]["expected_skill_count"], 7)
         self.assertEqual(len(acceptance["fixtures"]), 7)
         self.assertFalse(acceptance["safety"]["modifies_codex_configuration"])
         self.assertTrue((output / "projects" / "manual-main").is_dir())
@@ -59,6 +60,7 @@ class CodexAcceptanceToolTests(unittest.TestCase):
         self.assertTrue(audit["package_valid"])
         self.assertFalse(audit["installation_verified"])
         self.assertFalse(audit["skill_discovery_verified"])
+        self.assertIn("all seven skills are discoverable", audit["observations_required"])
 
         invalid_launcher = self.parent / "not-an-executable.txt"
         invalid_launcher.write_text("not executable\n", encoding="utf-8")

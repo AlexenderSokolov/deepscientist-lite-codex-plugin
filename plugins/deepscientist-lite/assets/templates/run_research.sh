@@ -15,5 +15,7 @@ fi
 
 # Examples:
 #   bash run_research.sh status --json
+#   bash run_research.sh mission --format json
+#   bash run_research.sh render-status
 #   bash run_research.sh validate --strict
 exec "$$PYTHON" "$$STATE_CLI" "$$COMMAND" --root "$$DS_LITE_PROJECT_ROOT" "$$@"
