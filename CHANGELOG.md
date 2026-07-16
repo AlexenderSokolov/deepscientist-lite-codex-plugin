@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.4.0-beta.2
+
+- Add `mission` and `render-status` state CLI commands that project Graph v2 into a user-visible Mission Board.
+- Display Evidence Pack metric direction, thresholds, budgets, and early/final/aggregate metric surfaces in the Mission Board.
+- Add the `ds-lite-iterate` skill for exactly one bounded worker iteration with a required frontier decision artifact.
+- Add OpenScience worker handoff documentation for supervisor-driven Codex worker tasks.
+- Update `STATUS.md` to show active route, next action, candidate queue, rollback targets, validation state, and readiness rules.
+- Record AIResearch-derived readiness rules: artifact is not progress, ready is not done, idea is not experiment, metric errors are protocol failures, and invisible loops are not agent experience.
+- Extend repository smoke coverage to verify mission JSON/Markdown, render-status, rollback, blocked branch visibility, and off-route warnings.
+- Add an `external long-task stewardship` protocol for append-only runtime handoffs, recovery evidence, and duplicate-submission checks; this is a Codex behavior constraint, not background scheduling capability.
+- Add a `manual tmux capacity handshake`: Codex plans named slots and exact bootstrap commands, the user creates the top-level tmux surface, and Codex verifies it before launching pane-scoped CLI workers.
+- Add `ds-lite.work-unit.v1` planning and claim-bearing sidecars without changing Graph v2.
+- Require typed Evidence Pack validation before `has-evidence`; ordinary artifacts, logs, and non-empty paths no longer promote evidence strength.
+- Add the domain-neutral `ds-lite.review-result.v1` typed review result with separate review `verdict` and `claim_assessment`, plus Mission Board claim readiness and evidence detail.
+- Scope `waiting_for_user` to the active route while preserving off-route blocked warnings and debt.
+- Keep the Lite boundary unchanged: no daemon, MCP, Web/TUI, hooks, or long-running scheduler.
+- Publish this version as a source/package prerelease; fresh Codex cache installation remains a separate, unverified acceptance surface.
+
 ## 0.3.0-beta.1
 
 - Add standard-library Evidence Pack v1 contracts, manifests, hashing, and strict verification.

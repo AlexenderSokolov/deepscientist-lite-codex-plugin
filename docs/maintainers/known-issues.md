@@ -4,13 +4,17 @@
 
 Codex Desktop may not expose newly installed or upgraded skills until the app is restarted and a new thread is opened.
 
+## Source release is not cache acceptance
+
+`v0.4.0-beta.2` may be validated, tagged, and published from a clean source package without changing the installed Codex cache. That proves the source/package surface only. Do not report the installed version, skill discovery, or fresh-thread behavior as verified until a separately authorized cache installation and new-thread probe records the exact loaded version.
+
 ## Marketplace cache access denied
 
 `codex plugin marketplace upgrade deepscientist-lite` can fail with an access-denied error while Codex Desktop is using the plugin cache. Close or restart Codex Desktop, then retry the upgrade.
 
 ## Local marketplace registration without plugin installation
 
-`codex plugin marketplace add` registers a source. Installation is a separate action in the `/plugins` browser, and the exact surface can vary by Codex build. A new thread may continue loading an older cached plugin even when source registration succeeds. Verify the exact version, source, UI description, and six discovered skills in a fresh session; never treat a marketplace config entry as installation evidence. Preserve the old cache until the new source is confirmed.
+`codex plugin marketplace add` registers a source. Installation is a separate action in the `/plugins` browser, and the exact surface can vary by Codex build. A new thread may continue loading an older cached plugin even when source registration succeeds. Verify the exact version, source, UI description, and seven discovered skills in a fresh session; never treat a marketplace config entry as installation evidence. Preserve the old cache until the new source is confirmed.
 
 ## Windows non-ASCII command arguments
 
@@ -42,6 +46,28 @@ External files are not hashed by default because they may be large or sensitive.
 
 `ds-lite-review` creates a separate workflow pass and artifact. Without separately authorized subagents or infrastructure it does not guarantee a different model, process, or isolated evaluator.
 
+## Markdown-only review compatibility
+
+A Markdown-only review remains readable but cannot produce `evidence_strength=reviewed`. The review node must be done and link a valid `ds-lite.review-result.v1` sidecar whose work unit, profile, node ids, Evidence Pack refs, and digest match. Old projects receive a compatibility warning until the typed result is added; do not silence it by treating prose as typed evidence.
+
+## Reserved profiles
+
+`literature-evidence`, `mathematical-exploration`, `software-evaluation`, and `numerical-simulation` are `reserved / not-validated`. They intentionally fail closed when claim-bearing evidence is requested. Registration is not evidence of domain support.
+
+## Ephemeral launch ownership
+
+An `agent-ephemeral` or `unknown` launch context is not a durable runtime owner. A tmux server created inside a temporary Codex shell may remain tied to that shell's cgroup, container, host, or scheduler allocation, so detaching the pane does not prove persistence. `nohup`, `disown`, `setsid`, backgrounding, and automatic tmux creation are likewise insufficient evidence by themselves.
+
+For work that must cross a tool call, SSH connection, or worker lifetime, run a persistence probe through the same ownership boundary and record the external owner, PID/job identity, logs, exit path, heartbeat, checkpoint, budget, and recovery command in `research/artifacts/external-task-<task-id>.md`. Preserve old attempts and reconcile the original process before resubmitting.
+
+## Manual tmux capacity
+
+A tmux session has no parent-child hierarchy. This protocol defines no Codex or tmux "child session"; the supported unit is a pane-scoped Codex CLI child worker. The user must create the server and top-level capacity from a separately owned stable shell after Codex writes an `external-tmux-plan-*`. Manual creation is still not persistence evidence until the recorded server fingerprint survives the planned disconnect/reconnect probe.
+
+Do not infer provider conversation recovery from a surviving server, pane, or CLI PID. Record and test the provider thread/task handle and resume command separately. If the verified socket disappears, Codex must stop instead of using `new-session`, which could silently create an unverified replacement server.
+
 ## Scope boundary
 
 DeepScientist Lite has no daemon, MCP server, Web/TUI, connector, runner registry, or long-running scheduler. It is a lightweight file-led research protocol for Codex skills.
+
+`$ds-lite-iterate` is a one-round worker checkpoint, not autonomous background research. It must stop after writing the frontier decision, graph update, and Mission Board status.

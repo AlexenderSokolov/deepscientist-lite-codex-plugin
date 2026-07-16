@@ -4,7 +4,8 @@ This folder explains how the plugin is built and maintained. Start with the root
 
 ## For Users And Teachers
 
-- [中文用户指南](user-guide.zh.md): a beginner-facing explanation of the six skills, file roles, Graph revisions, Evidence Packs, review boundaries, path aliases, and session recovery.
+- [中文用户指南](user-guide.zh.md): a beginner-facing explanation of the seven skills, file roles, Mission Board, Graph revisions, Evidence Packs, review boundaries, path aliases, and session recovery.
+- [OpenScience worker handoff](openscience-worker-handoff.zh.md): how a supervisor system can call DS Lite as a lightweight Codex worker protocol without adding a daemon or MCP server.
 - [设计、实现、现状与演进审视](implementation.zh.md): the primary Chinese design document, covering product intent, architecture, code composition, state protocol, verified status, technical debt, and the improvement roadmap.
 - [Teaching materials](../teaching/README.zh.md): runnable 20/30/45/90-minute courses, guided and one-prompt modes, worksheets, rubric, and reference answers.
 
@@ -19,8 +20,11 @@ This folder explains how the plugin is built and maintained. Start with the root
 - [v0.3 hardening log](maintainers/v0.3-hardening-log.zh.md): staged fixes after manual acceptance, with design decisions, tests, and open risks.
 - [Release checklist](maintainers/release-checklist.md): checks before beta or stable releases.
 - [Release status](maintainers/release-status.zh.md): current positioning and long-term maintenance notes.
+- [Roadmap and deferred gates](maintainers/roadmap.zh.md): active short-term work and the P1-P3 interfaces that remain explicitly deferred.
 - [Writing guide](maintainers/writing-guide.zh.md): Chinese terminology, claim strength, examples, and version-fact maintenance rules.
 
 ## Runtime References
 
 The installable plugin keeps only skill-facing protocol references under `plugins/deepscientist-lite/references/`. Teaching cases and maintainer notes live outside the runtime plugin package.
+
+- [external-long-task-protocol.md](../plugins/deepscientist-lite/references/external-long-task-protocol.md): ownership, manual tmux capacity handshakes, persistence probes, append-only task records, and recovery rules for work that may outlive a Codex worker or SSH connection.
