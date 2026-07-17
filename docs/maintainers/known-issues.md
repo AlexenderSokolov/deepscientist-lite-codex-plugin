@@ -14,7 +14,7 @@ Codex Desktop may not expose newly installed or upgraded skills until the app is
 
 ## Local marketplace registration without plugin installation
 
-`codex plugin marketplace add` registers a source. Installation is a separate action in the `/plugins` browser, and the exact surface can vary by Codex build. A new thread may continue loading an older cached plugin even when source registration succeeds. Verify the exact version, source, UI description, and seven discovered skills in a fresh session; never treat a marketplace config entry as installation evidence. Preserve the old cache until the new source is confirmed.
+`codex plugin marketplace add` registers a source. Installation is a separate action in the `/plugins` browser, and the exact surface can vary by Codex build. A new thread may continue loading an older cached plugin even when source registration succeeds. Verify the exact version, source, UI description, and release-specific skill count in a fresh session: `0.4.0-beta.2` has seven skills, while the unreleased v0.5 source adds an eighth `$ds-lite-coordinate`. Never treat a marketplace config entry as installation evidence. Preserve the old cache until the new source is confirmed.
 
 ## Windows non-ASCII command arguments
 
@@ -45,6 +45,12 @@ External files are not hashed by default because they may be large or sensitive.
 ## Review independence
 
 `ds-lite-review` creates a separate workflow pass and artifact. Without separately authorized subagents or infrastructure it does not guarantee a different model, process, or isolated evaluator.
+
+## Bounded delegation is not host execution proof
+
+`ds-lite.delegation.v1`, `validate-delegation`, and `$ds-lite-coordinate` can prove that a plan is structurally bounded, approved, path-disjoint, and result-linked. They do not prove that the Codex host discovered the new skill, enforced a child's filesystem scope, or executed children independently. A fresh-agent forward test requires separate authorization. Until then, report the protocol as source-validated and host behavior as not verified.
+
+The coordinator must stop before execution when approval is missing. It must also preserve partial/blocked results and stop on ambiguous transport or duplicate risk; the protocol provides no background queue or automatic retry.
 
 ## Markdown-only review compatibility
 

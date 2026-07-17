@@ -1,0 +1,47 @@
+{
+  "schema_version": "ds-lite.delegation.v1",
+  "delegation_id": "$delegation_id",
+  "parent_work_unit_id": "$parent_work_unit_id",
+  "strategy": "parallel",
+  "status": "planned",
+  "approval": {
+    "status": "required",
+    "authority": "none",
+    "approval_ref": "",
+    "extensions": {}
+  },
+  "integration_owner": "$integration_owner",
+  "max_children": 3,
+  "nested_delegation": false,
+  "tasks": [
+    {
+      "task_id": "task-a",
+      "objective": "Complete the first bounded, independent task.",
+      "input_refs": ["PROJECT.md"],
+      "allowed_paths": ["research/artifacts/delegation-result-task-a.md"],
+      "expected_output_refs": ["research/artifacts/delegation-result-task-a.md"],
+      "validation_commands": ["python tools/validation/validate_repo.py"],
+      "resource_limits": [],
+      "stop_conditions": ["Stop after the declared output or any blocker."],
+      "status": "planned",
+      "result_ref": "",
+      "extensions": {}
+    },
+    {
+      "task_id": "task-b",
+      "objective": "Complete the second bounded, independent task.",
+      "input_refs": ["PROJECT.md"],
+      "allowed_paths": ["research/artifacts/delegation-result-task-b.md"],
+      "expected_output_refs": ["research/artifacts/delegation-result-task-b.md"],
+      "validation_commands": ["python tools/validation/validate_repo.py"],
+      "resource_limits": [],
+      "stop_conditions": ["Stop after the declared output or any blocker."],
+      "status": "planned",
+      "result_ref": "",
+      "extensions": {}
+    }
+  ],
+  "created_at": "$created_at",
+  "updated_at": "$updated_at",
+  "extensions": {}
+}

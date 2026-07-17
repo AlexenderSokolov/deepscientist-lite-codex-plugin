@@ -23,11 +23,11 @@ flowchart LR
     E --> R["review<br/>是否允许提升结论"]
 ```
 
-这些文件不是重复记录。它们的更新频率和职责不同：PROJECT 很少改，STATUS 经常改，Graph 管路线，`research/work-unit.json` 管当前有界任务，artifact 讲清一步工作，Evidence Pack 保存实验事实，review 记录检查决定。
+这些文件不是重复记录。它们的更新频率和职责不同：PROJECT 很少改，STATUS 经常改，Graph 管路线，`research/work-unit.json` 管当前有界任务，artifact 讲清一步工作，Evidence Pack 保存实验事实，review 记录检查决定；需要两到三个独立 worker 时，`delegation-*.json` 只记录授权、路径所有权、回传和父 worker 的整合责任。
 
 `research/work-unit.json` 使用 `ds-lite.work-unit.v1`。新项目起初没有 claim requirement，所以证据状态是 planning；开始 claim-bearing experiment 前，才声明 profile、typed validator 和 canonical evidence refs。普通 Markdown、日志、PROJECT/STATUS 或任意非空路径都不是 typed evidence。schema 不认识的字段只能放进 `extensions`。
 
-## 2. 七个技能分别在什么时候用
+## 2. 八个技能分别在什么时候用
 
 ### Intake：先把问题和边界说清楚
 
@@ -119,6 +119,23 @@ Review 会同时写人类可读的 `review-<slug>.md` 和机器可读的 `ds-lit
 你应当看到：`frontier-decision-*.md`、必要的 Graph 变化，以及由 `render-status` 更新的 `STATUS.md`。
 
 它不能保证：后台持续运行。一次调用只推进一轮；GPU、长跑、依赖安装或外部数据访问仍需要用户或主管系统授权。
+
+### Coordinate：先划清任务和写入边界，再决定是否委派
+
+`$ds-lite-coordinate` 只适合一个 work unit 中已经存在两到三个彼此独立的有界任务。它先创建 `ds-lite.delegation.v1` sidecar，逐项写明目标、必需输入、允许修改路径、预期结果、验证命令、资源预算和停止条件，并指定唯一的父级 integration owner。
+
+计划生成后先运行：
+
+```bash
+python <plugin>/scripts/ds_lite_protocol.py validate-delegation \
+  --path research/artifacts/delegation-<id>.json
+```
+
+此时仍不能启动子任务。只有用户或 OpenScience 主管明确批准，并留下简短、项目相对的 approval ref 后，才可以使用宿主已有的子智能体能力。最多三个任务；`nested_delegation=false`；parallel 模式要求所有写入和结果路径互不重叠。子任务只回传自己的 artifact/result ref，父 worker 负责检查 diff、核验证据、运行完整测试和最终整合。
+
+若任务只需要一个 worker、彼此依赖、共享写入路径，或父 worker 无法独立验收，就不要委派，继续使用普通 skill 或 `$ds-lite-iterate`。partial、blocked、cancelled 和 transport 状态不明都要保留，不能自动重试或启动替代任务。
+
+它不能保证：后台排队、长期调度、自动恢复或“子智能体说完成了就算完成”。委派协议只管理一次有界计划和回传；真实效果仍需要在具体宿主和新线程中单独验收。
 
 ## 3. Mission Board 是什么
 
@@ -253,6 +270,8 @@ intake → scout → idea → experiment → review → analysis
 ```
 
 这条路线表示：问题已经定义，资料和基线已检查，候选路线已选择，实验已经留下证据，审查允许提升结论，最后才进入分析。
+
+`coordinate` 不属于这条科研语义路线中的新阶段。它只是当某一步确实可以拆成二到三个独立任务时采用的执行协议，不能绕过 experiment、Evidence Pack 或 review。
 
 它不表示每个研究项目都必须线性推进。你可以建立分支、保留失败、回滚到旧想法，也可以在证据不足时停在 blocked 状态。
 

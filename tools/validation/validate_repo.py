@@ -17,6 +17,7 @@ EXPECTED_SKILLS = [
     "ds-lite-review",
     "ds-lite-analysis-write",
     "ds-lite-iterate",
+    "ds-lite-coordinate",
 ]
 
 
@@ -659,6 +660,7 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         "state-graph-protocol.md",
         "evidence-pack-protocol.md",
         "external-long-task-protocol.md",
+        "delegation-protocol.md",
         "experiment-comparison-template.md",
         "math-exploration-template.md",
         "scientific-factor-card-protocol.md",
@@ -764,6 +766,35 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
     for script in (repo_root / "tools" / "validation" / "run_validate.ps1", repo_root / "tools" / "validation" / "run_validate.sh"):
         if "test_protocols.py" not in script.read_text(encoding="utf-8"):
             fail(f"{script} does not include protocol schema tests")
+
+    delegation_protocol = plugin_root / "references" / "delegation-protocol.md"
+    delegation_text = delegation_protocol.read_text(encoding="utf-8") if delegation_protocol.exists() else ""
+    for required_text in (
+        "ds-lite.delegation.v1",
+        "maximum of three",
+        "nested_delegation=false",
+        "explicit approval",
+        "path ownership",
+        "integration owner",
+        "no daemon",
+        "no queue",
+        "no automatic retry",
+    ):
+        if required_text not in delegation_text:
+            fail(f"delegation protocol missing behavior anchor: {required_text}")
+    coordinate_skill = plugin_root / "skills" / "ds-lite-coordinate" / "SKILL.md"
+    coordinate_text = coordinate_skill.read_text(encoding="utf-8") if coordinate_skill.exists() else ""
+    for required_text in (
+        "ds-lite.delegation.v1",
+        "validate-delegation",
+        "explicit user or OpenScience approval",
+        "maximum of three",
+        "nested_delegation=false",
+        "integration owner",
+        "Stop after",
+    ):
+        if required_text not in coordinate_text:
+            fail(f"ds-lite-coordinate missing bounded coordination behavior: {required_text}")
 
     long_task_protocol = plugin_root / "references" / "external-long-task-protocol.md"
     long_task_text = long_task_protocol.read_text(encoding="utf-8") if long_task_protocol.exists() else ""

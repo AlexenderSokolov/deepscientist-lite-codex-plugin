@@ -5,6 +5,10 @@
 - Add the domain-neutral Scientific Factor Card protocol and `ds-lite.factor-card.v1` validator/template.
 - Teach `$ds-lite-idea` to compare six evidence-linked factors and run `validate-factor-card` without creating a weighted total or promoting the card as evidence.
 - Extend `$ds-lite-review` to reject unsupported novelty scores, reversed cost/risk semantics, and Factor Card claims that bypass typed evidence.
+- Add the explicitly approved `$ds-lite-coordinate` skill for one bounded delegation of at most three independent tasks.
+- Add `ds-lite.delegation.v1`, its strict standard-library validator, template, runtime protocol, ownership/approval/result rules, and negative fixtures.
+- Keep coordination file-led and parent-integrated: no daemon, queue, scheduler, nested delegation, background worker ownership, or automatic retry.
+- Mark fresh-agent coordination behavior as pending a separately authorized forward test; static schema and repository validation do not prove host-side delegation behavior.
 
 ## 0.4.0-beta.2
 

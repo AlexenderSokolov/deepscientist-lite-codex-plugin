@@ -18,7 +18,7 @@ DeepScientist Lite 用一组 Codex 技能和普通项目文件解决这些交接
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace，再安装 `deepscientist-lite`。安装或升级后重启 Codex Desktop，并打开一个新线程，核对插件版本和七个技能；旧线程不会自动刷新插件缓存。
+这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace，再安装 `deepscientist-lite`。安装或升级后重启 Codex Desktop，并打开一个新线程，核对插件版本和八个技能；旧线程不会自动刷新插件缓存。
 
 ### 2. 从一个真实问题开始
 
@@ -44,6 +44,8 @@ $ds-lite-review 在进入分析前检查证据包、指标、引用和方法是�
 $ds-lite-analysis-write 只基于通过审查的证据总结结果、限制和下一步。
 
 $ds-lite-iterate 读取 Mission Board，只推进一轮有界研究动作，记录 frontier decision，更新 STATUS 后停止。
+
+$ds-lite-coordinate 把两到三个彼此独立的任务写成有界委派计划，先停下来等明确批准，再收集、核验并由父 worker 整合结果。
 ```
 
 ### 3. 看懂生成的文件
@@ -67,6 +69,7 @@ $ds-lite-iterate 读取 Mission Board，只推进一轮有界研究动作，记�
 - **实验先约定再解释**：指标、阈值、seed、预算和失败条件在运行前写入契约。
 - **高分不自动通关**：文件完整、指标达标和结论可用是三个不同判断。
 - **图可以检查和重建**：机器状态保存在 `graph.json`，人读的地图可以重新渲染。
+- **协作边界写得清楚**：每个子任务有独立输入、可改路径、结果路径、预算和停止条件，父 worker 负责最终核验与整合。
 
 ## 它不会替你做什么
 
@@ -74,6 +77,7 @@ $ds-lite-iterate 读取 Mission Board，只推进一轮有界研究动作，记�
 - 不启动 daemon、Web/TUI、MCP server、聊天 connector 或本地模型。
 - 不在 Codex 关闭后继续运行任务。
 - 不把 `$ds-lite-iterate` 变成无限自动循环；一次调用只推进一轮并停在 checkpoint。
+- 不把 `$ds-lite-coordinate` 变成队列或后台 worker 服务；没有用户或 OpenScience 明确批准时只生成计划并停止。
 - 不替代人工审查、领域知识、数据治理和研究伦理判断。
 - Review 是一个单独的检查步骤和记录，不代表使用了另一模型或隔离执行环境。
 

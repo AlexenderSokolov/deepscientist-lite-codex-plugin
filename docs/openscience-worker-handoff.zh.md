@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | OpenScience 主管 | 创建任务、分配预算、决定是否继续、收集多个 worker 结果 | 亲自维护每个小项目的 artifact 细节 |
 | Codex worker | 读写代码、运行授权范围内的命令、分析结果、更新 DS Lite 文件 | 在无授权时长跑、安装依赖、访问外部数据 |
-| DS Lite 插件 | `PROJECT.md`、Mission Board、Graph、Evidence Pack、review、单轮 iterate 协议 | daemon、队列服务、后台自动研究、科学真实性证明 |
+| DS Lite 插件 | `PROJECT.md`、Mission Board、Graph、Evidence Pack、review、单轮 iterate 与有界 delegation 协议 | daemon、队列服务、后台自动研究、科学真实性证明 |
 
 进程生命周期始终由 OpenScience 主管、调度器、稳定用户 shell 或其他可查询的外部 owner 持有。DS Lite worker 不接管进程，只维护 `research/artifacts/external-task-<task-id>.md`、逐 attempt 的 Evidence Pack / run ID 索引、日志/checkpoint 索引和恢复证据。若启动上下文是 `agent-ephemeral` 或 `unknown`，worker 只能生成包含精确命令与查询方式的 launch-ready handoff，不得声称后台任务已经持久运行。
 
@@ -30,14 +30,20 @@ tmux session 本身没有父子层级，本协议不建立“tmux 子会话”�
    bash run_research.sh mission --format json
    ```
 
-4. 如果需要推进一轮，调用 `$ds-lite-iterate`。该 skill 只允许选择一个动作：`exploit`、`branch`、`debug`、`review`、`analysis`、`stop` 或 `ask-human`。
-5. 本轮结束后，worker 必须运行或等价执行：
+4. 主管根据任务结构选择入口：
+
+   - 单个动作或不可拆分工作调用 `$ds-lite-iterate`。该 skill 只允许选择一个动作：`exploit`、`branch`、`debug`、`review`、`analysis`、`stop` 或 `ask-human`。
+   - 两到三个独立任务调用 `$ds-lite-coordinate`。worker 先写 `ds-lite.delegation.v1`，声明每项的输入、路径所有权、结果、验证、预算和停止条件，运行 `validate-delegation`，然后停止等待主管明确批准。
+
+5. 主管批准 delegation 时，只批准已列出的 task IDs、路径和预算。批准后宿主可以按 `parallel|sequential` 启动任务；`nested_delegation=false`，每个子任务写独立 result ref，父 worker 是唯一 integration owner。没有明确批准、路径重叠或验收方式不完整时，继续单 worker，不得先启动再补记录。
+6. 本轮或本次 coordination 结束后，worker 必须运行或等价执行：
 
    ```bash
    bash run_research.sh render-status
    ```
 
-6. 主管收集 `STATUS.md`、`RESEARCH_MAP.md`、`research/artifacts/frontier-decision-*.md`、Evidence Pack manifest、review/analysis artifact，并决定是否再次创建任务。
+7. 主管收集 `STATUS.md`、`RESEARCH_MAP.md`、`research/artifacts/frontier-decision-*.md`、`delegation-*.json` 与各 task result ref、Evidence Pack manifest、review/analysis artifact，并核验实际文件和测试，不以 worker 的“完成”文字代替证据。
+8. 遇到 `partial` 或 `blocked` 时，主管保留已完成结果和 blocker，决定下一次单动作；遇到 transport 状态不明或 duplicate risk 时禁止自动重试。只有路径所有权无冲突、声明验证与项目全量验证均通过后，父 worker 才整合结果并决定是否创建下一轮任务。
 
 涉及跨 SSH、工具调用或 worker 生命周期的任务时，主管还要读取 `external-task-*` 记录，并以记录中的 host、owner、PID/job、日志、退出码、heartbeat、checkpoint 和预算证据判断任务状态。恢复顺序遵循 `recover first, resubmit last`；只有证明旧进程不存在、无法恢复且不会重复消耗预算后，才允许追加新 attempt。
 
@@ -63,6 +69,19 @@ tmux session 本身没有父子层级，本协议不建立“tmux 子会话”�
 - 更新后的 `STATUS.md` Mission Board；
 - 若涉及实验，则有 contract、预算、metric direction、失败解释和 Evidence Pack 状态；
 - 若涉及结论提升，则先通过 review。
+
+## 有界 delegation 的验收
+
+一次 `$ds-lite-coordinate` 成功也不等于多个 worker 已被正确执行。确定性协议层至少要证明：
+
+- `delegation-*.json` 通过 `validate-delegation`，任务数不超过三个；
+- approval ref 明确绑定用户或 OpenScience，未批准时没有启动记录；
+- `nested_delegation=false`，所有写入和结果路径互斥；
+- 每个 terminal task 都有独立 result ref，partial/blocked 结果未被覆盖；
+- 父 worker 是唯一 integration owner，并实际检查 diff、artifact、声明验证和项目全量验证；
+- 没有 daemon、queue、scheduler、后台自动重试或 ambiguous transport 重放。
+
+以上静态记录仍不能替代真实宿主验收。发布前需要在新任务中确认技能可发现、宿主支持受控子任务、批准门确实生效，以及子任务无法越过路径和 nested-delegation 边界。
 
 ## AIResearch 经验固化
 

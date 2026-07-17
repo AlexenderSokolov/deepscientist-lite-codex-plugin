@@ -8,8 +8,8 @@
 
 ## 下一条短期线
 
-- 领域中立 Factor Card：只做可解释分项、证据引用、不确定性和最小验证，不做自动加权真值或金融 DSL。
-- 有界任务协调：只记录最多三个明确授权的子任务、路径所有权、预算、回传和集成责任，不提供 daemon、队列或后台 scheduler。
+- 领域中立 Factor Card：源码已实现 schema、validator、模板及 idea/review 规则；fresh-agent 行为仍待授权验收，不做自动加权真值或金融 DSL。
+- 有界任务协调：源码已实现 `ds-lite.delegation.v1`、`$ds-lite-coordinate`、最多三个明确授权子任务、路径所有权、预算、回传和集成责任；真实子智能体 forward test 尚未授权，不提供 daemon、队列或后台 scheduler。
 - 真实教学 pilot：使用 matched plain、scratchpad 和 DS Lite 三组，验证恢复、证据、负结果、碎片治理和任务协调；结果只作为 pilot 证据。
 
 ## 延期 P1-P3

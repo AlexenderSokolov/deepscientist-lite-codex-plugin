@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "DeepScientist Lite",
     "shortDescription": "Keep research goals, experiments, evidence, and next steps easy to recover and review.",
-    "longDescription": "DeepScientist Lite is an independent, unofficial Codex plugin for teaching and small research projects. Seven skills help users define a project, scout evidence, compare ideas, record reproducible experiments, review claims, write bounded conclusions, and advance one visible worker iteration at a time. Local project files preserve the current route and supporting evidence across sessions. The plugin does not run a daemon, deploy models, expose an MCP server, or prove that a scientific claim is true. It is not sponsored, certified, or endorsed by ResearAI.",
+    "longDescription": "DeepScientist Lite is an independent, unofficial Codex plugin for teaching and small research projects. Eight skills help users define a project, scout evidence, compare ideas, record reproducible experiments, review claims, write bounded conclusions, advance one visible worker iteration, and coordinate up to three explicitly approved tasks. Local project files preserve the current route and supporting evidence across sessions. The plugin does not run a daemon, queue, scheduler, deploy models, expose an MCP server, or prove that a scientific claim is true. It is not sponsored, certified, or endorsed by ResearAI.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
     "capabilities": [
@@ -34,7 +34,8 @@
       "$ds-lite-scout check the available evidence, baselines, metrics, and risks",
       "$ds-lite-experiment define the contract first, then record this run and its evidence",
       "$ds-lite-review check whether this experiment is ready to support an analysis",
-      "$ds-lite-iterate advance exactly one visible research iteration and stop at a checkpoint"
+      "$ds-lite-iterate advance exactly one visible research iteration and stop at a checkpoint",
+      "$ds-lite-coordinate plan up to three independent tasks, stop for approval, then collect their declared results"
     ],
     "brandColor": "#245A7A",
     "screenshots": []

@@ -25,6 +25,15 @@ FACTOR_CARD_TEMPLATE = (
     / "artifacts"
     / "factor-card.json"
 )
+DELEGATION_TEMPLATE = (
+    REPO_ROOT
+    / "plugins"
+    / "deepscientist-lite"
+    / "assets"
+    / "templates"
+    / "research"
+    / "delegation.json"
+)
 PROTOCOL_SCRIPT = SCRIPT_DIR / "ds_lite_protocol.py"
 
 
@@ -67,6 +76,55 @@ class ProtocolSchemaTests(unittest.TestCase):
                 "stop_condition": "Stop after one comparison or any authorization blocker.",
                 "extensions": {},
             },
+            "created_at": "2026-07-17T00:00:00Z",
+            "updated_at": "2026-07-17T00:00:00Z",
+            "extensions": {},
+        }
+
+    def delegation(self) -> dict:
+        return {
+            "schema_version": "ds-lite.delegation.v1",
+            "delegation_id": "delegation-pilot",
+            "parent_work_unit_id": "work-pilot",
+            "strategy": "parallel",
+            "status": "authorized",
+            "approval": {
+                "status": "approved",
+                "authority": "user",
+                "approval_ref": "research/artifacts/delegation-approval.md",
+                "extensions": {},
+            },
+            "integration_owner": "parent-worker",
+            "max_children": 3,
+            "nested_delegation": False,
+            "tasks": [
+                {
+                    "task_id": "task-docs",
+                    "objective": "Audit the user-facing documentation.",
+                    "input_refs": ["PROJECT.md"],
+                    "allowed_paths": ["docs/user-guide.zh.md"],
+                    "expected_output_refs": ["research/artifacts/delegation-result-task-docs.md"],
+                    "validation_commands": ["python tools/validation/validate_repo.py"],
+                    "resource_limits": [{"dimension": "walltime", "unit": "minute", "value": 10}],
+                    "stop_conditions": ["Stop after the scoped documentation audit."],
+                    "status": "authorized",
+                    "result_ref": "",
+                    "extensions": {},
+                },
+                {
+                    "task_id": "task-tests",
+                    "objective": "Audit the protocol regression tests.",
+                    "input_refs": ["tests/test_protocols.py"],
+                    "allowed_paths": ["tests/test_protocols.py"],
+                    "expected_output_refs": ["research/artifacts/delegation-result-task-tests.md"],
+                    "validation_commands": ["python tests/test_protocols.py -v"],
+                    "resource_limits": [{"dimension": "walltime", "unit": "minute", "value": 10}],
+                    "stop_conditions": ["Stop after one bounded test audit."],
+                    "status": "authorized",
+                    "result_ref": "",
+                    "extensions": {},
+                },
+            ],
             "created_at": "2026-07-17T00:00:00Z",
             "updated_at": "2026-07-17T00:00:00Z",
             "extensions": {},
@@ -170,6 +228,165 @@ class ProtocolSchemaTests(unittest.TestCase):
         )
         self.assertNotEqual(invalid.returncode, 0)
         self.assertIn("decision", json.loads(invalid.stdout)["error"])
+
+    def test_delegation_accepts_bounded_object_and_extensions(self) -> None:
+        payload = self.delegation()
+        payload["extensions"] = {"example.org/transport": {"version": 1}}
+        self.assertEqual(ds_lite_protocol.validate_delegation(payload), payload)
+
+    def test_delegation_rejects_missing_field(self) -> None:
+        payload = self.delegation()
+        payload.pop("integration_owner")
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "missing fields: integration_owner"):
+            ds_lite_protocol.validate_delegation(payload)
+
+    def test_delegation_rejects_wrong_enum(self) -> None:
+        payload = self.delegation()
+        payload["strategy"] = "queue"
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "strategy"):
+            ds_lite_protocol.validate_delegation(payload)
+
+    def test_delegation_rejects_path_escape(self) -> None:
+        payload = self.delegation()
+        payload["tasks"][0]["allowed_paths"] = ["../shared"]
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "allowed_paths"):
+            ds_lite_protocol.validate_delegation(payload)
+
+    def test_delegation_rejects_sensitive_or_hidden_reasoning_fields(self) -> None:
+        payload = self.delegation()
+        payload["tasks"][0]["extensions"] = {"api_key": "not-allowed"}
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "sensitive or hidden-reasoning"):
+            ds_lite_protocol.validate_delegation(payload)
+
+    def test_delegation_rejects_id_conflicts(self) -> None:
+        payload = self.delegation()
+        payload["delegation_id"] = payload["parent_work_unit_id"]
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "must differ"):
+            ds_lite_protocol.validate_delegation(payload)
+
+        payload = self.delegation()
+        payload["tasks"][1]["task_id"] = payload["tasks"][0]["task_id"]
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "duplicate task_id"):
+            ds_lite_protocol.validate_delegation(payload)
+
+        payload = self.delegation()
+        payload["integration_owner"] = payload["tasks"][0]["task_id"]
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "integration_owner"):
+            ds_lite_protocol.validate_delegation(payload)
+
+        for conflicting_id in (payload["delegation_id"], payload["parent_work_unit_id"]):
+            payload = self.delegation()
+            payload["tasks"][0]["task_id"] = conflicting_id
+            with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "task_id must differ"):
+                ds_lite_protocol.validate_delegation(payload)
+
+    def test_delegation_rejects_unknown_fields_but_allows_extensions(self) -> None:
+        payload = self.delegation()
+        payload["scheduler"] = "background"
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "unsupported fields: scheduler"):
+            ds_lite_protocol.validate_delegation(payload)
+
+        payload = self.delegation()
+        payload["tasks"][0]["extensions"] = {"example.org/worker": {"kind": "bounded"}}
+        self.assertEqual(ds_lite_protocol.validate_delegation(payload), payload)
+
+    def test_delegation_extensions_cannot_add_runtime_services_or_retry(self) -> None:
+        for forbidden in (
+            "daemon",
+            "queue",
+            "scheduler",
+            "background_worker",
+            "retry",
+            "auto_retry",
+            "automatic_retry",
+            "retry_policy",
+            "example.org/scheduler",
+            "example.org/auto-retry",
+        ):
+            with self.subTest(forbidden=forbidden):
+                payload = self.delegation()
+                payload["extensions"] = {forbidden: True}
+                with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "runtime service or retry"):
+                    ds_lite_protocol.validate_delegation(payload)
+
+    def test_delegation_terminal_status_must_match_terminal_tasks(self) -> None:
+        payload = self.delegation()
+        payload["status"] = "completed"
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "terminal delegation requires terminal tasks"):
+            ds_lite_protocol.validate_delegation(payload)
+
+        for task in payload["tasks"]:
+            task["status"] = "completed"
+            task["result_ref"] = task["expected_output_refs"][0]
+        self.assertEqual(ds_lite_protocol.validate_delegation(payload), payload)
+
+    def test_delegation_rejects_capacity_nested_and_path_overlap(self) -> None:
+        payload = self.delegation()
+        payload["max_children"] = 4
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "max_children"):
+            ds_lite_protocol.validate_delegation(payload)
+
+        payload = self.delegation()
+        payload["nested_delegation"] = True
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "nested_delegation must be false"):
+            ds_lite_protocol.validate_delegation(payload)
+
+        payload = self.delegation()
+        payload["tasks"][0]["allowed_paths"] = ["docs"]
+        payload["tasks"][1]["allowed_paths"] = ["docs/user-guide.zh.md"]
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "overlapping allowed_paths"):
+            ds_lite_protocol.validate_delegation(payload)
+
+    def test_delegation_requires_approval_before_active_states(self) -> None:
+        payload = self.delegation()
+        payload["approval"] = {"status": "required", "authority": "none", "approval_ref": "", "extensions": {}}
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "requires approved authorization"):
+            ds_lite_protocol.validate_delegation(payload)
+
+    def test_delegation_terminal_task_requires_result_ref(self) -> None:
+        payload = self.delegation()
+        payload["tasks"][0]["status"] = "completed"
+        with self.assertRaisesRegex(ds_lite_protocol.ProtocolError, "terminal task requires result_ref"):
+            ds_lite_protocol.validate_delegation(payload)
+
+        payload["tasks"][0]["result_ref"] = "research/artifacts/delegation-result-task-docs.md"
+        self.assertEqual(ds_lite_protocol.validate_delegation(payload), payload)
+
+    def test_delegation_template_renders_to_valid_planned_object(self) -> None:
+        rendered = Template(DELEGATION_TEMPLATE.read_text(encoding="utf-8")).substitute(
+            delegation_id="delegation-template",
+            parent_work_unit_id="work-template",
+            integration_owner="parent-worker",
+            created_at="2026-07-17T00:00:00Z",
+            updated_at="2026-07-17T00:00:00Z",
+        )
+        payload = json.loads(rendered)
+        self.assertEqual(ds_lite_protocol.validate_delegation(payload), payload)
+
+    def test_delegation_cli_validates_file_and_reports_errors(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-delegation-"))
+        path = root / "delegation.json"
+        path.write_text(json.dumps(self.delegation(), ensure_ascii=False), encoding="utf-8")
+        valid = subprocess.run(
+            [sys.executable, str(PROTOCOL_SCRIPT), "validate-delegation", "--path", str(path)],
+            text=True,
+            encoding="utf-8",
+            capture_output=True,
+        )
+        self.assertEqual(valid.returncode, 0, valid.stdout + valid.stderr)
+        self.assertEqual(json.loads(valid.stdout)["schema_version"], "ds-lite.delegation.v1")
+
+        payload = self.delegation()
+        payload["nested_delegation"] = True
+        path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        invalid = subprocess.run(
+            [sys.executable, str(PROTOCOL_SCRIPT), "validate-delegation", "--path", str(path)],
+            text=True,
+            encoding="utf-8",
+            capture_output=True,
+        )
+        self.assertNotEqual(invalid.returncode, 0)
+        self.assertIn("nested_delegation", json.loads(invalid.stdout)["error"])
 
 
 if __name__ == "__main__":

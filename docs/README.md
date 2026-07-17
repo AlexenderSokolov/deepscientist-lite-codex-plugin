@@ -4,7 +4,7 @@ This folder explains how the plugin is built and maintained. Start with the root
 
 ## For Users And Teachers
 
-- [中文用户指南](user-guide.zh.md): a beginner-facing explanation of the seven skills, file roles, Mission Board, Graph revisions, Evidence Packs, review boundaries, path aliases, and session recovery.
+- [中文用户指南](user-guide.zh.md): a beginner-facing explanation of the eight skills, file roles, Mission Board, Graph revisions, Evidence Packs, review boundaries, bounded delegation, path aliases, and session recovery.
 - [OpenScience worker handoff](openscience-worker-handoff.zh.md): how a supervisor system can call DS Lite as a lightweight Codex worker protocol without adding a daemon or MCP server.
 - [设计、实现、现状与演进审视](implementation.zh.md): the primary Chinese design document, covering product intent, architecture, code composition, state protocol, verified status, technical debt, and the improvement roadmap.
 - [Teaching materials](../teaching/README.zh.md): runnable 20/30/45/90-minute courses, guided and one-prompt modes, worksheets, rubric, and reference answers.
