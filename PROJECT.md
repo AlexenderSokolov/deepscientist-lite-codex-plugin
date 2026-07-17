@@ -22,6 +22,7 @@
 - 为教学 Beta 提供可重复验证、证据审查、迁移和发布流程。
 - 用领域中立 Factor Card 比较科研 idea 的新颖性、可行性、证据、成本、风险与任务对齐，同时抑制单一分数和自动真值错觉。
 - 用显式批准、互斥路径所有权和独立 result ref 管理一次最多三个任务的有界协作，同时保持父 worker 的唯一整合责任。
+- 用四案例、三 arm 的 matched pilot 比较工程连续性、反例保留、多 seed 解释和创新评价；准备态、真实执行态与发布证据必须分开。
 
 ## 工作流程
 
@@ -43,7 +44,7 @@
 - `tools/validation/`：仓库级验证器与 shell/PowerShell 入口。
 - `docs/`：设计、迁移、已知问题和发布维护资料。
 - `teaching/`：不进入运行时包的课程与演示材料。
-- `teaching/lab_runner.py`：跨平台课程准备器；student 模式不预写审查结论，reference 模式只生成明确标记的教师答案。
+- `teaching/lab_runner.py`：跨平台课程准备器；六个协议 lab 支持 student/reference，matched pilot 只生成隔离 student workspaces 与独立教师材料，不预写模型结果。
 
 ## 运行流程
 
@@ -52,10 +53,12 @@
 - 单元测试：`python -m unittest discover -s tests -v`
 - 仓库 smoke：`python tools/validation/validate_repo.py`
 - 教学课程：`python teaching/lab_runner.py --lab quickstart --mode student --output <path>`
+- 对照 pilot：`python teaching/lab_runner.py --lab matched-pilot --mode student --output <path>`
 
 ## 验收标准
 
 - Graph v2 写入具备跨平台锁、revision 检查和原子替换。
+- 节点更新时间在宿主 wall clock 短暂回退时不早于已有 `created_at/updated_at`，Graph 时间不变量继续严格生效。
 - v1 可读且可迁移，原 graph 备份永久保留；外部绝对路径不会被静默写入 v2。
 - progression trace 不遍历 `supports`、`blocks` 或 `rollback`。
 - 八个技能的结构和元数据可验证；涉及 graph 的技能只通过 CLI 修改 graph 并处理 revision 冲突，`ds-lite-iterate` 一次只推进一轮并停在 checkpoint。
@@ -66,7 +69,7 @@
 - Delegation 正例、缺字段、错误 enum、路径逃逸、敏感字段、ID 冲突、路径重叠、批准门、terminal result ref 和 `extensions` forward compatibility 均有测试；真实子智能体行为仍需单独授权验收。
 - Windows PowerShell、Git Bash、WSL DrvFS、WSL ext4，以及远程 Windows/Ubuntu CI 均通过统一验证入口。
 - manifest、技能、模板、文档和发布版本保持一致。
-- 六类教学实验可在 student/reference 模式运行；公开文档不把 Graph 说成推理链快照，不把 Evidence Pack 完整性说成科学真实性。
+- 六类协议教学实验可在 student/reference 模式运行；matched pilot 可确定性准备 4 案例 x 3 arm，三 arm 输入摘要一致、结果保持 pending，且公开文档不把 Graph 说成推理链快照，不把 Evidence Pack 完整性说成科学真实性。
 
 ## 设计决策
 
@@ -80,6 +83,7 @@
 - v0.2 不引入 MCP、daemon、Web/TUI、模型路由或长期 automation。
 - `run_validate.sh` 必须兼容只有 `python3` 的 Unix/WSL 环境；运行时脚本保持 LF。
 - CLI 文件内容固定使用 UTF-8；验证入口启用 Python UTF-8 模式，CLI 输出在旧 Windows 代码页下必须可安全转义，不能依赖宿主区域设置。
+- 节点 mutation 使用已有节点时间作为下界；WSL/虚拟化时钟校正不能把 `updated_at` 写到 `created_at` 之前，也不通过放宽 schema 校验掩盖异常。
 - 状态内核模块化属于 v0.2 之后的内部重构，必须保持 Graph v2 与 CLI 兼容。
 - Review 是独立流程和 artifact，不宣称独立模型或物理隔离。
 - v0.3 不加入 MCP、subagents、HPC/云调度或完整树搜索；评分循环只作为 Graph 分支教学。
@@ -87,6 +91,7 @@
 - 外部长任务管护采用“稳定外部 owner 管进程，DS Lite 管文件化交接和证据”的责任模型。进程丢失的根因应先按生命周期归属错误排查；对话、Codex worker、tmux、实验进程和工件是五种独立状态。Lite 不拥有进程生命周期，只要求 Codex 登记、检查、备份、修复和恢复 `external-task-*` 记录，不能把临时 shell 内创建的 tmux 当作持久执行证明。
 - tmux 容量申请必须先由 Codex 写成 `external-tmux-plan-*`，再由用户从独立稳定 shell 手动创建固定 socket、顶层 session 和计划内 pane；Codex 只验证、连接和使用已授权槽位。“子会话”不是 tmux 协议对象，用户这样表述时只解释为 pane-scoped Codex CLI child worker，其进程存活与 provider 对话可恢复性必须分别验证。
 - 教学 runner 只负责确定性准备和协议故障，不冒充 Codex skill 或领域审查；课程默认保留所有输出，不覆盖已有目录。
+- Matched pilot 的 plain、scratchpad、DS Lite 三 arm 只改变连续性机制；任务、材料与分轮提示进入同一 SHA-256 输入摘要。真实 12-arm Codex 调用、成本记录和子智能体 forward test 仍需单独授权，静态生成不能写成效果证据。
 - 教学 runner 完成场景准备后必须从最终 Graph 同步 `STATUS.md` 的 active node 与 revision，不能把初始化状态留给学生当作“故障”。
 - 生成的 `run_*.sh` 不保存项目绝对根目录或 Codex cache 路径；本机运行时通过 `PYTHON_BIN`、`DS_LITE_EVIDENCE_CLI`、`DS_LITE_PLUGIN_ROOT` 等环境变量解析。
 - 本地 marketplace 写入配置只代表来源已注册；安装须在 `/plugins` 等宿主提供的插件浏览界面中明确完成。缓存验收以新线程实际报告的版本、来源、UI 文案和对应版本技能数量为准：已发布 `0.4.0-beta.2` 为七技能，当前未发布 v0.5 源码为八技能。

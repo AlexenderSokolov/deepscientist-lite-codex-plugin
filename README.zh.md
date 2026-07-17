@@ -108,6 +108,7 @@ Graph 不保存工作站绝对根目录。请使用 `external://<alias>/<relativ
 - 想理解 Graph、Evidence Pack 和 review 的设计：读[用户指南](docs/user-guide.zh.md)。
 - 想亲手做一遍：从[20分钟快速体验](teaching/quickstart-20.zh.md)开始。
 - 想讲课或组会演示：看[教学课程入口](teaching/README.zh.md)。
+- 想比较普通 Codex、单文件记忆和 DS Lite：看[四案例 matched-control pilot](teaching/matched-control-pilot.zh.md)。
 - 要升级旧 Graph v1 项目：看[迁移指南](docs/maintainers/graph-v2-migration.md)。
 - 要参与维护：看[实现说明](docs/implementation.zh.md)和[仓库验证](tools/validation/)。
 

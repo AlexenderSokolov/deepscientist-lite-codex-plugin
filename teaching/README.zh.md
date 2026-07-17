@@ -14,6 +14,7 @@
 | [路线语义](route-lab-30.zh.md) | 30分钟 | 想理解 Graph 的人 | `supports` 和 `rollback` 为什么不改变 Active Route？ |
 | [路径可移植](path-lab-30.zh.md) | 30分钟 | 跨 Windows/WSL 协作的人 | 项目外数据怎样关联而不泄露绝对根目录？ |
 | [Revision 冲突](revision-lab-30.zh.md) | 30分钟 | 多会话协作或系统课程 | 陈旧写入为什么被拒绝，怎样安全重试？ |
+| [Matched Control Pilot](matched-control-pilot.zh.md) | 多轮 pilot | 课程设计者、插件维护者 | 文件化任务协议是否改善恢复、证据和负结果管理？ |
 
 第一次使用建议按“20分钟快速体验 → 45分钟证据审查 → 90分钟分支决策”完成。后三门是协议专题，可以按需要选择。
 
@@ -55,7 +56,18 @@ powershell -ExecutionPolicy Bypass -File teaching/run_lab.ps1 `
   -Output .validation-tmp\my-threshold-lab
 ```
 
-`--lab` 可选 `quickstart`、`evidence`、`branches`、`route`、`paths`、`revision`。只有 evidence 使用 `--case clean|tampered|threshold-miss`。
+`--lab` 可选 `quickstart`、`evidence`、`branches`、`route`、`paths`、`revision`、`matched-pilot`。只有 evidence 使用 `--case clean|tampered|threshold-miss`；matched pilot 只接受 student 模式，教师材料会另行生成。
+
+准备四案例、三 arm 的对照包：
+
+```bash
+python teaching/lab_runner.py \
+  --lab matched-pilot \
+  --mode student \
+  --output .validation-tmp/matched-pilot-01
+```
+
+该命令只生成 12 个隔离工作区、分轮提示、空白评分面和学生/教师指南，不会调用 Codex 或预填比较结果。真实运行前必须固定模型、预算、工具和材料，并取得明确授权。
 
 ## 输出里有什么
 
@@ -83,4 +95,3 @@ student 模式不会预写 review 或 analysis。reference 模式才生成带“
 - [参考答案](answer-key.zh.md)
 
 教学 fixture 只能说明协议如何工作，不能证明某个科研方法有效，也不能作为插件稳定版发布的唯一证据。
-

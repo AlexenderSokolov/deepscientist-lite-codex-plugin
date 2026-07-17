@@ -545,7 +545,7 @@ Graph v2 提供 `update-node`、`set-status` 和通用 `link-path --type`；涉�
 
 ### 已解决主体：写入缺少事务与并发保护
 
-写命令使用永久 lock file、Windows `msvcrt` / Unix `fcntl` 锁、锁内重读、expected revision、语义校验、`fsync` 和同盘原子替换。地图与 graph 无法成为单个文件系统事务，因此通过 revision 检测并允许 `render-map` 修复。
+写命令使用永久 lock file、Windows `msvcrt` / Unix `fcntl` 锁、锁内重读、expected revision、语义校验、`fsync` 和同盘原子替换。节点 mutation 会把候选 `updated_at` 钳制到已有 `created_at/updated_at` 下界，避免 WSL 或虚拟化宿主 wall clock 短暂回退破坏时间不变量；schema 仍拒绝真正的逆序时间。地图与 graph 无法成为单个文件系统事务，因此通过 revision 检测并允许 `render-map` 修复。
 
 ### 已解决主体：路径协议边界不一致
 
@@ -589,6 +589,9 @@ Codex 可以按 skills 正确写入 artifact 和 graph，但当前没有 hook、
 
 - cache 安装、新线程技能发现、真实 tmux 断线、provider resume、macOS 和完整跨模式矩阵仍待验收。
 - 文献、数学、软件和仿真 profile 保持 `reserved / not-validated`，教学 fixture 不能把它们升级成领域支持声明。
+- R3 教学基础设施已独立落地：`MatchedPilotBuilder` 复用现有 runner，生成四案例 x plain/scratchpad/DS Lite 三 arm、工程分轮提示、输入 SHA-256 摘要、空白结果面和学生/教师材料。
+- repo validator 会真实生成 12 个 workspace，检查唯一 run id、跨 arm 输入一致、结果仍为 pending、无预填评分和无工作站根目录。它不调用 Codex，因此不能替代真实对照、成本和盲评证据。
+- matched pilot 只允许 student workspaces；教师材料在 pilot 根独立生成，`--mode reference` fail closed，避免把参考边界误放进 arm。
 
 ## 16. 稳定版验收门槛
 

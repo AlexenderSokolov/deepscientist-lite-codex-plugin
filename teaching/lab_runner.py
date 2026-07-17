@@ -8,6 +8,7 @@ Codex skills or make scientific judgments on a student's behalf.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -20,8 +21,10 @@ from typing import Any, Iterable
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STATE_SCRIPT = REPO_ROOT / "plugins" / "deepscientist-lite" / "scripts" / "ds_lite_state.py"
 EVIDENCE_SCRIPT = REPO_ROOT / "plugins" / "deepscientist-lite" / "scripts" / "ds_lite_evidence.py"
-LABS = ("quickstart", "evidence", "branches", "route", "paths", "revision")
+LABS = ("quickstart", "evidence", "branches", "route", "paths", "revision", "matched-pilot")
 EVIDENCE_CASES = ("clean", "tampered", "threshold-miss")
+PILOT_CASES = ("engineering-continuity", "math-counterexample", "numerical-seeds", "idea-evaluation")
+PILOT_ARMS = ("plain", "scratchpad", "ds-lite")
 
 
 class LabError(RuntimeError):
@@ -765,6 +768,431 @@ print(f"branch={branch} early={payload['early_score']} final={payload['final_sco
         return "# 教师参考答案\n\n" + answers[self.lab] + "\n\n该答案只解释当前教学 fixture，不是通用科研结论。"
 
 
+class MatchedPilotBuilder:
+    def __init__(self, output: Path) -> None:
+        self.workspace = output.resolve()
+
+    def task_text(self, case_id: str) -> str:
+        tasks = {
+            "engineering-continuity": """# Round 1: repair the slug utility
+
+Work only inside `materials/`. Fix `slugger.make_slug` so the existing tests pass without changing its public signature. Run `python -m unittest -v` from `materials/`, record the command and result in `ROUND_1_REPORT.md`, and stop after this round. Preserve enough explicit state for a later context restart; do not read prompts outside this arm workspace.
+""",
+            "math-counterexample": """# Audit a prime-valued conjecture
+
+The supplied observations report that `n^2 + n + 41` is prime for every integer `n` from 0 through 39. Determine whether the universal claim "the expression is prime for every non-negative integer n" is justified.
+
+Use `materials/check_conjecture.py` or an equivalent reproducible check, search at least through `n=100`, and write `REPORT.md` with the claim status, the decisive evidence, and the difference between many supporting examples and a proof. Preserve any negative result instead of smoothing it away.
+""",
+            "numerical-seeds": """# Audit a multi-seed simulation
+
+Use only the Python standard library. Run `materials/run_simulation.py` first with 2 seeds and then with at least 20 seeds. Compare the early and expanded estimates for methods A and B, retain per-seed results, and write `REPORT.md` stating what is supported, inconclusive, or contradicted. Do not turn a small mean difference into a significance claim.
+""",
+            "idea-evaluation": """# Evaluate three research ideas
+
+Read `materials/candidates.json` and `materials/source-packet.md`. Compare all three candidates on novelty, feasibility, evidence strength, cost, risk, and alignment. Every non-unknown novelty judgment must cite a supplied source. Cost and risk are burdens, not positive contributions to an automatic total.
+
+Write `IDEA_DECISION.md` with a traceable decision, uncertainty, and the smallest validation experiment for each candidate. Do not invent sources or claim that the evaluation itself proves an idea works.
+""",
+        }
+        return tasks[case_id]
+
+    def followup_prompts(self, case_id: str) -> dict[str, str]:
+        if case_id != "engineering-continuity":
+            return {}
+        return {
+            "round-2.md": """# Round 2: changed requirement
+
+Continue in the same arm workspace. Extend `make_slug` so Latin accents are normalized with the Python standard library and an empty result raises `ValueError`. Add focused tests, run the full suite, update the handoff artifact available to your arm, and stop.
+""",
+            "round-3.md": """# Round 3: context restart
+
+Start from the files in the arm workspace, without relying on prior chat. First state the current contract, completed work, and open risk using file evidence. Then make reserved slugs `admin` and `api` return `admin-item` and `api-item`, preserve earlier behavior, run the full suite, and write `FINAL_REPORT.md` with the recovery path and validation result.
+""",
+        }
+
+    def case_materials(self, case_id: str) -> dict[str, str]:
+        if case_id == "engineering-continuity":
+            return {
+                "README.md": "# Slug utility\n\nRun `python -m unittest -v`. Modify only files in this directory.\n",
+                "slugger.py": """import re
+
+
+def make_slug(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+""",
+                "test_slugger.py": """import unittest
+
+from slugger import make_slug
+
+
+class SluggerTests(unittest.TestCase):
+    def test_collapses_ascii_whitespace(self) -> None:
+        self.assertEqual(make_slug("Research   Notes"), "research-notes")
+
+    def test_removes_punctuation_without_adding_a_separator(self) -> None:
+        self.assertEqual(make_slug("model+audit"), "modelaudit")
+
+
+if __name__ == "__main__":
+    unittest.main()
+""",
+            }
+        if case_id == "math-counterexample":
+            observations = "n,value,reported_prime\n" + "\n".join(
+                f"{n},{n * n + n + 41},true" for n in range(40)
+            )
+            return {
+                "observations.csv": observations,
+                "conjecture.md": "# Candidate claim\n\nFor every non-negative integer `n`, `n^2 + n + 41` is prime.\n",
+                "check_conjecture.py": """import argparse
+import json
+from pathlib import Path
+
+
+def smallest_divisor(value: int) -> int | None:
+    if value < 2:
+        return 1
+    candidate = 2
+    while candidate * candidate <= value:
+        if value % candidate == 0:
+            return candidate
+        candidate += 1
+    return None
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--max-n", type=int, required=True)
+parser.add_argument("--output", type=Path, required=True)
+args = parser.parse_args()
+if args.max_n < 0:
+    raise SystemExit("--max-n must be non-negative")
+
+counterexample = None
+for n in range(args.max_n + 1):
+    value = n * n + n + 41
+    divisor = smallest_divisor(value)
+    if divisor is not None:
+        counterexample = {"n": n, "value": value, "smallest_divisor": divisor}
+        break
+
+payload = {"checked_through": args.max_n, "first_counterexample": counterexample}
+args.output.write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
+print(json.dumps(payload))
+""",
+            }
+        if case_id == "numerical-seeds":
+            return {
+                "study-contract.md": """# Simulation contract
+
+- Method A generating mean: 0.55.
+- Method B generating mean: 0.53.
+- Each seed uses 12 noisy observations per method.
+- First inspect 2 seeds, then expand to at least 20.
+- Report per-seed values and uncertainty; no significance test is pre-registered.
+""",
+                "run_simulation.py": """import argparse
+import json
+import random
+from pathlib import Path
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--seed-count", type=int, required=True)
+parser.add_argument("--output", type=Path, required=True)
+args = parser.parse_args()
+if args.seed_count < 1:
+    raise SystemExit("--seed-count must be positive")
+
+rows = []
+for seed in range(args.seed_count):
+    rng = random.Random(seed)
+    method_a = sum(rng.gauss(0.55, 0.20) for _ in range(12)) / 12
+    method_b = sum(rng.gauss(0.53, 0.20) for _ in range(12)) / 12
+    rows.append({"seed": seed, "method_a": method_a, "method_b": method_b, "difference_a_minus_b": method_a - method_b})
+
+payload = {
+    "seed_count": args.seed_count,
+    "mean_a": sum(row["method_a"] for row in rows) / args.seed_count,
+    "mean_b": sum(row["method_b"] for row in rows) / args.seed_count,
+    "rows": rows,
+}
+args.output.write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
+print(json.dumps({key: value for key, value in payload.items() if key != "rows"}))
+""",
+            }
+        if case_id == "idea-evaluation":
+            return {
+                "candidates.json": json.dumps(
+                    {
+                        "candidates": [
+                            {
+                                "id": "idea-a",
+                                "title": "Failure ledger for interrupted research tasks",
+                                "proposal": "Keep compact, typed records of failed attempts and their repair conditions.",
+                            },
+                            {
+                                "id": "idea-b",
+                                "title": "Cross-seed review sentinel",
+                                "proposal": "Require a review checkpoint when early seed rankings reverse after expansion.",
+                            },
+                            {
+                                "id": "idea-c",
+                                "title": "Single weighted innovation score",
+                                "proposal": "Collapse novelty, feasibility, evidence, cost, risk, and alignment into one automatic total.",
+                            },
+                        ]
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                "source-packet.md": """# Fixed source packet
+
+## S1: continuity observation
+
+Interrupted engineering work often repeats failed attempts when the failure condition is not preserved. This packet does not establish how large that effect is.
+
+## S2: seed sensitivity observation
+
+Small seed sets can reverse method rankings after expansion. A review gate can expose the reversal, but this packet supplies no evidence that a specific gate improves final task quality.
+
+## S3: multi-criteria decision warning
+
+Cost and risk scores describe burden. Treating larger burdens as positive terms in a naive total can invert a decision.
+
+## S4: prior-art boundary
+
+Research logs, experiment tracking, and multi-criteria scorecards already exist as broad ideas. Novelty claims therefore require a narrower mechanism and a direct comparison, neither of which is supplied here.
+""",
+            }
+        raise LabError(f"unknown matched pilot case: {case_id}")
+
+    def write_shared_case(self, case_id: str) -> None:
+        for name, content in self.followup_prompts(case_id).items():
+            write_text(self.workspace / "prompts" / case_id / name, content)
+
+    def input_digest(self, case_id: str, materials: dict[str, str]) -> str:
+        payload = {
+            "task": self.task_text(case_id),
+            "followup_prompts": self.followup_prompts(case_id),
+            "materials": materials,
+        }
+        canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    def arm_instructions(self, arm_id: str) -> str:
+        instructions = {
+            "plain": """# Plain Codex arm
+
+Use only files below this arm workspace. Do not use DeepScientist Lite, a persistent scratchpad, or files from another arm. You may write only the deliverables and code/tests requested by `TASK.md`. Stop at each requested checkpoint.
+""",
+            "scratchpad": """# Scratchpad arm
+
+Use only files below this arm workspace. Do not use DeepScientist Lite. `NOTES.md` is the only persistent coordination aid beyond requested deliverables and code/tests; keep it concise and do not store full conversation text or private reasoning. Stop at each requested checkpoint.
+""",
+            "ds-lite": """# DeepScientist Lite arm
+
+Use only files below this arm workspace. Use PROJECT, STATUS, Graph, work unit, and explicit artifacts for continuity; do not edit `graph.json` directly. Run one bounded action at a time and stop at checkpoints. Do not delegate subagents. Factor Cards are decision artifacts, not evidence, and are appropriate only for the idea-evaluation case.
+""",
+        }
+        return instructions[arm_id]
+
+    def write_teaching_guides(self) -> None:
+        write_text(
+            self.workspace / "PILOT_README.md",
+            """# DeepScientist Lite matched-control pilot
+
+This package prepares four cases across three arms: plain Codex, Codex with one `NOTES.md`, and a DeepScientist Lite workspace. All 12 runs are `pending`; no model task has been executed, scored, or compared.
+
+## Layout
+
+- `arms/<case>/<arm>/`: isolated student workspaces.
+- `prompts/engineering-continuity/`: round 2 and round 3 prompts, delivered only after the prior checkpoint.
+- `STUDENT_GUIDE.zh.md`: participant commands and deliverables.
+- `INSTRUCTOR_GUIDE.zh.md`: preregistration, isolation, scoring, and interpretation.
+- `RUBRIC.csv`: metric definitions.
+- `results/`: empty scoring surface marked `prepared-not-run`.
+
+Use a host sandbox or copy one arm into a separate execution root before opening it. Changing the current directory alone is not access control and does not hide sibling arms or instructor files. The pilot is descriptive teaching evidence, not a domain-support or statistical-significance claim.
+""",
+        )
+        write_text(
+            self.workspace / "STUDENT_GUIDE.zh.md",
+            """# 学生指南：四案例三组对照
+
+## 共同规则
+
+每次只打开一个 `arms/<case>/<arm>/` 作为工作区。先读 `ARM_INSTRUCTIONS.md`，再读 `TASK.md`。不得查看兄弟 arm、教师材料或根目录评分文件；不得保存完整对话、隐藏推理、凭据或本机绝对根目录。所有判断都要落到请求的产物中。
+
+## Windows PowerShell
+
+```powershell
+Set-Location arms/numerical-seeds/plain
+python materials/run_simulation.py --seed-count 2 --output early.json
+python materials/run_simulation.py --seed-count 20 --output expanded.json
+```
+
+工程案例每轮结束后停止。教师随后单独提供 `round-2.md`；第二轮结束并更换上下文后，再提供 `round-3.md`。
+
+## Git Bash / WSL
+
+```bash
+cd arms/numerical-seeds/plain
+python3 materials/run_simulation.py --seed-count 2 --output early.json
+python3 materials/run_simulation.py --seed-count 20 --output expanded.json
+```
+
+WSL 中只使用当前 arm 的相对路径。不要为课程创建 tmux、后台 worker 或自动重试循环。
+
+## 交付边界
+
+- 工程：代码、测试、每轮报告与最终恢复说明。
+- 数学：可复核搜索结果与 `REPORT.md`；支持样例不是证明。
+- 数值：2 seed 和扩展 seed 的机器结果、逐 seed 记录与谨慎解释。
+- 创新评价：六维比较、来源引用、不确定性和最小验证实验。
+
+课程不会提供预填答案。脚本运行成功也不等于科研主张成立。
+""",
+        )
+        write_text(
+            self.workspace / "INSTRUCTOR_GUIDE.zh.md",
+            """# 教师材料：执行、盲评与结果解读
+
+## 执行前预注册
+
+在真实运行前固定并记录准确模型版本、共同提示词、每轮预算、允许工具、材料摘要、超时规则和停止条件。任何字段仍为 `pending-operator-input` 时不得开始比较。真实 12-arm Codex 调用和任何子智能体 forward test 都需要用户明确授权；本包不会自行发起。
+
+## 隔离与投递
+
+1. 为每个 manifest run 创建独立任务，并用宿主 sandbox 或独立执行副本只暴露对应 arm。仅切换当前目录不是访问控制。
+2. plain 不使用持久 scratchpad；scratchpad 只使用 `NOTES.md`；ds-lite 使用已初始化的文件协议。
+3. 工程案例按三轮投递。第二轮结束后新建上下文，再投递第三轮，计时从第三轮提示出现开始。
+4. 其他案例只投递 `TASK.md`。数值案例在 Windows 或 WSL 中真实执行标准库脚本。
+5. 保存脱敏后的命令、最终产物、验证退出码和成本；不保存完整对话或隐藏推理。
+
+## 评分
+
+用 `RUBRIC.csv` 的统一定义评分，最好先隐藏 arm 标签。正确率和恢复时间之外，还要检查重复工作、状态遗漏、负结果保留、证据可追溯、路线恢复、artifact 碎片、speculation leakage、成本和单位成本信息增益。碎片率必须结合“能否从权威入口恢复”解释，不能单纯按文件数量惩罚 DS Lite。
+
+## 答案边界
+
+教师可以核对可执行事实，但不得把参考现象提前放进 arm。数学案例存在可计算的反例；数值案例刻意让极小 seed 子集产生误导，扩展结果仍需按不确定性解释；创新案例没有预设唯一赢家。工程案例以测试、需求保持和跨上下文恢复为准。
+
+## 结果解读
+
+这是 4 案例 x 3 arm 的 pilot，只报告描述性差异，不作统计显著性宣称。单次教学运行不能把 literature、mathematical、software 或 numerical profile 从 `reserved / not-validated` 升级，也不能证明 DeepScientist Lite 在一般办公任务上有效。Finance Factor 不进入这些 core 教学默认值。
+""",
+        )
+        write_text(
+            self.workspace / "RUBRIC.csv",
+            """metric,type,collection_rule,interpretation_boundary
+task_correctness,score_0_4,Apply case-specific tests or evidence checks,Correct output without preserved evidence is not full credit
+recovery_time_seconds,nonnegative_number,Measure from restart prompt to an evidence-backed state summary,Use the same timer rule for all arms
+repeated_work_count,count,Count repeated actions already evidenced as complete,Do not count deliberate revalidation
+state_omission_count,count,Count required contract or status facts absent at handoff,Score only facts available before restart
+negative_result_retained,binary_or_na,Check whether counterexamples reversals and failed attempts remain visible,Retention does not make a claim supportable
+evidence_traceability,score_0_4,Trace claims to commands outputs sources or typed refs,Fluent prose alone receives no evidence credit
+route_recovery,score_0_4,Reconstruct current state next action and rollback condition,Do not reward guessed history
+artifact_fragmentation,ratio,Count unreferenced deliverable fragments over all deliverable fragments,File count alone is not fragmentation
+speculation_leakage,count,Count unsupported claims presented as established,Unknown or explicitly provisional statements are not leakage
+cost_units,nonnegative_number,Record the same provider-defined cost unit for every arm,Do not mix incomparable units
+information_gain_per_cost,derived,Divide rubric-approved information gain by cost units,Leave blank when cost is unavailable or zero
+""",
+        )
+
+    def write_results_scaffold(self) -> None:
+        write_text(
+            self.workspace / "results" / "README.md",
+            """# Pilot results
+
+Status: `prepared-not-run`.
+
+No Codex arm has been executed or scored. Fill the CSV only from saved, redacted artifacts after all arms use the same model, prompt sequence, budget, tools, and materials. A 12-arm pilot is descriptive and does not establish statistical significance or validate a reserved domain profile.
+""",
+        )
+        write_text(
+            self.workspace / "results" / "scores.csv",
+            "case,arm,status,task_correctness,recovery_time_seconds,repeated_work_count,state_omission_count,negative_result_retained,evidence_traceability,route_recovery,artifact_fragmentation,speculation_leakage,cost_units,information_gain_per_cost,notes",
+        )
+
+    def init_ds_lite_arm(self, arm: Path, case_id: str) -> None:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(STATE_SCRIPT),
+                "init",
+                "--root",
+                str(arm),
+                "--title",
+                f"Matched pilot: {case_id}",
+                "--question",
+                f"Complete the bounded {case_id} teaching task and preserve an auditable handoff.",
+            ],
+            cwd=REPO_ROOT,
+            text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
+            capture_output=True,
+            env={**os.environ, "PYTHONUTF8": "1", "PYTHONDONTWRITEBYTECODE": "1"},
+        )
+        if completed.returncode != 0:
+            raise LabError(f"DS Lite arm initialization failed for {case_id}: {completed.stdout}{completed.stderr}")
+
+    def build(self) -> None:
+        if self.workspace.exists():
+            raise LabError(f"output already exists; choose a new path: {self.workspace}")
+        self.workspace.mkdir(parents=True)
+        runs = []
+        for case_id in PILOT_CASES:
+            self.write_shared_case(case_id)
+            materials = self.case_materials(case_id)
+            digest = self.input_digest(case_id, materials)
+            for arm_id in PILOT_ARMS:
+                arm = self.workspace / "arms" / case_id / arm_id
+                write_text(arm / "TASK.md", self.task_text(case_id))
+                write_text(arm / "ARM_INSTRUCTIONS.md", self.arm_instructions(arm_id))
+                for relative, content in materials.items():
+                    write_text(arm / "materials" / relative, content)
+                if arm_id == "scratchpad":
+                    write_text(arm / "NOTES.md", "# Notes\n\n")
+                elif arm_id == "ds-lite":
+                    self.init_ds_lite_arm(arm, case_id)
+                run_id = f"{case_id}--{arm_id}"
+                prompt_refs = [f"arms/{case_id}/{arm_id}/TASK.md"]
+                prompt_refs.extend(f"prompts/{case_id}/{name}" for name in self.followup_prompts(case_id))
+                runs.append(
+                    {
+                        "run_id": run_id,
+                        "case": case_id,
+                        "arm": arm_id,
+                        "status": "pending",
+                        "workspace": f"arms/{case_id}/{arm_id}",
+                        "prompt_refs": prompt_refs,
+                        "input_digest": digest,
+                        "result_ref": f"results/{run_id}.json",
+                    }
+                )
+        self.write_teaching_guides()
+        self.write_results_scaffold()
+        write_json(
+            self.workspace / "pilot-manifest.json",
+            {
+                "format_version": "ds-lite.matched-pilot.v1",
+                "status": "prepared-not-run",
+                "cases": list(PILOT_CASES),
+                "arms": list(PILOT_ARMS),
+                "control_policy": {
+                    "model": "pending-operator-input",
+                    "prompt_budget": "pending-operator-input",
+                    "tool_policy": "pending-operator-input",
+                    "material_digest_algorithm": "sha256",
+                    "actual_execution_authorization": "required",
+                },
+                "runs": runs,
+            },
+        )
+
+
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description="Prepare runnable DeepScientist Lite teaching labs.")
     result.add_argument("--lab", choices=LABS, required=True)
@@ -779,12 +1207,15 @@ def main() -> int:
     if args.lab != "evidence" and args.case != "clean":
         print("--case is only meaningful for the evidence lab", file=sys.stderr)
         return 1
+    if args.lab == "matched-pilot" and args.mode != "student":
+        print("matched-pilot creates student workspaces; instructor materials are generated separately", file=sys.stderr)
+        return 1
     output = args.output
     if output is None:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         output = REPO_ROOT / ".validation-tmp" / f"{args.lab}-{args.mode}-{args.case}-{stamp}"
     try:
-        builder = LabBuilder(args.lab, args.mode, args.case, output)
+        builder = MatchedPilotBuilder(output) if args.lab == "matched-pilot" else LabBuilder(args.lab, args.mode, args.case, output)
         builder.build()
     except (LabError, OSError, subprocess.SubprocessError, ValueError, KeyError) as exc:
         print(f"lab preparation failed: {exc}", file=sys.stderr)

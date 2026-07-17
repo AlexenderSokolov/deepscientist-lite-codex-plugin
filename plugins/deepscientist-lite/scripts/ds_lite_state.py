@@ -376,6 +376,22 @@ def parse_utc(value: Any) -> datetime | None:
     return parsed.astimezone(timezone.utc)
 
 
+def monotonic_node_timestamp(node: dict[str, Any], candidate: str | None = None) -> str:
+    timestamp = candidate or utc_now()
+    parsed_candidate = parse_utc(timestamp)
+    if parsed_candidate is None:
+        return timestamp
+    floor: tuple[datetime, str] | None = None
+    for field in ("created_at", "updated_at"):
+        value = node.get(field)
+        parsed = parse_utc(value)
+        if parsed is not None and (floor is None or parsed > floor[0]):
+            floor = (parsed, value)
+    if floor is not None and parsed_candidate < floor[0]:
+        return floor[1]
+    return timestamp
+
+
 def find_route(graph: dict[str, Any], start: str, target: str, mode: str = "progression") -> list[str]:
     if not start or not target:
         return []
@@ -1745,7 +1761,7 @@ def cmd_update_node(args: argparse.Namespace) -> int:
             node["summary"] = summary
         if args.kind:
             node["kind"] = args.kind
-        node["updated_at"] = utc_now()
+        node["updated_at"] = monotonic_node_timestamp(node)
         return {"node_id": args.node}
 
     graph, payload, backup = mutation_transaction(root, args, mutate)
@@ -1781,7 +1797,7 @@ def cmd_link_path(args: argparse.Namespace) -> int:
         node = require_node(graph, args.node)
         path = normalize_graph_path(root, args.path)
         append_unique(node.setdefault(field, []), path)
-        node["updated_at"] = utc_now()
+        node["updated_at"] = monotonic_node_timestamp(node)
         return {"node_id": args.node, "path_type": args.type, "path": path}
 
     graph, payload, backup = mutation_transaction(root, args, mutate)
@@ -1801,9 +1817,9 @@ def set_active_in_graph(graph: dict[str, Any], target_id: str, now: str | None =
     for node in graph.get("nodes", {}).values():
         if node.get("status") == "active" and node.get("id") != target_id:
             node["status"] = "done"
-            node["updated_at"] = timestamp
+            node["updated_at"] = monotonic_node_timestamp(node, timestamp)
     target["status"] = "active"
-    target["updated_at"] = timestamp
+    target["updated_at"] = monotonic_node_timestamp(target, timestamp)
     graph["active_node_id"] = target_id
 
 
@@ -1828,7 +1844,7 @@ def cmd_set_status(args: argparse.Namespace) -> int:
             set_active_in_graph(graph, args.node)
         else:
             node["status"] = args.status
-            node["updated_at"] = utc_now()
+            node["updated_at"] = monotonic_node_timestamp(node)
             if graph.get("active_node_id") == args.node:
                 graph["active_node_id"] = ""
         return {"node_id": args.node, "status": args.status}

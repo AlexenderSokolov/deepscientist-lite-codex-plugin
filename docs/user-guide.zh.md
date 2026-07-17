@@ -285,3 +285,6 @@ intake → scout → idea → experiment → review → analysis
 - [30分钟路线语义](../teaching/route-lab-30.zh.md)
 - [30分钟路径可移植](../teaching/path-lab-30.zh.md)
 - [30分钟 revision 冲突](../teaching/revision-lab-30.zh.md)
+- [四案例三组 matched-control pilot](../teaching/matched-control-pilot.zh.md)
+
+matched pilot 比较普通 Codex、单个 `NOTES.md` 和 DS Lite workspace。runner 只准备 12 个隔离 arm、分轮提示和空白评分面；真实运行前仍要固定模型/预算/工具并取得授权。不要把 `prepared-not-run` 当成插件效果证据。

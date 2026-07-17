@@ -737,6 +737,34 @@ class StateKernelTests(unittest.TestCase):
             ["intake-root", "experiment-reviewed", "review-reviewed", "analysis-reviewed"],
         )
 
+    def test_status_update_clamps_a_regressed_wall_clock(self) -> None:
+        added = run_cli(
+            self.root,
+            "add-node",
+            "--id",
+            "future-clock-node",
+            "--kind",
+            "scout",
+            "--parent",
+            "intake-root",
+            "--title",
+            "Future clock node",
+        )
+        self.assertEqual(added.returncode, 0, added.stderr)
+        graph_path = self.root / "research" / "state" / "graph.json"
+        graph = json.loads(graph_path.read_text(encoding="utf-8"))
+        future = "2999-01-01T00:00:00Z"
+        graph["nodes"]["future-clock-node"]["created_at"] = future
+        graph["nodes"]["future-clock-node"]["updated_at"] = future
+        graph_path.write_text(json.dumps(graph, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+        updated = run_cli(self.root, "set-status", "--node", "future-clock-node", "--status", "done")
+        self.assertEqual(updated.returncode, 0, updated.stderr)
+        graph = json.loads(graph_path.read_text(encoding="utf-8"))
+        self.assertEqual(graph["nodes"]["future-clock-node"]["updated_at"], future)
+        strict = run_cli(self.root, "validate", "--strict")
+        self.assertEqual(strict.returncode, 0, strict.stdout + strict.stderr)
+
     def test_progression_trace_ignores_supports_shortcut(self) -> None:
         self.assertEqual(self.add_node("scout").returncode, 0)
         self.write_artifact("research/artifacts/idea.md")

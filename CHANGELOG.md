@@ -9,6 +9,10 @@
 - Add `ds-lite.delegation.v1`, its strict standard-library validator, template, runtime protocol, ownership/approval/result rules, and negative fixtures.
 - Keep coordination file-led and parent-integrated: no daemon, queue, scheduler, nested delegation, background worker ownership, or automatic retry.
 - Mark fresh-agent coordination behavior as pending a separately authorized forward test; static schema and repository validation do not prove host-side delegation behavior.
+- Add a deterministic matched-control teaching builder for four engineering/research cases across plain, single-scratchpad, and DS Lite arms.
+- Add staged continuity prompts, runnable standard-library math/numerical fixtures, equal-input digests, pending result refs, a unified rubric, and separate student/instructor guidance.
+- Keep real 12-arm Codex execution and scoring behind explicit authorization; preparation smoke does not claim effectiveness, statistical significance, or reserved-profile support.
+- Keep node update timestamps monotonic across transient WSL/virtualized wall-clock regressions without weakening Graph validation.
 
 ## 0.4.0-beta.2
 

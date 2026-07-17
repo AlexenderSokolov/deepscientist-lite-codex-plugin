@@ -52,6 +52,12 @@ External files are not hashed by default because they may be large or sensitive.
 
 The coordinator must stop before execution when approval is missing. It must also preserve partial/blocked results and stop on ambiguous transport or duplicate risk; the protocol provides no background queue or automatic retry.
 
+## Matched pilot preparation is not effectiveness evidence
+
+`teaching/lab_runner.py --lab matched-pilot` prepares four cases across plain, scratchpad, and DS Lite arms. Repository tests verify layout, equal input digests, runnable standard-library fixtures, pending result state, and absence of prefilled answers. They do not execute 12 Codex tasks or show that one arm performs better.
+
+Before a real comparison, record the exact model, prompt budget, tools, material digest, timer rule, and cost unit, then obtain explicit authorization for model calls. Use a host sandbox or a separate execution copy for each arm; changing the current directory alone does not prevent access to siblings or instructor files. Report a first pilot descriptively; do not claim statistical significance or promote reserved profiles from one teaching run.
+
 ## Markdown-only review compatibility
 
 A Markdown-only review remains readable but cannot produce `evidence_strength=reviewed`. The review node must be done and link a valid `ds-lite.review-result.v1` sidecar whose work unit, profile, node ids, Evidence Pack refs, and digest match. Old projects receive a compatibility warning until the typed result is added; do not silence it by treating prose as typed evidence.

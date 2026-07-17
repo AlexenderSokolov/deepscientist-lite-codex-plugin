@@ -80,6 +80,9 @@ class TeachingLabTests(unittest.TestCase):
         result = run_lab(output, "quickstart")
         self.assertEqual(result.returncode, 1)
         self.assertEqual(marker.read_text(encoding="utf-8"), "keep\n")
+        result = run_lab(output, "matched-pilot")
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(marker.read_text(encoding="utf-8"), "keep\n")
 
     def test_evidence_cases_separate_integrity_and_threshold_failures(self) -> None:
         expectations = {
@@ -193,6 +196,176 @@ class TeachingLabTests(unittest.TestCase):
         graph = read_json(output / "project" / "research" / "state" / "graph.json")
         self.assertIn("scout-session-a", graph["nodes"])
         self.assertIn("scout-session-b", graph["nodes"])
+
+    def test_matched_pilot_prepares_four_cases_across_three_arms(self) -> None:
+        output = self.root / "matched pilot"
+        result = run_lab(output, "matched-pilot")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+        manifest = read_json(output / "pilot-manifest.json")
+        self.assertEqual(manifest["status"], "prepared-not-run")
+        self.assertEqual(
+            manifest["cases"],
+            ["engineering-continuity", "math-counterexample", "numerical-seeds", "idea-evaluation"],
+        )
+        self.assertEqual(manifest["arms"], ["plain", "scratchpad", "ds-lite"])
+        self.assertEqual(len(manifest["runs"]), 12)
+
+        for case_id in manifest["cases"]:
+            for arm_id in manifest["arms"]:
+                arm = output / "arms" / case_id / arm_id
+                self.assertTrue((arm / "TASK.md").is_file())
+                self.assertTrue((arm / "ARM_INSTRUCTIONS.md").is_file())
+
+    def test_matched_pilot_keeps_task_materials_equal_and_arm_memory_distinct(self) -> None:
+        output = self.root / "matched arm boundaries"
+        result = run_lab(output, "matched-pilot")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+        for case_id in ("engineering-continuity", "math-counterexample", "numerical-seeds", "idea-evaluation"):
+            arms = {arm_id: output / "arms" / case_id / arm_id for arm_id in ("plain", "scratchpad", "ds-lite")}
+            task_texts = {(arm / "TASK.md").read_text(encoding="utf-8") for arm in arms.values()}
+            self.assertEqual(len(task_texts), 1)
+            material_snapshots = {
+                arm_id: {
+                    path.relative_to(arm / "materials").as_posix(): path.read_bytes()
+                    for path in (arm / "materials").rglob("*")
+                    if path.is_file()
+                }
+                for arm_id, arm in arms.items()
+            }
+            self.assertEqual(material_snapshots["plain"], material_snapshots["scratchpad"])
+            self.assertEqual(material_snapshots["plain"], material_snapshots["ds-lite"])
+
+            self.assertFalse((arms["plain"] / "NOTES.md").exists())
+            self.assertFalse((arms["plain"] / "PROJECT.md").exists())
+            self.assertTrue((arms["scratchpad"] / "NOTES.md").is_file())
+            self.assertFalse((arms["scratchpad"] / "PROJECT.md").exists())
+            self.assertTrue((arms["ds-lite"] / "PROJECT.md").is_file())
+            self.assertTrue((arms["ds-lite"] / "STATUS.md").is_file())
+            self.assertTrue((arms["ds-lite"] / "research" / "state" / "graph.json").is_file())
+            self.assertTrue((arms["ds-lite"] / "research" / "work-unit.json").is_file())
+
+    def test_matched_pilot_provides_runnable_cases_but_no_prefilled_results(self) -> None:
+        output = self.root / "matched runnable cases"
+        result = run_lab(output, "matched-pilot")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        fixture_env = os.environ.copy()
+        fixture_env["PYTHONUTF8"] = "1"
+        fixture_env["PYTHONDONTWRITEBYTECODE"] = "1"
+
+        engineering = output / "arms" / "engineering-continuity" / "plain"
+        self.assertTrue((engineering / "materials" / "slugger.py").is_file())
+        self.assertTrue((output / "prompts" / "engineering-continuity" / "round-2.md").is_file())
+        self.assertTrue((output / "prompts" / "engineering-continuity" / "round-3.md").is_file())
+        completed = subprocess.run(
+            [sys.executable, "-m", "unittest", "-v"],
+            cwd=engineering / "materials",
+            text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
+            capture_output=True,
+            env=fixture_env,
+        )
+        self.assertEqual(completed.returncode, 1)
+        self.assertIn("test_removes_punctuation_without_adding_a_separator", completed.stderr)
+
+        math_arm = output / "arms" / "math-counterexample" / "plain"
+        self.assertEqual(len((math_arm / "materials" / "observations.csv").read_text(encoding="utf-8").splitlines()), 41)
+        math_result = math_arm / "math-search.json"
+        completed = subprocess.run(
+            [sys.executable, "materials/check_conjecture.py", "--max-n", "50", "--output", math_result.name],
+            cwd=math_arm,
+            text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
+            capture_output=True,
+            env=fixture_env,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual(read_json(math_result)["first_counterexample"]["n"], 40)
+
+        numerical = output / "arms" / "numerical-seeds" / "plain"
+        early_result = numerical / "early-summary.json"
+        completed = subprocess.run(
+            [sys.executable, "materials/run_simulation.py", "--seed-count", "2", "--output", early_result.name],
+            cwd=numerical,
+            text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
+            capture_output=True,
+            env=fixture_env,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        numerical_result = numerical / "seed-summary.json"
+        completed = subprocess.run(
+            [sys.executable, "materials/run_simulation.py", "--seed-count", "20", "--output", numerical_result.name],
+            cwd=numerical,
+            text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
+            capture_output=True,
+            env=fixture_env,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        early = read_json(early_result)
+        expanded = read_json(numerical_result)
+        self.assertLess(early["mean_a"], early["mean_b"])
+        self.assertGreater(expanded["mean_a"], expanded["mean_b"])
+        self.assertEqual(expanded["seed_count"], 20)
+
+        ideas = read_json(output / "arms" / "idea-evaluation" / "plain" / "materials" / "candidates.json")
+        self.assertEqual(len(ideas["candidates"]), 3)
+        self.assertTrue((output / "arms" / "idea-evaluation" / "plain" / "materials" / "source-packet.md").is_file())
+
+        score_rows = (output / "results" / "scores.csv").read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(score_rows), 1)
+        self.assertIn("prepared-not-run", (output / "results" / "README.md").read_text(encoding="utf-8"))
+        self.assertFalse(any(path.name == "REFERENCE_ANSWER.md" for path in (output / "arms").rglob("*")))
+
+    def test_matched_pilot_has_auditable_manifest_and_separate_teaching_guides(self) -> None:
+        output = self.root / "matched guides"
+        result = run_lab(output, "matched-pilot")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+        for name in ("PILOT_README.md", "STUDENT_GUIDE.zh.md", "INSTRUCTOR_GUIDE.zh.md", "RUBRIC.csv"):
+            self.assertTrue((output / name).is_file(), name)
+        student = (output / "STUDENT_GUIDE.zh.md").read_text(encoding="utf-8")
+        instructor = (output / "INSTRUCTOR_GUIDE.zh.md").read_text(encoding="utf-8")
+        self.assertIn("PowerShell", student)
+        self.assertIn("WSL", student)
+        self.assertIn("Set-Location arms/numerical-seeds/plain", student)
+        self.assertIn("python materials/run_simulation.py --seed-count 20 --output expanded.json", student)
+        self.assertIn("教师材料", instructor)
+        self.assertIn("不作统计显著性宣称", instructor)
+        self.assertIn("明确授权", instructor)
+
+        manifest = read_json(output / "pilot-manifest.json")
+        run_ids = {run["run_id"] for run in manifest["runs"]}
+        self.assertEqual(len(run_ids), 12)
+        for case_id in manifest["cases"]:
+            case_runs = [run for run in manifest["runs"] if run["case"] == case_id]
+            self.assertEqual(len({run["input_digest"] for run in case_runs}), 1)
+            for run in case_runs:
+                self.assertEqual(run["status"], "pending")
+                self.assertFalse(Path(run["workspace"]).is_absolute())
+                self.assertTrue(run["result_ref"].startswith("results/"))
+
+        generated_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in output.rglob("*")
+            if path.is_file()
+        )
+        self.assertNotIn(str(output.resolve()), generated_text)
+        for forbidden in ("hidden_reasoning", "chain_of_thought", "api_key", "password", "secret", "token"):
+            self.assertNotIn(f'"{forbidden}"', generated_text.lower())
+
+    def test_matched_pilot_rejects_reference_mode_instead_of_leaking_answers(self) -> None:
+        output = self.root / "matched reference"
+        result = run_lab(output, "matched-pilot", mode="reference")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("student workspaces", result.stderr)
+        self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":

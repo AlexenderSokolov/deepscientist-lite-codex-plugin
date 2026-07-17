@@ -604,6 +604,7 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "teaching" / "demo-script.zh.md",
         repo_root / "teaching" / "lesson-plan.zh.md",
         repo_root / "teaching" / "instructor-guide.zh.md",
+        repo_root / "teaching" / "matched-control-pilot.zh.md",
         repo_root / "teaching" / "cases" / "paradigm-comparison-case.md",
         repo_root / "teaching" / "quickstart-20.zh.md",
         repo_root / "teaching" / "evidence-lab-45.zh.md",
@@ -646,6 +647,13 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
     for item in required_paths:
         if not item.exists():
             fail(f"missing documentation file: {item}")
+
+    powershell_lab_wrapper = (repo_root / "teaching" / "run_lab.ps1").read_text(encoding="utf-8")
+    if '"matched-pilot"' not in powershell_lab_wrapper:
+        fail("teaching/run_lab.ps1 does not expose matched-pilot")
+    teaching_readme = (repo_root / "teaching" / "README.zh.md").read_text(encoding="utf-8")
+    if "matched-control-pilot.zh.md" not in teaching_readme:
+        fail("teaching README does not link the matched-control pilot")
 
     readme = (repo_root / "README.md").read_text(encoding="utf-8")
     for required_link in ("README.zh.md", "docs/user-guide.zh.md", "docs/README.md", "teaching/README.zh.md", "plugins/deepscientist-lite/"):
@@ -1021,6 +1029,40 @@ def validate_teaching_runner(repo_root: Path) -> None:
     graph = json.loads((output / "project" / "research" / "state" / "graph.json").read_text(encoding="utf-8"))
     if graph.get("active_node_id") != "idea-file-handoff":
         fail("quickstart teaching smoke did not reach the expected idea node")
+
+    pilot_output = parent / "matched pilot workspace"
+    run(
+        [
+            sys.executable,
+            str(lab_runner),
+            "--lab",
+            "matched-pilot",
+            "--mode",
+            "student",
+            "--output",
+            str(pilot_output),
+        ],
+        repo_root,
+    )
+    manifest = json.loads((pilot_output / "pilot-manifest.json").read_text(encoding="utf-8"))
+    runs = manifest.get("runs", [])
+    if manifest.get("status") != "prepared-not-run" or len(runs) != 12:
+        fail("matched teaching pilot must prepare exactly 12 pending runs")
+    if len({item.get("run_id") for item in runs}) != 12 or any(item.get("status") != "pending" for item in runs):
+        fail("matched teaching pilot run ids or pending states are invalid")
+    for case_id in manifest.get("cases", []):
+        digests = {item.get("input_digest") for item in runs if item.get("case") == case_id}
+        if len(digests) != 1:
+            fail(f"matched teaching pilot inputs differ across arms for {case_id}")
+    if len((pilot_output / "results" / "scores.csv").read_text(encoding="utf-8").splitlines()) != 1:
+        fail("matched teaching pilot must not prefill score rows")
+    saved_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in pilot_output.rglob("*")
+        if path.is_file()
+    )
+    if str(pilot_output.resolve()) in saved_text:
+        fail("matched teaching pilot persisted its workstation root")
     if sys.platform != "win32":
         compatibility_output = parent / "compatibility evidence workspace"
         run(

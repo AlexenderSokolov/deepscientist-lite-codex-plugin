@@ -4,7 +4,7 @@
 
 1. 在授课机器上运行 `python teaching/lab_runner.py --help`。
 2. 用 student 模式准备课程，确认目录中没有 `REFERENCE_ANSWER.md`。
-3. 新开 Codex 线程，确认六个 `$ds-lite-*` 技能可发现。
+3. 新开 Codex 线程，记录实际加载版本与技能数：`0.4.0-beta.2` 发布包为七个，未发布 v0.5 源码为八个；不要从源码反推 cache。
 4. 准备纯 CLI 备用路线；插件缓存失效时，课程仍可检查 Graph 和 Evidence Pack。
 5. 不使用学生真实数据、凭据或未授权外部文件。
 
@@ -32,6 +32,10 @@ runner 负责产生相同的事实和故障；Codex负责按技能读取、检�
 ## 参考答案怎么用
 
 reference 模式只用于备课和课后核对。它生成的 review/analysis 带“教师参考”标记。不要把这些文件提前放进 student 工作区，也不要把 reference 模式通过说成 Codex 自动完成了科研审查。
+
+## Matched-control pilot 怎么用
+
+[四案例三组 pilot](matched-control-pilot.zh.md) 只用 student workspace；教师指南和 rubric 在生成包根目录独立保存。每次只打开一个 arm，工程案例分三轮投递并在第三轮更换上下文。真实 12-arm 调用前固定模型、预算、工具和计时规则并取得明确授权。首批结果只做描述性比较，不作统计显著性宣称。
 
 ## 收集反馈
 
