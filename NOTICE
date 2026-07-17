@@ -10,3 +10,9 @@ and workflow. Upstream project: https://github.com/ResearAI/DeepScientist
 
 DeepScientist naming and branding remain subject to the upstream trademark guidelines:
 https://github.com/ResearAI/DeepScientist/blob/main/TRADEMARK.md
+
+Scientific Factor Card process provenance:
+The Factor Card workflow independently adapts high-level research-process ideas audited in
+DeepScientist v0.1.5 wq-alpha-research material: mechanism-first hypotheses, staged validation,
+explicit uncertainty, failure diagnosis, and bounded next tests. No source text, financial fields,
+formulas, datasets, credentials, or domain thresholds from that distribution are included here.

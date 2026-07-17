@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add the domain-neutral Scientific Factor Card protocol and `ds-lite.factor-card.v1` validator/template.
+- Teach `$ds-lite-idea` to compare six evidence-linked factors and run `validate-factor-card` without creating a weighted total or promoting the card as evidence.
+- Extend `$ds-lite-review` to reject unsupported novelty scores, reversed cost/risk semantics, and Factor Card claims that bypass typed evidence.
+
 ## 0.4.0-beta.2
 
 - Add `mission` and `render-status` state CLI commands that project Graph v2 into a user-visible Mission Board.

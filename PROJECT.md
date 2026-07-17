@@ -20,6 +20,7 @@
 - 防止并发覆盖、非原子写入、路径泄露和证据关系污染推进路线。
 - 保持 Windows 与 Unix-like 环境中的命令、中文和空格路径可用。
 - 为教学 Beta 提供可重复验证、证据审查、迁移和发布流程。
+- 用领域中立 Factor Card 比较科研 idea 的新颖性、可行性、证据、成本、风险与任务对齐，同时抑制单一分数和自动真值错觉。
 
 ## 工作流程
 
@@ -28,9 +29,10 @@
 3. Graph 写操作在锁内检查 revision、校验语义并原子替换。
 4. 实验先生成 contract/Evidence Pack，再由独立 review 流程决定是否进入 analysis/write。
 5. 每个有界任务由 `research/work-unit.json` 的 `ds-lite.work-unit.v1` 描述；claim-bearing evidence 只由 profile typed validator 升级，review 同时写 Markdown 和 `ds-lite.review-result.v1` sidecar。
-6. 每次 graph 提交后重建 `RESEARCH_MAP.md`；高频用户入口通过 `mission` / `render-status` 投影到 `STATUS.md`。
-7. 使用统一验证脚本执行单元测试、仓库 smoke 和语法检查。
-8. 用户文档按“README 快速上手—用户指南理解机制—实现文档维护细节”分层；教学课程用标准库 runner 准备确定性现场。
+6. idea 比较可写 `ds-lite.factor-card.v1` sidecar；六个分项独立保存证据与不确定性，no weighted total，且卡片只作为 decision artifact。
+7. 每次 graph 提交后重建 `RESEARCH_MAP.md`；高频用户入口通过 `mission` / `render-status` 投影到 `STATUS.md`。
+8. 使用统一验证脚本执行单元测试、仓库 smoke 和语法检查。
+9. 用户文档按“README 快速上手—用户指南理解机制—实现文档维护细节”分层；教学课程用标准库 runner 准备确定性现场。
 
 ## 代码结构
 
@@ -58,6 +60,7 @@
 - Evidence Pack 不保存凭据或本机绝对根目录，项目内证据可通过 SHA-256 复核。
 - 新的 experiment→analysis 路线经过 review；旧 Graph v2 仍可读并仅产生兼容警告。
 - 新项目无 claim requirement 时为 `planning`；普通 artifact/log/path 不升级证据。只有 profile typed validator 通过才能到 `has-evidence`，只有匹配的 typed review result 才能到 `reviewed`。
+- Factor Card 正例、缺字段、错误 enum、路径逃逸、敏感字段、ID/因子冲突和 `extensions` forward compatibility 均有测试；卡片不能升级 evidence strength。
 - Windows PowerShell、Git Bash、WSL DrvFS、WSL ext4，以及远程 Windows/Ubuntu CI 均通过统一验证入口。
 - manifest、技能、模板、文档和发布版本保持一致。
 - 六类教学实验可在 student/reference 模式运行；公开文档不把 Graph 说成推理链快照，不把 Evidence Pack 完整性说成科学真实性。
@@ -67,6 +70,7 @@
 - 当前发布线：`0.4.0-beta.2`，Graph schema 继续为 `ds-lite.graph.v2`，Evidence schema 为 `ds-lite.evidence.v1`；Mission Board 是派生投影，不是新 schema。
 - P0 引入独立 `ds-lite.work-unit.v1` 和 `ds-lite.review-result.v1` sidecar，不改变 Graph v2 或 Evidence Pack v1。`verdict` 表示 review gate，`claim_assessment` 表示 claim readiness；未知 schema 字段只允许放在 `extensions`。
 - 通用 core 只面向科研与工程任务。`literature-evidence`、`mathematical-exploration`、`software-evaluation`、`numerical-simulation` 仅保留为 `reserved / not-validated`，不得据此宣称领域支持。
+- `ds-lite.factor-card.v1` 固定六个科研/工程通用分项，不计算总分或自动赢家。Finance Factor 只保留为方法来源与 pressure-case fixture；WQ、Qlib、股票池和金融指标不进入 core、模板或默认 skill。
 - 项目外资源使用 `external://alias/path`，绝对根目录由 `DS_LITE_EXTERNAL_<ALIAS>` 提供。
 - 保留 `DeepScientist Lite` 名称，但明确声明为独立、非官方第三方插件。
 - v0.2 不引入 MCP、daemon、Web/TUI、模型路由或长期 automation。

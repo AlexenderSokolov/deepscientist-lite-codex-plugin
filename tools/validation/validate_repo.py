@@ -661,6 +661,7 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         "external-long-task-protocol.md",
         "experiment-comparison-template.md",
         "math-exploration-template.md",
+        "scientific-factor-card-protocol.md",
         "teaching-guide.zh.md",
     }
     if runtime_refs != expected_refs:
@@ -710,6 +711,59 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         for required_text in required_texts:
             if required_text not in skill_text:
                 fail(f"{skill_name} missing P0 behavior: {required_text}")
+
+    factor_template = plugin_root / "assets" / "templates" / "research" / "artifacts" / "factor-card.json"
+    if not factor_template.is_file():
+        fail("missing ds-lite.factor-card.v1 template")
+    factor_protocol = plugin_root / "references" / "scientific-factor-card-protocol.md"
+    factor_protocol_text = factor_protocol.read_text(encoding="utf-8") if factor_protocol.exists() else ""
+    for required_text in (
+        "ds-lite.factor-card.v1",
+        "novelty",
+        "feasibility",
+        "evidence_strength",
+        "cost",
+        "risk",
+        "alignment",
+        "does not become evidence",
+        "no weighted total",
+        "DeepScientist v0.1.5",
+    ):
+        if required_text not in factor_protocol_text:
+            fail(f"Factor Card protocol missing behavior anchor: {required_text}")
+    factor_skill_requirements = {
+        "ds-lite-idea": (
+            "scientific-factor-card-protocol.md",
+            "factor-card-<slug>.json",
+            "validate-factor-card",
+            "no weighted total",
+        ),
+        "ds-lite-review": (
+            "ds-lite.factor-card.v1",
+            "Factor Card is not evidence",
+            "novelty",
+        ),
+    }
+    for skill_name, required_texts in factor_skill_requirements.items():
+        skill_text = (plugin_root / "skills" / skill_name / "SKILL.md").read_text(encoding="utf-8")
+        for required_text in required_texts:
+            if required_text not in skill_text:
+                fail(f"{skill_name} missing Factor Card behavior: {required_text}")
+    factor_doc_requirements = {
+        repo_root / "PROJECT.md": ("ds-lite.factor-card.v1", "no weighted total", "pressure-case fixture"),
+        repo_root / "CHANGELOG.md": ("Scientific Factor Card", "validate-factor-card"),
+        repo_root / "docs" / "user-guide.zh.md": ("ds-lite.factor-card.v1", "不做加权总分", "novelty"),
+        repo_root / "docs" / "implementation.zh.md": ("ds-lite.factor-card.v1", "decision artifact", "Finance Factor"),
+        repo_root / "NOTICE": ("Scientific Factor Card process provenance", "No source text"),
+    }
+    for path, required_texts in factor_doc_requirements.items():
+        text = path.read_text(encoding="utf-8")
+        for required_text in required_texts:
+            if required_text not in text:
+                fail(f"{path} missing Factor Card documentation anchor: {required_text}")
+    for script in (repo_root / "tools" / "validation" / "run_validate.ps1", repo_root / "tools" / "validation" / "run_validate.sh"):
+        if "test_protocols.py" not in script.read_text(encoding="utf-8"):
+            fail(f"{script} does not include protocol schema tests")
 
     long_task_protocol = plugin_root / "references" / "external-long-task-protocol.md"
     long_task_text = long_task_protocol.read_text(encoding="utf-8") if long_task_protocol.exists() else ""

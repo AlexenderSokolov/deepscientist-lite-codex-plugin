@@ -53,6 +53,30 @@ flowchart LR
 
 它不能保证：分支越多越好。Lite 的目标是留下少量可检查路线，不是自动执行完整树搜索。
 
+#### 用 Factor Card 评价 idea，而不是只问“新不新”
+
+`ds-lite.factor-card.v1` 把一个候选 idea 分成六项。每项使用 `null` 或 0–4 分，另存 confidence、证据路径、简短依据和不确定性：
+
+| 分项 | 要回答的问题 | 分数方向 |
+| --- | --- | --- |
+| `novelty` | 与最近的已知工作相比，机制、组合、目标或证据是否真的不同？ | 越高表示差异证据越强；没有来源时必须为未知 |
+| `feasibility` | 最小实现或推导能否在当前数据、权限和预算内完成？ | 越高越可行 |
+| `evidence_strength` | 现在已有多少可复核、typed 或可复现证据？ | 越高表示现有证据越强 |
+| `cost` | 时间、算力、数据准备、外部调用和人工审查负担多大？ | 越高表示成本越高，不是越好 |
+| `risk` | 技术、科学、重复执行、授权和误解风险多大？ | 越高表示风险越高，不是越好 |
+| `alignment` | 它是否直接推进当前 work unit 和 active route？ | 越高越对齐 |
+
+插件不做加权总分，也不会把最高分自动变成赢家。选择只能是 `explore`、`verify-first`、`park`、`reject` 或 `needs-human`，并且必须写一个能改变当前判断的最小测试。这样可以保留“新但贵”“可行但证据弱”“风险高但值得先做小验证”等真实取舍。
+
+每个进入比较的候选保存为 `research/artifacts/factor-card-<slug>.json`，然后运行：
+
+```bash
+python <plugin>/scripts/ds_lite_protocol.py validate-factor-card \
+  --path research/artifacts/factor-card-<slug>.json
+```
+
+Factor Card 只是路线选择 artifact，不是实验、引用核验或 Evidence Pack。即使六项都有高分，也不能把 Mission Board 从 planning/needs-evidence 升到 has-evidence；只有 work unit 声明的 typed validator 可以完成这种升级。
+
 ### Experiment：先写契约，再运行
 
 `$ds-lite-experiment` 在运行前声明命令、输入、指标、阈值、seed、预算、预期输出和失败解释；运行后再封装日志和结果。

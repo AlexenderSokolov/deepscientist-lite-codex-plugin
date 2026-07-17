@@ -19,6 +19,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   tools\validation\validate_repo.py `
   tests\test_acceptance_tools.py `
   tests\test_evidence_pack.py `
+  tests\test_protocols.py `
   tests\test_state_kernel.py `
   tests\test_teaching_labs.py
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

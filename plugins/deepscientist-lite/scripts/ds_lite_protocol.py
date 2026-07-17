@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from ds_lite_evidence import EvidenceError, normalize_protocol_path
 
 WORK_UNIT_SCHEMA = "ds-lite.work-unit.v1"
 REVIEW_RESULT_SCHEMA = "ds-lite.review-result.v1"
+FACTOR_CARD_SCHEMA = "ds-lite.factor-card.v1"
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 EXECUTION_MODES = {"none", "inline", "external", "human"}
@@ -19,6 +23,17 @@ SUBJECT_KINDS = {"conversation", "worker", "terminal", "job", "request", "artifa
 REVIEW_VERDICTS = {"pass", "fail", "needs-human"}
 CLAIM_ASSESSMENTS = {"none", "inconclusive", "refuted", "supportable"}
 CHANNEL_STATUSES = {"pass", "fail", "needs-human", "not-applicable"}
+FACTOR_CARD_STATUSES = {"draft", "assessed", "reviewed"}
+FACTOR_CARD_DECISIONS = {"explore", "verify-first", "park", "reject", "needs-human"}
+FACTOR_CONFIDENCE = {"unknown", "low", "medium", "high"}
+FACTOR_NAMES = {
+    "novelty",
+    "feasibility",
+    "evidence_strength",
+    "cost",
+    "risk",
+    "alignment",
+}
 FORBIDDEN_KEYS = {
     "thought",
     "chain_of_thought",
@@ -72,6 +87,20 @@ REVIEW_RESULT_REQUIRED = {
     "limitations",
     "review_artifact_ref",
     "completed_at",
+    "extensions",
+}
+FACTOR_CARD_REQUIRED = {
+    "schema_version",
+    "factor_card_id",
+    "work_unit_id",
+    "profile_id",
+    "subject_ref",
+    "status",
+    "factors",
+    "decision",
+    "minimal_test",
+    "created_at",
+    "updated_at",
     "extensions",
 }
 
@@ -246,6 +275,100 @@ def validate_work_unit(payload: Any) -> dict[str, Any]:
     return json.loads(json.dumps(payload))
 
 
+def _validate_resource_limits(value: Any, label: str) -> None:
+    if not isinstance(value, list):
+        raise ProtocolError(f"{label} must be a list")
+    identities: set[tuple[str, str]] = set()
+    for index, item in enumerate(value):
+        if not isinstance(item, dict) or set(item) != {"dimension", "unit", "value"}:
+            raise ProtocolError(f"{label}[{index}] must contain exactly dimension, unit, and value")
+        dimension = validate_id(item["dimension"], f"{label}[{index}].dimension")
+        unit = validate_id(item["unit"], f"{label}[{index}].unit")
+        amount = item["value"]
+        if not isinstance(amount, (int, float)) or isinstance(amount, bool) or amount < 0:
+            raise ProtocolError(f"{label}[{index}].value must be a non-negative number")
+        identity = (dimension, unit)
+        if identity in identities:
+            raise ProtocolError(f"{label} contains duplicate dimension/unit pairs")
+        identities.add(identity)
+
+
+def validate_factor_card(payload: Any) -> dict[str, Any]:
+    payload = _require_object(payload, FACTOR_CARD_SCHEMA, FACTOR_CARD_REQUIRED)
+    factor_card_id = validate_id(payload["factor_card_id"], "factor_card_id")
+    work_unit_id = validate_id(payload["work_unit_id"], "work_unit_id")
+    validate_id(payload["profile_id"], "profile_id")
+    if factor_card_id == work_unit_id:
+        raise ProtocolError("factor_card_id and work_unit_id must differ")
+    validate_ref(payload["subject_ref"], "subject_ref")
+    if payload["status"] not in FACTOR_CARD_STATUSES:
+        raise ProtocolError("status must be draft, assessed, or reviewed")
+    if payload["decision"] not in FACTOR_CARD_DECISIONS:
+        raise ProtocolError("decision must be explore, verify-first, park, reject, or needs-human")
+
+    factors = payload["factors"]
+    if not isinstance(factors, list):
+        raise ProtocolError("factors must be a list")
+    seen: set[str] = set()
+    factor_fields = {"name", "score", "confidence", "evidence_refs", "summary", "uncertainty", "extensions"}
+    for index, factor in enumerate(factors):
+        if not isinstance(factor, dict) or set(factor) != factor_fields:
+            raise ProtocolError(f"factors[{index}] must contain exactly {', '.join(sorted(factor_fields))}")
+        name = factor["name"]
+        if name not in FACTOR_NAMES:
+            raise ProtocolError(f"factors[{index}].name is invalid")
+        if name in seen:
+            raise ProtocolError("each required factor must appear exactly once")
+        seen.add(name)
+        score = factor["score"]
+        if score is not None and (not isinstance(score, int) or isinstance(score, bool) or not 0 <= score <= 4):
+            raise ProtocolError(f"factors[{index}].score must be null or an integer from 0 to 4")
+        confidence = factor["confidence"]
+        if confidence not in FACTOR_CONFIDENCE:
+            raise ProtocolError(f"factors[{index}].confidence is invalid")
+        refs = _validate_unique_refs(factor["evidence_refs"], f"factors[{index}].evidence_refs")
+        if score is None and confidence != "unknown":
+            raise ProtocolError("an unknown factor score requires unknown confidence")
+        if score is not None and confidence == "unknown":
+            raise ProtocolError("a scored factor requires non-unknown confidence")
+        if score is not None and not refs:
+            raise ProtocolError("a scored factor requires evidence_refs")
+        if not isinstance(factor["summary"], str) or not factor["summary"].strip():
+            raise ProtocolError(f"factors[{index}].summary must be a non-empty string")
+        if not isinstance(factor["uncertainty"], list) or not all(
+            isinstance(item, str) and item.strip() for item in factor["uncertainty"]
+        ):
+            raise ProtocolError(f"factors[{index}].uncertainty must be a list of non-empty strings")
+        if not isinstance(factor["extensions"], dict):
+            raise ProtocolError(f"factors[{index}].extensions must be an object")
+    if seen != FACTOR_NAMES:
+        raise ProtocolError("each required factor must appear exactly once")
+
+    minimal_test = payload["minimal_test"]
+    minimal_fields = {
+        "question",
+        "method",
+        "expected_evidence",
+        "resource_limits",
+        "stop_condition",
+        "extensions",
+    }
+    if not isinstance(minimal_test, dict) or set(minimal_test) != minimal_fields:
+        raise ProtocolError("minimal_test has unsupported or missing fields")
+    for field in ("question", "method", "stop_condition"):
+        if not isinstance(minimal_test[field], str) or not minimal_test[field].strip():
+            raise ProtocolError(f"minimal_test.{field} must be a non-empty string")
+    expected = minimal_test["expected_evidence"]
+    if not isinstance(expected, list) or not expected or not all(isinstance(item, str) and item.strip() for item in expected):
+        raise ProtocolError("minimal_test.expected_evidence must be a non-empty list of strings")
+    _validate_resource_limits(minimal_test["resource_limits"], "minimal_test.resource_limits")
+    if not isinstance(minimal_test["extensions"], dict):
+        raise ProtocolError("minimal_test.extensions must be an object")
+    validate_timestamp(payload["created_at"], "created_at")
+    validate_timestamp(payload["updated_at"], "updated_at")
+    return json.loads(json.dumps(payload))
+
+
 def validate_review_result(payload: Any) -> dict[str, Any]:
     payload = _require_object(payload, REVIEW_RESULT_SCHEMA, REVIEW_RESULT_REQUIRED)
     for field in ("review_id", "work_unit_id", "profile_id", "review_node_id", "reviewed_node_id"):
@@ -295,3 +418,23 @@ def canonical_json_bytes(value: Any) -> bytes:
 def evidence_refs_digest(records: list[dict[str, str]]) -> str:
     ordered = sorted(records, key=lambda item: item["path"])
     return hashlib.sha256(canonical_json_bytes(ordered)).hexdigest()
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Validate DeepScientist Lite sidecar protocols.")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    factor_parser = subparsers.add_parser("validate-factor-card", help="Validate ds-lite.factor-card.v1 JSON.")
+    factor_parser.add_argument("--path", required=True)
+    args = parser.parse_args(argv)
+    try:
+        payload = json.loads(Path(args.path).read_text(encoding="utf-8"))
+        validated = validate_factor_card(payload)
+    except (OSError, UnicodeError, json.JSONDecodeError, ProtocolError) as exc:
+        print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False))
+        return 1
+    print(json.dumps({"ok": True, "schema_version": validated["schema_version"]}, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

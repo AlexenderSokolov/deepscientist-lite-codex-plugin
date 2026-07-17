@@ -299,6 +299,14 @@ P0 保持 `ds-lite.graph.v2` 不变，在 `research/work-unit.json` 增加独立
 
 Mission 的 `evidence_detail` 给出 work unit/profile、validated/negative evidence、typed review 数量、最新 refs 和 blocking reasons。`waiting_for_user` 只由 active-route blocked、active-route blocker edge、typed `needs-human` 或 blocked work unit触发；off-route blocked 与警告继续可见，但不无条件阻塞当前路线。文学证据、数学探索、软件评测和数值仿真 profile 目前均为 `reserved / not-validated`，不包含领域默认规则。
 
+### Scientific Factor Card
+
+`ds-lite.factor-card.v1` 是 idea 阶段的独立 decision artifact，不改变 Graph v2、Evidence Pack v1、work unit 或 review-result schema。它固定记录 `novelty`、`feasibility`、`evidence_strength`、`cost`、`risk` 和 `alignment` 六项，每项包含 `null|0..4` score、confidence、evidence refs、公开摘要、不确定性和 `extensions`。cost/risk 分数越高表示负担越大，因此禁止计算默认加权总分。
+
+卡片的核心约束是“评价必须回到证据，但评价本身不是证据”。非空 score 需要项目相对或 `external://` ref；没有来源对照时 novelty 必须未知。`validate-factor-card` 只检查结构、路径、enum、敏感字段、ID/因子冲突和证据引用存在形式，不判断科学主张为真，也不参与 Mission evidence promotion。
+
+该方法只化用了本地审计的 DeepScientist v0.1.5 研究流程中的高层思想：先写机制假设、分离 idea 与验证状态、显式诊断失败、保留不确定性、选择下一项有界测试。Finance Factor 是 pressure fixture，不是默认 profile；金融字段、公式、数据、阈值和凭据均未进入插件。
+
 ## 8. 文件协议与长期记忆
 
 一个 DS Lite 项目通常包含：
@@ -312,6 +320,7 @@ Mission 的 `evidence_detail` 给出 work unit/profile、validated/negative evid
 | `research/work-unit.json` | 当前有界任务变化时 | `ds-lite.work-unit.v1`、mode、profile、claim requirement、refs 和开放限制 | 领域硬编码、凭据、绝对工作站根目录 |
 | `research/memory/*.md` | 发现长期事实时 | 有来源的稳定事实、约束、环境结论或方法决策 | 未经验证的临时猜测 |
 | `research/artifacts/*.md` | 每个研究阶段 | idea、baseline、experiment、analysis、decision 和写作记录 | 只有口号、没有证据的结论 |
+| `research/artifacts/factor-card-*.json` | idea 比较或证据变化时 | 六项分解评价、refs、不确定性、decision 与 minimal test | 自动总分、隐藏推理、claim evidence |
 | `research/artifacts/review-*.json` | 每次 review 完成时 | typed verdict、claim assessment、Evidence Pack refs/digest 和匹配身份 | Markdown 解释、隐藏推理或任意未知顶层字段 |
 | `research/evidence/<run-id>/` | 每次 claim-bearing run | contract、manifest、日志、指标、白名单环境说明和哈希 | 凭据、完整环境变量、未经授权复制的外部数据 |
 | `run_*.sh` | 运行方法变化时 | 可重复执行的研究、实验或分析命令 | 只在某次终端中有效的隐式步骤 |
@@ -410,7 +419,7 @@ runner 支持 quickstart、evidence、branches、route、paths 和 revision 六�
 
 每门课同时提供逐步引导和一段式 Codex 挑战。前者减少模型波动，适合第一次学习；后者用于检查 Codex 是否能在真实项目中遵守同一协议。案例中的算法结论和固定分数都不是插件能力声明。
 
-运行时 `references/` 只保留 skills 会直接使用的协议材料：状态图协议、Evidence Pack、外部长任务管护、比较实验模板、数学探索模板和教学说明。发布检查、已知问题和产品状态放在 `docs/maintainers/`，避免给每个运行中的 skill 增加无关上下文。
+运行时 `references/` 只保留 skills 会直接使用的协议材料：状态图协议、Evidence Pack、Scientific Factor Card、外部长任务管护、比较实验模板、数学探索模板和教学说明。发布检查、已知问题和产品状态放在 `docs/maintainers/`，避免给每个运行中的 skill 增加无关上下文。
 
 这个分层维持了清楚的主次关系：
 
