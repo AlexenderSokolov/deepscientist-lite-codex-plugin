@@ -1,0 +1,29 @@
+{
+  "schema_version": "ds-lite.experiment-contract.v1",
+  "run_id": "demo-run",
+  "node_id": "experiment-demo",
+  "hypothesis": "The deterministic demo should produce accuracy at or above 0.80.",
+  "command": "bash run_experiment.sh",
+  "cwd": ".",
+  "inputs": [
+    "run_experiment.sh"
+  ],
+  "metrics": [
+    {
+      "name": "accuracy",
+      "direction": "max",
+      "threshold": 0.8
+    }
+  ],
+  "seeds": [
+    0
+  ],
+  "budget": {
+    "value": 1,
+    "unit": "run"
+  },
+  "expected_outputs": [
+    "research/results/result.json"
+  ],
+  "failure_interpretation": "A missing output, integrity failure, or accuracy below 0.80 blocks claim promotion."
+}

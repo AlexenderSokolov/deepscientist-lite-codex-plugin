@@ -1,7 +1,7 @@
 {
   "name": "deepscientist-lite",
-  "version": "0.2.0-beta.1",
-  "description": "Independent teaching-first research workflow plugin for Codex with file-led research maps, artifacts, and a transactional Graph v2 state kernel.",
+  "version": "0.4.0-beta.2",
+  "description": "Keep a Codex research project recoverable: record goals, routes, experiments, evidence, reviews, and next steps in local files.",
   "author": {
     "name": "DeepScientist Lite maintainers"
   },
@@ -14,13 +14,14 @@
     "research-agent",
     "teaching",
     "research-map",
-    "artifact-first"
+    "artifact-first",
+    "evidence-review"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "DeepScientist Lite",
-    "shortDescription": "Run a lightweight DeepScientist-style research workflow inside Codex.",
-    "longDescription": "DeepScientist Lite is an independent, unofficial plugin inspired by the DeepScientist research workflow. It provides Codex skills, templates, and a transactional local state graph without the DeepScientist daemon, Web/TUI, connectors, MCP servers, or local model deployment. It is not sponsored, certified, or endorsed by ResearAI.",
+    "shortDescription": "Keep research goals, experiments, evidence, and next steps easy to recover and review.",
+    "longDescription": "DeepScientist Lite is an independent, unofficial Codex plugin for teaching and small research projects. Seven skills help users define a project, scout evidence, compare ideas, record reproducible experiments, review claims, write bounded conclusions, and advance one visible worker iteration at a time. Local project files preserve the current route and supporting evidence across sessions. The plugin does not run a daemon, deploy models, expose an MCP server, or prove that a scientific claim is true. It is not sponsored, certified, or endorsed by ResearAI.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
     "capabilities": [
@@ -29,9 +30,11 @@
       "Write"
     ],
     "defaultPrompt": [
-      "$ds-lite-intake start a research project from this question",
-      "$ds-lite-scout audit the literature and baseline route",
-      "$ds-lite-experiment record this experiment in the research map"
+      "$ds-lite-intake turn this research question into a project with clear goals and a next step",
+      "$ds-lite-scout check the available evidence, baselines, metrics, and risks",
+      "$ds-lite-experiment define the contract first, then record this run and its evidence",
+      "$ds-lite-review check whether this experiment is ready to support an analysis",
+      "$ds-lite-iterate advance exactly one visible research iteration and stop at a checkpoint"
     ],
     "brandColor": "#245A7A",
     "screenshots": []

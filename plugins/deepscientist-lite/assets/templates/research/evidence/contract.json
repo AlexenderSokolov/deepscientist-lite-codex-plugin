@@ -1,0 +1,29 @@
+{
+  "schema_version": "ds-lite.experiment-contract.v1",
+  "run_id": "example-run",
+  "node_id": "experiment-example",
+  "hypothesis": "State the expected result and mechanism.",
+  "command": "bash run_experiment.sh",
+  "cwd": ".",
+  "inputs": [
+    "run_experiment.sh"
+  ],
+  "metrics": [
+    {
+      "name": "primary_metric",
+      "direction": "max",
+      "threshold": 0.0
+    }
+  ],
+  "seeds": [
+    0
+  ],
+  "budget": {
+    "value": 1,
+    "unit": "run"
+  },
+  "expected_outputs": [
+    "research/results/example.json"
+  ],
+  "failure_interpretation": "State what a failed, partial, or inconclusive result would mean."
+}

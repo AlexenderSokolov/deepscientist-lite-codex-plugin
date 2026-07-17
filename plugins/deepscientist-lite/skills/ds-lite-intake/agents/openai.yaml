@@ -1,4 +1,4 @@
 interface:
   display_name: "DS Lite Intake"
-  short_description: "Start or audit a lightweight research project protocol."
-  default_prompt: "$ds-lite-intake start a DS Lite project from this research question"
+  short_description: "Define the project goal, current state, evidence gaps, and next step."
+  default_prompt: "$ds-lite-intake inspect this folder and turn my research question into a clear project handoff"

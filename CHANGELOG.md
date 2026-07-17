@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.4.0-beta.2
+
+- Add `mission` and `render-status` state CLI commands that project Graph v2 into a user-visible Mission Board.
+- Display Evidence Pack metric direction, thresholds, budgets, and early/final/aggregate metric surfaces in the Mission Board.
+- Add the `ds-lite-iterate` skill for exactly one bounded worker iteration with a required frontier decision artifact.
+- Add OpenScience worker handoff documentation for supervisor-driven Codex worker tasks.
+- Update `STATUS.md` to show active route, next action, candidate queue, rollback targets, validation state, and readiness rules.
+- Record AIResearch-derived readiness rules: artifact is not progress, ready is not done, idea is not experiment, metric errors are protocol failures, and invisible loops are not agent experience.
+- Extend repository smoke coverage to verify mission JSON/Markdown, render-status, rollback, blocked branch visibility, and off-route warnings.
+- Add an `external long-task stewardship` protocol for append-only runtime handoffs, recovery evidence, and duplicate-submission checks; this is a Codex behavior constraint, not background scheduling capability.
+- Add a `manual tmux capacity handshake`: Codex plans named slots and exact bootstrap commands, the user creates the top-level tmux surface, and Codex verifies it before launching pane-scoped CLI workers.
+- Add `ds-lite.work-unit.v1` planning and claim-bearing sidecars without changing Graph v2.
+- Require typed Evidence Pack validation before `has-evidence`; ordinary artifacts, logs, and non-empty paths no longer promote evidence strength.
+- Add the domain-neutral `ds-lite.review-result.v1` typed review result with separate review `verdict` and `claim_assessment`, plus Mission Board claim readiness and evidence detail.
+- Scope `waiting_for_user` to the active route while preserving off-route blocked warnings and debt.
+- Keep the Lite boundary unchanged: no daemon, MCP, Web/TUI, hooks, or long-running scheduler.
+- Publish this version as a source/package prerelease; fresh Codex cache installation remains a separate, unverified acceptance surface.
+
+## 0.3.0-beta.1
+
+- Add standard-library Evidence Pack v1 contracts, manifests, hashing, and strict verification.
+- Add the `ds-lite-review` skill and `review` Graph v2 node kind between experiment and analysis.
+- Gate new analysis/write work on a passing review without breaking existing Graph v2 files.
+- Add 45/90-minute evidence-chain and scored-branch teaching labs, worksheets, rubric, and answer key.
+- Replace outline-only teaching material with a cross-platform six-lab runner, student/reference modes, guided prompts, observable failures, and beginner-facing course notes.
+- Rewrite the Chinese quick start and add a user guide plus writing rules that explain mechanisms without overstating what Graph, Evidence Packs, or review can prove.
+- Document which platform recommendations were adopted, deferred, or rejected to preserve the Lite boundary.
+- Keep generated teaching `STATUS.md` synchronized with the final Graph active node and revision.
+- Require portable review/experiment shell scripts that resolve plugin tooling through environment variables instead of persisting workstation or Codex cache paths.
+- Record real Codex skill-trigger acceptance evidence and the remaining local-marketplace cache blocker.
+- Add fresh-output-only Codex acceptance preparation and audit tools that separate marketplace registration, installation, and skill discovery evidence.
+- Generate portable project shell entry points from a shared runtime resolver instead of placeholder scripts or saved cache paths.
+- Add `validate --strict --scope active-route`, keeping structural errors global while reporting preserved branch warnings separately.
+- Add `ds-lite.teaching-handoff.v1` so Graph, STATUS, active route, revision, and blocked follow-ups can be checked together.
+
 ## 0.2.0-beta.1
 
 - Upgrade the research state protocol to `ds-lite.graph.v2` with revisions.

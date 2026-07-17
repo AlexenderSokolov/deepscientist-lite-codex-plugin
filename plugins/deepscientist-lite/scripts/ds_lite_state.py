@@ -17,6 +17,9 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from string import Template
 from typing import Any, Callable, Iterator
 
+import ds_lite_evidence
+import ds_lite_protocol
+
 SCHEMA_V1 = "ds-lite.graph.v1"
 SCHEMA_VERSION = "ds-lite.graph.v2"
 NODE_KINDS = {
@@ -24,6 +27,7 @@ NODE_KINDS = {
     "scout",
     "idea",
     "experiment",
+    "review",
     "analysis",
     "write",
     "decision",
@@ -49,6 +53,21 @@ PATH_FIELDS = ("artifact_paths", "memory_paths", "evidence_paths")
 EXTERNAL_URI_RE = re.compile(r"^external://([a-z][a-z0-9_-]*)/(.+)$")
 MAP_REVISION_RE = re.compile(r"^- Revision: `([0-9]+)`$", re.MULTILINE)
 LOCK_TIMEOUT_SECONDS = float(os.environ.get("DS_LITE_LOCK_TIMEOUT", "10"))
+EVIDENCE_SCHEMA = "ds-lite.evidence.v1"
+WORK_UNIT_RELATIVE = "research/work-unit.json"
+RESERVED_PROFILES = {
+    "literature-evidence",
+    "mathematical-exploration",
+    "software-evaluation",
+    "numerical-simulation",
+}
+READINESS_RULES = [
+    "artifact != progress",
+    "ready != done",
+    "idea != experiment",
+    "metric wrong == protocol failure",
+    "no visible loop == no agent experience",
+]
 
 
 def configure_text_streams() -> None:
@@ -105,7 +124,7 @@ def template_root() -> Path:
 
 
 def ensure_dirs(root: Path) -> None:
-    for item in ("research/state", "research/memory", "research/artifacts"):
+    for item in ("research/state", "research/memory", "research/artifacts", "research/evidence"):
         (root / item).mkdir(parents=True, exist_ok=True)
 
 
@@ -410,14 +429,69 @@ def progression_cycle(graph: dict[str, Any]) -> list[str]:
     return []
 
 
-def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) -> tuple[list[str], list[str]]:
+def evidence_manifest_paths(node: dict[str, Any]) -> list[str]:
+    return [
+        value
+        for value in node.get("evidence_paths", [])
+        if isinstance(value, str) and value.startswith("research/evidence/") and value.endswith("/manifest.json")
+    ]
+
+
+def validate_evidence_manifest(root: Path, node_id: str, node: dict[str, Any], path_value: str) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
+    resolved, problem = resolve_graph_path(root, path_value)
+    if problem:
+        warnings.append(f"node {node_id} evidence manifest cannot be resolved: {problem}")
+        return errors, warnings
+    if resolved is None or not resolved.exists():
+        return errors, warnings
+    try:
+        payload = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        errors.append(f"node {node_id} evidence manifest is invalid JSON: {path_value}: {exc}")
+        return errors, warnings
+    if not isinstance(payload, dict) or payload.get("schema_version") != EVIDENCE_SCHEMA:
+        errors.append(f"node {node_id} evidence manifest must use {EVIDENCE_SCHEMA}: {path_value}")
+        return errors, warnings
+    if payload.get("node_id") != node_id:
+        errors.append(f"node {node_id} evidence manifest references node {payload.get('node_id')}: {path_value}")
+    if payload.get("status") not in {"planned", "completed", "failed"}:
+        errors.append(f"node {node_id} evidence manifest has invalid status: {path_value}")
+    verification = payload.get("verification")
+    verification_status = verification.get("status") if isinstance(verification, dict) else ""
+    if verification_status not in {"pass", "warning", "fail", "not-run"}:
+        errors.append(f"node {node_id} evidence manifest has invalid verification status: {path_value}")
+    elif verification_status in {"not-run", "warning"}:
+        warnings.append(f"node {node_id} evidence manifest is not strictly verified: {path_value}")
+    elif verification_status == "fail":
+        message = f"node {node_id} evidence manifest verification failed: {path_value}"
+        if node.get("status") == "done":
+            errors.append(message)
+        else:
+            warnings.append(message)
+    return errors, warnings
+
+
+def validate_graph(
+    root: Path,
+    graph: dict[str, Any],
+    check_paths: bool = True,
+    warning_nodes: list[str | None] | None = None,
+) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    def warn(message: str, node_id: str | None = None) -> None:
+        warnings.append(message)
+        if warning_nodes is not None:
+            warning_nodes.append(node_id)
+
     schema = graph.get("schema_version")
     if schema not in {SCHEMA_V1, SCHEMA_VERSION}:
         errors.append(f"schema_version must be {SCHEMA_V1} or {SCHEMA_VERSION}")
     if schema == SCHEMA_V1:
-        warnings.append("graph uses ds-lite.graph.v1; migrate before the next state change")
+        warn("graph uses ds-lite.graph.v1; migrate before the next state change")
     if schema == SCHEMA_VERSION:
         revision = graph.get("revision")
         if not isinstance(revision, int) or revision < 0:
@@ -487,14 +561,29 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
                     continue
                 resolved, path_problem = resolve_graph_path(root, value)
                 if path_problem:
-                    warnings.append(f"node {node_id} external path cannot be resolved: {path_problem}")
+                    warn(f"node {node_id} external path cannot be resolved: {path_problem}", node_id)
                     continue
                 if resolved is not None and not resolved.exists():
                     message = f"node {node_id} {list_field} path does not exist: {value}"
                     if list_field in {"artifact_paths", "memory_paths"} or node.get("status") == "done":
                         errors.append(message)
                     else:
-                        warnings.append(message)
+                        warn(message, node_id)
+
+        if node.get("kind") == "experiment":
+            manifests = evidence_manifest_paths(node)
+            if not manifests:
+                warn(f"experiment node {node_id} has no Evidence Pack manifest", node_id)
+            for manifest_value in manifests:
+                manifest_errors, manifest_warnings = validate_evidence_manifest(root, node_id, node, manifest_value)
+                errors.extend(manifest_errors)
+                for manifest_warning in manifest_warnings:
+                    warn(manifest_warning, node_id)
+        if node.get("kind") == "review":
+            if not node.get("artifact_paths"):
+                warn(f"review node {node_id} has no review artifact", node_id)
+            if not evidence_manifest_paths(node):
+                warn(f"review node {node_id} is not linked to an Evidence Pack manifest", node_id)
 
     if len(active_nodes) > 1:
         errors.append(f"multiple nodes have active status: {', '.join(sorted(active_nodes))}")
@@ -511,6 +600,7 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
         errors.append("active_node_id does not match the node with active status")
 
     semantic_edges: set[tuple[str, str, str]] = set()
+    progression_parents: dict[str, set[str]] = {node_id: set() for node_id in nodes}
     for source, edges in adjacency.items():
         if source not in nodes:
             errors.append(f"adjacency source {source} is not a node")
@@ -531,6 +621,8 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
             if edge_key in semantic_edges:
                 errors.append(f"duplicate semantic edge: {source} -[{relation}]-> {target}")
             semantic_edges.add(edge_key)
+            if relation in PROGRESSION_RELATIONS and target in progression_parents:
+                progression_parents[target].add(source)
             for field in ("reason", "artifact_path"):
                 if field not in edge:
                     errors.append(f"edge {source}[{index}] missing {field}")
@@ -546,7 +638,7 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
                 if check_paths:
                     resolved, path_problem = resolve_graph_path(root, artifact_path)
                     if path_problem:
-                        warnings.append(f"edge {source}[{index}] external path cannot be resolved: {path_problem}")
+                        warn(f"edge {source}[{index}] external path cannot be resolved: {path_problem}", source)
                     elif resolved is not None and not resolved.exists():
                         errors.append(f"edge {source}[{index}] artifact_path does not exist: {artifact_path}")
 
@@ -555,6 +647,11 @@ def validate_graph(root: Path, graph: dict[str, Any], check_paths: bool = True) 
             continue
         if not find_route(graph, root_id, node_id, mode="progression"):
             errors.append(f"node {node_id} is unreachable from root through progression edges")
+        node = nodes.get(node_id, {})
+        if node.get("kind") in {"analysis", "write"}:
+            parents = progression_parents.get(node_id, set())
+            if not any(nodes.get(parent, {}).get("kind") == "review" for parent in parents):
+                warn(f"{node.get('kind')} node {node_id} has no direct progression parent of kind review", node_id)
     cycle = progression_cycle(graph)
     if cycle:
         errors.append("progression graph contains a cycle: " + " -> ".join(cycle))
@@ -734,6 +831,744 @@ def render_map(root: Path, graph: dict[str, Any]) -> Path:
     return output
 
 
+def short_node(node: dict[str, Any] | None) -> dict[str, Any]:
+    node = node or {}
+    return {
+        "id": node.get("id", ""),
+        "kind": node.get("kind", ""),
+        "status": node.get("status", ""),
+        "title": node.get("title", ""),
+        "summary": node.get("summary", ""),
+        "artifact_paths": list(node.get("artifact_paths", [])),
+        "evidence_paths": list(node.get("evidence_paths", [])),
+    }
+
+
+def route_node_summaries(graph: dict[str, Any], route: list[str]) -> list[dict[str, Any]]:
+    nodes = graph.get("nodes", {})
+    return [short_node(nodes.get(node_id, {})) for node_id in route]
+
+
+def next_action_for(active: dict[str, Any], evidence_strength: str, claim_readiness: str) -> str:
+    kind = active.get("kind", "")
+    status = active.get("status", "")
+    if status == "blocked":
+        return "Resolve the blocker or ask the user/OpenScience supervisor for a decision."
+    if kind == "intake":
+        return "Run scouting to identify baselines, metrics, evidence gaps, and the first validation route."
+    if kind == "scout":
+        return "Generate 2-3 testable ideas and select the cheapest useful experiment."
+    if kind == "idea":
+        return "Write an experiment contract, run a smoke check if authorized, and package evidence."
+    if kind == "experiment":
+        if evidence_strength in {"has-evidence", "reviewed"}:
+            return "Run ds-lite-review before promoting any claim into analysis."
+        return "Package and validate the claim-bearing evidence; ordinary artifacts and logs do not satisfy the gate."
+    if kind == "review":
+        if evidence_strength != "reviewed":
+            return "Complete a typed review result before promoting any claim into analysis."
+        return "Analyze only passing review evidence; otherwise keep the experiment actionable and record follow-up."
+    if kind in {"analysis", "write", "finalize"}:
+        return "Decide whether to stop, branch the next candidate, or hand off the reviewed claim."
+    if kind == "decision":
+        if claim_readiness == "blocked":
+            return "Resolve the typed evidence or review blocker before selecting another claim-bearing action."
+        return "Execute exactly one bounded next action: exploit, branch, debug, review, analysis, stop, or ask-human."
+    return "Inspect STATUS.md, RESEARCH_MAP.md, and linked artifacts before choosing the next action."
+
+
+def default_work_unit(graph: dict[str, Any], route: list[str]) -> dict[str, Any]:
+    nodes = graph.get("nodes", {})
+    has_experiment = any(nodes.get(node_id, {}).get("kind") == "experiment" for node_id in route)
+    evidence_refs: list[str] = []
+    for node_id in route:
+        for value in evidence_manifest_paths(nodes.get(node_id, {})):
+            append_unique(evidence_refs, value)
+    return {
+        "schema_version": ds_lite_protocol.WORK_UNIT_SCHEMA,
+        "work_unit_id": "legacy-active-route",
+        "title": "Legacy active route",
+        "goal": "Continue the current Graph route without changing Graph v2.",
+        "execution_mode": "none",
+        "profile_id": "experiment-run" if has_experiment else "core-planning",
+        "state": "active",
+        "prerequisites": [],
+        "required_capabilities": ["read"],
+        "evidence_requirements": (
+            [{"kind": "experiment-pack", "validator": EVIDENCE_SCHEMA}] if has_experiment else []
+        ),
+        "evidence_refs": evidence_refs,
+        "resource_limits": [{"dimension": "actions", "unit": "count", "value": 1}],
+        "subjects": [
+            {
+                "kind": "artifact",
+                "id": "graph-state",
+                "query_ref": "research/state/graph.json",
+            }
+        ],
+        "active_iteration_ref": "",
+        "extensions": {"compatibility": "legacy-graph-derived"},
+    }
+
+
+def load_work_unit(
+    root: Path,
+    graph: dict[str, Any],
+    route: list[str],
+) -> tuple[dict[str, Any], list[str], list[str]]:
+    path = root / WORK_UNIT_RELATIVE
+    if not path.exists():
+        return (
+            default_work_unit(graph, route),
+            [],
+            [f"{WORK_UNIT_RELATIVE} is absent; mission used a legacy Graph-derived work unit"],
+        )
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return ds_lite_protocol.validate_work_unit(payload), [], []
+    except (OSError, UnicodeError, json.JSONDecodeError, ds_lite_protocol.ProtocolError) as exc:
+        return default_work_unit(graph, route), [f"work unit is invalid: {exc}"], []
+
+
+def route_evidence_nodes(graph: dict[str, Any], route: list[str]) -> dict[str, str]:
+    linked: dict[str, str] = {}
+    for node_id in route:
+        node = graph.get("nodes", {}).get(node_id, {})
+        if node.get("kind") != "experiment":
+            continue
+        for value in evidence_manifest_paths(node):
+            linked[value] = node_id
+    return linked
+
+
+def validate_work_unit_evidence(
+    root: Path,
+    graph: dict[str, Any],
+    route: list[str],
+    work_unit: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[str]]:
+    requirements = work_unit.get("evidence_requirements", [])
+    if not requirements:
+        return [], []
+    blocking: list[str] = []
+    profile_id = str(work_unit.get("profile_id", ""))
+    validators = {str(item.get("validator", "")) for item in requirements if isinstance(item, dict)}
+    if profile_id in RESERVED_PROFILES:
+        return [], [f"profile {profile_id} is reserved / not-validated and has no typed validator"]
+    if profile_id != "experiment-run":
+        return [], [f"profile validator missing for profile {profile_id}"]
+    unsupported = sorted(validators - {EVIDENCE_SCHEMA})
+    if unsupported:
+        return [], [f"profile validator missing for: {', '.join(unsupported)}"]
+
+    refs = list(work_unit.get("evidence_refs", []))
+    if not refs:
+        return [], ["claim-bearing work unit has no evidence refs"]
+    linked = route_evidence_nodes(graph, route)
+    validated: list[dict[str, Any]] = []
+    for ref in refs:
+        node_id = linked.get(ref)
+        if not node_id:
+            blocking.append(f"evidence ref is not linked on the active route: {ref}")
+            continue
+        resolved, problem, is_external = ds_lite_evidence.resolve_protocol_path(root, ref)
+        if problem or resolved is None or is_external:
+            blocking.append(f"evidence ref cannot be resolved as a project Evidence Pack: {ref}: {problem or 'external'}")
+            continue
+        try:
+            payload = json.loads(resolved.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            blocking.append(f"evidence ref is damaged: {ref}: {exc}")
+            continue
+        if not isinstance(payload, dict) or payload.get("schema_version") != EVIDENCE_SCHEMA:
+            blocking.append(f"evidence ref has invalid schema: {ref}")
+            continue
+        run_id = str(payload.get("run_id", ""))
+        expected_ref = f"research/evidence/{run_id}/manifest.json"
+        if ref != expected_ref:
+            blocking.append(f"evidence ref does not match its run id: {ref}")
+            continue
+        if payload.get("node_id") != node_id:
+            blocking.append(f"evidence ref node id does not match active-route node {node_id}: {ref}")
+            continue
+        verification = payload.get("verification")
+        if not isinstance(verification, dict) or verification.get("status") != "pass":
+            blocking.append(f"typed validator has not recorded pass for evidence ref: {ref}")
+            continue
+        try:
+            manifest, errors, warnings, _thresholds = ds_lite_evidence.verify_pack(root, run_id)
+        except (ds_lite_evidence.EvidenceError, OSError, UnicodeError, json.JSONDecodeError) as exc:
+            blocking.append(f"typed validator failed for evidence ref {ref}: {exc}")
+            continue
+        if errors or warnings:
+            details = errors + warnings
+            blocking.append(f"typed validator failed for evidence ref {ref}: {'; '.join(details)}")
+            continue
+        validated.append(
+            {
+                "ref": ref,
+                "node_id": node_id,
+                "run_id": run_id,
+                "status": manifest.get("status", ""),
+            }
+        )
+    return validated, blocking
+
+
+def review_result_paths(node: dict[str, Any]) -> list[str]:
+    return [
+        value
+        for value in node.get("artifact_paths", [])
+        if isinstance(value, str) and value.endswith(".json")
+    ]
+
+
+def evidence_digest_for_refs(root: Path, refs: list[str]) -> tuple[str, str | None]:
+    records: list[dict[str, str]] = []
+    for ref in refs:
+        resolved, problem, is_external = ds_lite_evidence.resolve_protocol_path(root, ref)
+        if problem or resolved is None or is_external or not resolved.is_file():
+            return "", f"reviewed evidence ref cannot be hashed: {ref}: {problem or 'unavailable'}"
+        digest, _size = ds_lite_evidence.hash_file(resolved)
+        records.append({"path": ref, "sha256": digest})
+    return ds_lite_protocol.evidence_refs_digest(records), None
+
+
+def validate_route_reviews(
+    root: Path,
+    graph: dict[str, Any],
+    route: list[str],
+    work_unit: dict[str, Any],
+    validated_evidence: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[str], list[str]]:
+    nodes = graph.get("nodes", {})
+    valid_evidence_refs = {item["ref"] for item in validated_evidence}
+    required_validators = {
+        str(item.get("validator", ""))
+        for item in work_unit.get("evidence_requirements", [])
+        if isinstance(item, dict)
+    }
+    valid_results: list[dict[str, Any]] = []
+    blocking: list[str] = []
+    compatibility: list[str] = []
+    for node_id in route:
+        node = nodes.get(node_id, {})
+        if node.get("kind") != "review":
+            continue
+        paths = review_result_paths(node)
+        if not paths:
+            compatibility.append(f"review node {node_id} has no {ds_lite_protocol.REVIEW_RESULT_SCHEMA} sidecar")
+            continue
+        for ref in paths:
+            resolved, problem, is_external = ds_lite_evidence.resolve_protocol_path(root, ref)
+            if problem or resolved is None or is_external:
+                blocking.append(f"review result cannot be resolved: {ref}: {problem or 'external'}")
+                continue
+            try:
+                payload = json.loads(resolved.read_text(encoding="utf-8"))
+                result = ds_lite_protocol.validate_review_result(payload)
+            except (OSError, UnicodeError, json.JSONDecodeError, ds_lite_protocol.ProtocolError) as exc:
+                blocking.append(f"review result is invalid: {ref}: {exc}")
+                continue
+            if node.get("status") != "done":
+                blocking.append(f"review node {node_id} must be done before its typed result is accepted")
+                continue
+            if result["review_node_id"] != node_id:
+                blocking.append(f"review result node id does not match {node_id}: {ref}")
+                continue
+            if result["work_unit_id"] != work_unit.get("work_unit_id"):
+                blocking.append(f"review result work unit does not match active work unit: {ref}")
+                continue
+            if result["profile_id"] != work_unit.get("profile_id"):
+                blocking.append(f"review result profile does not match active work unit: {ref}")
+                continue
+            if result["evidence_validator"] not in required_validators:
+                blocking.append(f"review result validator does not match active work unit: {ref}")
+                continue
+            reviewed_id = result["reviewed_node_id"]
+            reviewed_node = nodes.get(reviewed_id, {})
+            if reviewed_id not in route or reviewed_node.get("kind") != "experiment":
+                blocking.append(f"reviewed node is not an experiment on the active route: {ref}")
+                continue
+            if not any(
+                edge.get("to") == node_id and edge.get("relation") in PROGRESSION_RELATIONS
+                for edge in graph.get("adjacency", {}).get(reviewed_id, [])
+            ):
+                blocking.append(f"review node is not a direct progression child of {reviewed_id}: {ref}")
+                continue
+            reviewed_refs = set(result["reviewed_evidence_refs"])
+            if not reviewed_refs or not reviewed_refs.issubset(valid_evidence_refs):
+                blocking.append(f"review result references evidence that did not pass its typed validator: {ref}")
+                continue
+            if not reviewed_refs.issubset(set(reviewed_node.get("evidence_paths", []))):
+                blocking.append(f"reviewed evidence refs are not linked to node {reviewed_id}: {ref}")
+                continue
+            if not reviewed_refs.issubset(set(node.get("evidence_paths", []))):
+                blocking.append(f"reviewed evidence refs are not linked to review node {node_id}: {ref}")
+                continue
+            digest, digest_problem = evidence_digest_for_refs(root, result["reviewed_evidence_refs"])
+            if digest_problem or digest != result["evidence_digest"]:
+                blocking.append(digest_problem or f"review result evidence digest mismatch: {ref}")
+                continue
+            if result["review_artifact_ref"] not in node.get("artifact_paths", []):
+                blocking.append(f"review artifact ref is not linked to review node {node_id}: {ref}")
+                continue
+            valid_results.append({"ref": ref, **result})
+    return valid_results, blocking, compatibility
+
+
+def derive_evidence_state(
+    root: Path,
+    graph: dict[str, Any],
+    route: list[str],
+) -> dict[str, Any]:
+    work_unit, work_unit_errors, compatibility = load_work_unit(root, graph, route)
+    validated, evidence_blocking = validate_work_unit_evidence(root, graph, route, work_unit)
+    reviews, review_blocking, review_compatibility = validate_route_reviews(
+        root, graph, route, work_unit, validated
+    )
+    compatibility.extend(review_compatibility)
+    blocking = evidence_blocking + review_blocking
+    requirements = work_unit.get("evidence_requirements", [])
+    if reviews:
+        strength = "reviewed"
+    elif validated:
+        strength = "has-evidence"
+    elif requirements:
+        strength = "needs-evidence"
+    else:
+        strength = "planning"
+
+    if not requirements:
+        readiness = "none"
+    elif work_unit_errors or blocking or not validated:
+        readiness = "blocked"
+    elif reviews:
+        latest = reviews[-1]
+        readiness = latest["claim_assessment"] if latest["verdict"] == "pass" else "blocked"
+        if readiness == "none":
+            readiness = "inconclusive"
+    else:
+        readiness = "inconclusive"
+
+    negative = [item for item in validated if item.get("status") == "failed"]
+    detail = {
+        "work_unit_id": work_unit.get("work_unit_id", ""),
+        "profile_id": work_unit.get("profile_id", ""),
+        "claim_requirement_count": len(requirements),
+        "validated_evidence_count": len(validated),
+        "validated_evidence_refs": [item["ref"] for item in validated],
+        "negative_evidence_count": len(negative),
+        "negative_evidence_refs": [item["ref"] for item in negative],
+        "review_result_count": len(reviews),
+        "latest_evidence_ref": validated[-1]["ref"] if validated else "",
+        "latest_review_ref": reviews[-1]["ref"] if reviews else "",
+        "blocking_reasons": work_unit_errors + blocking,
+    }
+    return {
+        "work_unit": work_unit,
+        "evidence_strength": strength,
+        "claim_readiness": readiness,
+        "evidence_detail": detail,
+        "review_results": reviews,
+        "errors": work_unit_errors + review_blocking,
+        "warnings": evidence_blocking,
+        "compatibility_warnings": compatibility,
+    }
+
+
+def read_json_object(path: Path | None) -> dict[str, Any] | None:
+    if path is None or not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def metric_surface_label(metric_name: str) -> str:
+    lowered = metric_name.lower()
+    if "auc" in lowered or "aggregate" in lowered:
+        return "aggregate"
+    if "final" in lowered:
+        return "final"
+    if "early" in lowered or "smoke" in lowered:
+        return "early"
+    return "primary"
+
+
+def inferred_metric_surfaces(node: dict[str, Any]) -> list[dict[str, Any]]:
+    text = f"{node.get('title', '')} {node.get('summary', '')}".lower()
+    inferred: list[dict[str, Any]] = []
+    for token, surface in (("auc", "aggregate"), ("final", "final"), ("early", "early")):
+        if token in text:
+            inferred.append(
+                {
+                    "node_id": node.get("id", ""),
+                    "run_id": "",
+                    "name": token,
+                    "direction": "observe",
+                    "threshold": None,
+                    "surface": surface,
+                    "budget": {},
+                    "verification_status": "",
+                    "source": "node-summary",
+                }
+            )
+    return inferred
+
+
+def metric_surfaces_for_node(root: Path, node: dict[str, Any]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for manifest_value in evidence_manifest_paths(node):
+        manifest_path, problem = resolve_graph_path(root, manifest_value)
+        if problem:
+            continue
+        manifest = read_json_object(manifest_path)
+        if not manifest:
+            continue
+        contract_value = str(manifest.get("contract_path") or "")
+        if not contract_value:
+            contract_value = (PurePosixPath(manifest_value).parent / "contract.json").as_posix()
+        contract_path, contract_problem = resolve_graph_path(root, contract_value)
+        if contract_problem:
+            continue
+        contract = read_json_object(contract_path)
+        if not contract:
+            continue
+        budget = contract.get("budget") if isinstance(contract.get("budget"), dict) else {}
+        verification = manifest.get("verification") if isinstance(manifest.get("verification"), dict) else {}
+        threshold_records = verification.get("thresholds") if isinstance(verification.get("thresholds"), list) else []
+        thresholds_by_name = {
+            str(item.get("name")): item
+            for item in threshold_records
+            if isinstance(item, dict) and str(item.get("name", "")).strip()
+        }
+        for metric in contract.get("metrics", []):
+            if not isinstance(metric, dict):
+                continue
+            name = str(metric.get("name", "")).strip()
+            direction = str(metric.get("direction", "")).strip()
+            if not name or not direction:
+                continue
+            threshold_record = thresholds_by_name.get(name, {})
+            records.append(
+                {
+                    "node_id": node.get("id", ""),
+                    "run_id": manifest.get("run_id", ""),
+                    "name": name,
+                    "direction": direction,
+                    "threshold": metric.get("threshold", threshold_record.get("threshold")),
+                    "surface": metric_surface_label(name),
+                    "budget": budget,
+                    "verification_status": verification.get("status", ""),
+                    "source": contract_value,
+                }
+            )
+    return records or inferred_metric_surfaces(node)
+
+
+def metric_surfaces_for_route(root: Path, graph: dict[str, Any], route: list[str]) -> list[dict[str, Any]]:
+    surfaces: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for node_id in route:
+        node = graph.get("nodes", {}).get(node_id, {})
+        if node.get("kind") not in {"experiment", "review", "analysis", "write", "finalize"}:
+            continue
+        for record in metric_surfaces_for_node(root, node):
+            key = (str(record.get("run_id") or record.get("node_id", "")), str(record.get("name", "")))
+            if key in seen:
+                continue
+            seen.add(key)
+            surfaces.append(record)
+    return surfaces
+
+
+def build_mission(root: Path, graph: dict[str, Any]) -> dict[str, Any]:
+    nodes = graph.get("nodes", {})
+    adjacency = graph.get("adjacency", {})
+    active_id = graph.get("active_node_id", "")
+    root_id = graph.get("root_node_id", "")
+    active = nodes.get(active_id, {})
+    route = find_route(graph, root_id, active_id, mode="progression") if active_id else []
+    route_set = set(route)
+
+    warning_nodes: list[str | None] = []
+    errors, all_warnings = validate_graph(root, graph, check_paths=True, warning_nodes=warning_nodes)
+    if map_is_stale(root, graph):
+        all_warnings.append("RESEARCH_MAP.md is missing or stale; run render-map")
+        warning_nodes.append(None)
+    route_warnings: list[str] = []
+    off_route_warnings: list[str] = []
+    for message, node_id in zip(all_warnings, warning_nodes):
+        if node_id is not None and node_id not in route_set:
+            off_route_warnings.append(message)
+        else:
+            route_warnings.append(message)
+
+    evidence_state = derive_evidence_state(root, graph, route)
+    errors.extend(evidence_state["errors"])
+    route_warnings.extend(evidence_state["warnings"])
+
+    candidate_queue: list[dict[str, Any]] = []
+    rollback_targets: list[dict[str, str]] = []
+    supersedes: list[dict[str, str]] = []
+    blockers: list[dict[str, str]] = []
+    for source, edges in adjacency.items():
+        for edge in edges:
+            target = str(edge.get("to", ""))
+            relation = edge.get("relation", "")
+            if relation == "branch" and target not in route_set and target in nodes:
+                candidate_queue.append(short_node(nodes[target]))
+            elif relation == "rollback":
+                rollback_targets.append(
+                    {"from": str(source), "to": target, "reason": str(edge.get("reason", ""))}
+                )
+            elif relation == "supersedes":
+                supersedes.append({"from": str(source), "to": target, "reason": str(edge.get("reason", ""))})
+            elif relation == "blocks":
+                blockers.append({"from": str(source), "to": target, "reason": str(edge.get("reason", ""))})
+
+    blocked_nodes = [short_node(node) for node in nodes.values() if node.get("status") == "blocked"]
+    active_route_blocked = [
+        short_node(nodes[node_id])
+        for node_id in route
+        if nodes.get(node_id, {}).get("status") == "blocked"
+    ]
+    off_route_blocked = [
+        short_node(node)
+        for node_id, node in nodes.items()
+        if node.get("status") == "blocked" and node_id not in route_set
+    ]
+    active_route_blocker_edges = [item for item in blockers if item.get("from") in route_set]
+    review_needs_human = any(
+        item.get("verdict") == "needs-human" for item in evidence_state["review_results"]
+    )
+    work_unit_blocked = evidence_state["work_unit"].get("state") == "blocked"
+    waiting_for_user = bool(
+        active_route_blocked or active_route_blocker_edges or review_needs_human or work_unit_blocked
+    )
+    experiment_queue = [
+        short_node(node)
+        for node in nodes.values()
+        if node.get("kind") == "experiment" and node.get("status") in {"active", "proposed", "blocked"}
+    ]
+    latest_result = {}
+    for node_id in reversed(route):
+        node = nodes.get(node_id, {})
+        if node.get("kind") in {"experiment", "review", "analysis", "write", "finalize"}:
+            latest_result = short_node(node)
+            break
+
+    validation_ok = not errors and not route_warnings
+    mission = {
+        "ok": True,
+        "schema_version": graph.get("schema_version"),
+        "revision": graph.get("revision", 0),
+        "project": graph.get("project", {}),
+        "root_node_id": root_id,
+        "active_node_id": active_id,
+        "stage": active.get("kind", ""),
+        "active": short_node(active),
+        "active_route": route,
+        "active_route_nodes": route_node_summaries(graph, route),
+        "latest_result": latest_result,
+        "next_action": next_action_for(
+            active,
+            evidence_state["evidence_strength"],
+            evidence_state["claim_readiness"],
+        ),
+        "candidate_queue": candidate_queue,
+        "experiment_queue": experiment_queue,
+        "blocked_nodes": blocked_nodes,
+        "blockers": blockers,
+        "rollback_targets": rollback_targets,
+        "supersedes": supersedes,
+        "metric_surfaces": metric_surfaces_for_route(root, graph, route),
+        "work_unit": evidence_state["work_unit"],
+        "evidence_strength": evidence_state["evidence_strength"],
+        "claim_readiness": evidence_state["claim_readiness"],
+        "evidence_detail": evidence_state["evidence_detail"],
+        "waiting_for_user": waiting_for_user,
+        "waiting_detail": {
+            "active_route_blocked_count": len(active_route_blocked),
+            "off_route_blocked_count": len(off_route_blocked),
+            "active_route_blocker_edge_count": len(active_route_blocker_edges),
+            "review_needs_human": review_needs_human,
+            "work_unit_blocked": work_unit_blocked,
+        },
+        "readiness_rules": READINESS_RULES,
+        "validation": {
+            "ok": validation_ok,
+            "errors": errors,
+            "warnings": route_warnings,
+            "off_route_warnings": off_route_warnings,
+            "compatibility_warnings": evidence_state["compatibility_warnings"],
+            "map_stale": map_is_stale(root, graph),
+        },
+    }
+    return mission
+
+
+def render_mission_markdown(mission: dict[str, Any]) -> str:
+    project = mission.get("project", {})
+    active = mission.get("active", {})
+    latest = mission.get("latest_result") or {}
+    work_unit = mission.get("work_unit") or {}
+    evidence_detail = mission.get("evidence_detail") or {}
+    waiting_detail = mission.get("waiting_detail") or {}
+    lines = [
+        "# Status",
+        "",
+        "## Mission Board",
+        "",
+        f"- Project: {project.get('title') or project.get('id') or 'Untitled Project'}",
+        f"- Active node: `{mission.get('active_node_id', '')}`",
+        f"- Stage: {mission.get('stage', '') or 'unknown'}",
+        f"- Status: {active.get('status', '') or 'unknown'}",
+        f"- Work unit: `{work_unit.get('work_unit_id', '')}`",
+        f"- Profile: `{work_unit.get('profile_id', '')}`",
+        f"- Execution mode: {work_unit.get('execution_mode', '') or 'unknown'}",
+        f"- Evidence strength: {mission.get('evidence_strength', '')}",
+        f"- Claim readiness: {mission.get('claim_readiness', '')}",
+        f"- Validated evidence: {evidence_detail.get('validated_evidence_count', 0)}",
+        f"- Negative evidence: {evidence_detail.get('negative_evidence_count', 0)}",
+        f"- Typed review results: {evidence_detail.get('review_result_count', 0)}",
+        f"- Latest evidence ref: {evidence_detail.get('latest_evidence_ref') or 'none'}",
+        f"- Latest review ref: {evidence_detail.get('latest_review_ref') or 'none'}",
+        f"- Waiting for user: {'yes' if mission.get('waiting_for_user') else 'no'}",
+        f"- Active-route blocked: {waiting_detail.get('active_route_blocked_count', 0)}",
+        f"- Off-route blocked: {waiting_detail.get('off_route_blocked_count', 0)}",
+        "",
+        "## Current Summary",
+        "",
+        str(active.get("summary") or "No active summary recorded."),
+        "",
+        "## Latest Result",
+        "",
+    ]
+    if latest:
+        lines.extend(
+            [
+                f"- `{latest.get('id')}` - {latest.get('kind')}: {latest.get('title')} [{latest.get('status')}]",
+                f"- Summary: {latest.get('summary')}",
+            ]
+        )
+    else:
+        lines.append("- No experiment, review, or analysis result on the active route yet.")
+
+    lines.extend(["", "## Metric Surface", ""])
+    metric_surfaces = mission.get("metric_surfaces", [])
+    if metric_surfaces:
+        for item in metric_surfaces:
+            budget = item.get("budget") if isinstance(item.get("budget"), dict) else {}
+            budget_text = ""
+            if budget:
+                budget_text = f", budget={budget.get('value')} {budget.get('unit')}"
+            threshold = item.get("threshold")
+            threshold_text = "" if threshold is None else f", threshold={threshold}"
+            lines.append(
+                f"- `{item.get('name')}`: surface={item.get('surface')}, direction={item.get('direction')}"
+                f"{threshold_text}{budget_text}"
+            )
+    else:
+        lines.append("- No metric contract on the active route yet.")
+    lines.extend(
+        [
+            "",
+            "## Next Action",
+            "",
+            str(mission.get("next_action") or "Inspect the active node and choose the next bounded action."),
+            "",
+            "## Active Route",
+            "",
+        ]
+    )
+    for node in mission.get("active_route_nodes", []):
+        lines.append(f"- `{node.get('id')}` - {node.get('kind')}: {node.get('title')} [{node.get('status')}]")
+    if not mission.get("active_route_nodes"):
+        lines.append("- No progression route found.")
+
+    lines.extend(["", "## Experiment Queue", ""])
+    experiments = mission.get("experiment_queue", [])
+    if experiments:
+        for node in experiments:
+            lines.append(f"- `{node.get('id')}` - {node.get('title')} [{node.get('status')}]")
+    else:
+        lines.append("- No active or proposed experiment nodes.")
+
+    lines.extend(["", "## Candidate Queue", ""])
+    candidates = mission.get("candidate_queue", [])
+    if candidates:
+        for node in candidates:
+            lines.append(f"- `{node.get('id')}` - {node.get('title')} [{node.get('status')}]")
+    else:
+        lines.append("- No off-route branch candidates.")
+
+    lines.extend(["", "## Blockers", ""])
+    blocked = mission.get("blocked_nodes", [])
+    blockers = mission.get("blockers", [])
+    if blocked or blockers:
+        for node in blocked:
+            lines.append(f"- `{node.get('id')}` - {node.get('title')} [{node.get('status')}]")
+        for item in blockers:
+            lines.append(f"- `{item.get('from')}` blocks `{item.get('to')}`: {item.get('reason')}")
+    else:
+        lines.append("- None.")
+
+    lines.extend(["", "## Rollback Targets", ""])
+    rollbacks = mission.get("rollback_targets", [])
+    if rollbacks:
+        for item in rollbacks:
+            lines.append(f"- `{item.get('from')}` -> `{item.get('to')}`: {item.get('reason')}")
+    else:
+        lines.append("- None recorded.")
+
+    lines.extend(["", "## Validation", ""])
+    validation = mission.get("validation", {})
+    lines.append(f"- Active route valid: {'yes' if validation.get('ok') else 'no'}")
+    lines.append(f"- Map stale: {'yes' if validation.get('map_stale') else 'no'}")
+    errors = validation.get("errors") or []
+    if errors:
+        lines.append("- Errors:")
+        for error in errors:
+            lines.append(f"  - {error}")
+    warnings = validation.get("warnings") or []
+    if warnings:
+        lines.append("- Warnings:")
+        for warning in warnings:
+            lines.append(f"  - {warning}")
+    off_route_warnings = validation.get("off_route_warnings") or []
+    if off_route_warnings:
+        lines.append("- Off-route warnings preserved:")
+        for warning in off_route_warnings:
+            lines.append(f"  - {warning}")
+    evidence_blockers = evidence_detail.get("blocking_reasons") or []
+    if evidence_blockers:
+        lines.append("- Evidence blockers:")
+        for blocker in evidence_blockers:
+            lines.append(f"  - {blocker}")
+    compatibility_warnings = validation.get("compatibility_warnings") or []
+    if compatibility_warnings:
+        lines.append("- Compatibility warnings:")
+        for warning in compatibility_warnings:
+            lines.append(f"  - {warning}")
+
+    lines.extend(["", "## Readiness Rules", ""])
+    for rule in mission.get("readiness_rules", []):
+        lines.append(f"- {rule}")
+    lines.extend(["", "## Last Updated", "", utc_now()])
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_status(root: Path, graph: dict[str, Any]) -> Path:
+    mission = build_mission(root, graph)
+    output = root / "STATUS.md"
+    atomic_write_text(output, render_mission_markdown(mission))
+    return output
+
+
 def map_revision(root: Path) -> int | None:
     path = root / "RESEARCH_MAP.md"
     if not path.exists():
@@ -802,14 +1637,22 @@ def cmd_init(args: argparse.Namespace) -> int:
             return 0
 
         today = datetime.now().strftime("%Y-%m-%d")
-        values = {"project_title": title, "question": question or "TBD.", "date": today}
+        values = {
+            "project_title": title,
+            "question": question or "TBD.",
+            "question_json": json.dumps(question or "Define the first bounded research goal.", ensure_ascii=False),
+            "date": today,
+        }
         created = []
         for relative, template_name in (
             ("PROJECT.md", "PROJECT.md"),
             ("STATUS.md", "STATUS.md"),
             ("run_research.sh", "run_research.sh"),
             ("run_experiment.sh", "run_experiment.sh"),
+            ("run_review.sh", "run_review.sh"),
             ("run_analysis.sh", "run_analysis.sh"),
+            ("tools/ds_lite_runtime.sh", "tools/ds_lite_runtime.sh"),
+            (WORK_UNIT_RELATIVE, "research/work-unit.json"),
         ):
             if write_if_missing(root / relative, render_template(template_name, values)):
                 created.append(relative)
@@ -1063,18 +1906,37 @@ def cmd_trace_artifact(args: argparse.Namespace) -> int:
 def cmd_validate(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve()
     graph = load_graph(root)
-    errors, warnings = validate_graph(root, graph, check_paths=True)
+    warning_nodes: list[str | None] = []
+    errors, all_warnings = validate_graph(root, graph, check_paths=True, warning_nodes=warning_nodes)
     if map_is_stale(root, graph):
-        warnings.append("RESEARCH_MAP.md is missing or stale; run render-map")
+        all_warnings.append("RESEARCH_MAP.md is missing or stale; run render-map")
+        warning_nodes.append(None)
+
+    active_id = graph.get("active_node_id", "")
+    active_route = find_route(graph, graph.get("root_node_id", ""), active_id, mode="progression") if active_id else []
+    route_nodes = set(active_route)
+    warnings: list[str] = []
+    off_route_warnings: list[str] = []
+    for message, node_id in zip(all_warnings, warning_nodes):
+        if args.scope == "active-route" and node_id is not None and node_id not in route_nodes:
+            off_route_warnings.append(message)
+        else:
+            warnings.append(message)
+
     ok = not errors and (not args.strict or not warnings)
     emit(
         {
             "ok": ok,
             "strict": args.strict,
+            "scope": args.scope,
             "schema_version": graph.get("schema_version"),
             "revision": graph.get("revision", 0),
+            "active_node_id": active_id,
+            "active_route": active_route,
             "errors": errors,
             "warnings": warnings,
+            "off_route_warnings": off_route_warnings,
+            "warning_count": len(all_warnings),
             "graph": str(state_path(root)),
         }
     )
@@ -1095,6 +1957,33 @@ def cmd_render_map(args: argparse.Namespace) -> int:
             "schema_version": graph.get("schema_version"),
             "revision": graph.get("revision", 0),
             "backup": str(backup) if backup else "",
+        }
+    )
+    return 0
+
+
+def cmd_mission(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve()
+    graph = load_graph(root)
+    mission = build_mission(root, graph)
+    if args.format == "markdown":
+        print(render_mission_markdown(mission), end="")
+    else:
+        emit(mission)
+    return 0
+
+
+def cmd_render_status(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve()
+    graph = load_graph(root)
+    output = render_status(root, graph)
+    emit(
+        {
+            "ok": True,
+            "path": str(output),
+            "schema_version": graph.get("schema_version"),
+            "revision": graph.get("revision", 0),
+            "active_node_id": graph.get("active_node_id", ""),
         }
     )
     return 0
@@ -1281,12 +2170,27 @@ def build_parser() -> argparse.ArgumentParser:
     validate = subparsers.add_parser("validate", help="Validate graph structure, semantics, paths, and map freshness.")
     add_root(validate)
     validate.add_argument("--strict", action="store_true")
+    validate.add_argument(
+        "--scope",
+        choices=("all", "active-route"),
+        default="all",
+        help="Apply strict warning failure globally (default) or only to the current progression route.",
+    )
     validate.set_defaults(func=cmd_validate)
 
     render = subparsers.add_parser("render-map", help="Atomically render RESEARCH_MAP.md and migrate v1 when needed.")
     add_root(render)
     render.add_argument("--external-map", action="append", default=[])
     render.set_defaults(func=cmd_render_map)
+
+    mission = subparsers.add_parser("mission", help="Print the user-visible mission board projection.")
+    add_root(mission)
+    mission.add_argument("--format", choices=("json", "markdown"), default="json")
+    mission.set_defaults(func=cmd_mission)
+
+    render_status_parser = subparsers.add_parser("render-status", help="Render STATUS.md from the mission board.")
+    add_root(render_status_parser)
+    render_status_parser.set_defaults(func=cmd_render_status)
 
     status = subparsers.add_parser("status", help="Print graph and map status as JSON.")
     add_root(status)

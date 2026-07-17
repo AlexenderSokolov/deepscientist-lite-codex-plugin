@@ -12,7 +12,7 @@ The plugin is the main product. Teaching cases and small experiments are validat
 - The file protocol is easy to initialize in a new or existing research project.
 - `ds_lite_state.py` keeps state traceable without hidden chain-of-thought.
 - Users can recover from install/cache/encoding failures.
-- A teacher can explain the workflow in 20-30 minutes.
+- A teacher can explain the core workflow in 20-30 minutes and run evidence/review labs in 45 or 90 minutes.
 - A student can run a one-stop project loop and inspect the route afterward.
 
 ## What Experiments Are For
@@ -23,7 +23,13 @@ The sanitized paradigm-comparison teaching case demonstrates how DS Lite records
 
 ## Current Release Judgment
 
-`v0.2.0-beta.1` is the reliability-focused teaching beta. Graph v2 adds revisions, locked atomic writes, migration backups, portable external paths, semantic validation, and progression-aware tracing. Local Windows PowerShell, Git Bash, WSL DrvFS, WSL ext4, and the remote Windows/Ubuntu CI matrix passed on 2026-07-02; see the [Windows/WSL audit](v0.2-audit.zh.md). Stable release still requires independent installation reports, macOS verification, and repeatable cache-upgrade recovery.
+`v0.4.0-beta.2` is the worker-protocol source/package beta. It keeps Graph v2 and Evidence Pack v1, adds Mission Board projections, `mission` / `render-status`, a seventh `$ds-lite-iterate` skill, and OpenScience worker handoff guidance. Source/package validation is release evidence; fresh cache installation, all seven skills in a new thread, and one installed bounded iterate checkpoint remain explicitly unverified.
+
+P0 source validation covers `ds-lite.work-unit.v1`, typed Evidence Pack promotion, `ds-lite.review-result.v1`, claim readiness, evidence detail, and route-scoped waiting. This remains source/package evidence only: the installed cache remains unverified and must not be inferred from the source tree. P1 action/receipt and P2 typed external-long profile are not part of this P0 claim.
+
+The manual tmux capacity handshake remains pending release evidence until a user-created fixed-socket surface survives a real disconnect/reconnect probe, a missing socket causes a clean stop without `new-session`, and a pane-scoped Codex CLI child worker records provider query/resume evidence separately from tmux and experiment recovery.
+
+The previous `v0.3.0-beta.1` evidence-review teaching beta remains useful historical evidence: on 2026-07-05, 36 local tests, the repository smoke, Windows PowerShell, Git Bash, the plugin validator, and all six v0.3 skill validators passed. That evidence does not prove v0.4 cache installation or `$ds-lite-iterate` behavior. See the [hardening log](v0.3-hardening-log.zh.md) and [Codex acceptance audit](v0.3-codex-acceptance.zh.md). Remote CI for the new commits, explicit cache installation, completion of the main review/analysis/iterate recovery route, independent teaching reports, macOS verification, and repeatable cache-upgrade recovery remain release evidence.
 
 ## Long-Term Memory Rules
 
@@ -31,4 +37,3 @@ The sanitized paradigm-comparison teaching case demonstrates how DS Lite records
 - Keep algorithm experiment details inside the case study or the host research project.
 - Do not add MCP, daemon, hooks, or Web/TUI unless the product goal explicitly changes.
 - Treat teaching-case results as evidence for teaching value, not as a release blocker unless they expose a plugin workflow failure.
-

@@ -1,0 +1,9 @@
+{
+  "schema_version": "ds-lite.environment.v1",
+  "python": "not-used-by-deterministic-shell-fixture",
+  "platform": "portable shell fixture",
+  "packages": [],
+  "container": "not-applicable",
+  "hardware": "not-applicable",
+  "notes": "No credentials or process environment variables are recorded."
+}

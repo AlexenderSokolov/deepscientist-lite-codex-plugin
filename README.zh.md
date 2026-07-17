@@ -1,63 +1,113 @@
-﻿# DeepScientist Lite Codex 插件
+﻿# DeepScientist Lite：让科研过程接得上、查得清
 
-[English README](README.md) · [文档](docs/README.md) · [教学区](teaching/README.zh.md) · [插件包](plugins/deepscientist-lite/)
+[English README](README.md) · [用户指南](docs/user-guide.zh.md) · [教学课程](teaching/README.zh.md) · [维护文档](docs/README.md)
 
-DeepScientist Lite 是一个轻量级 Codex 插件，用来学习和实践可回溯的科研工作流。它保留 DeepScientist 风格流程里最适合教学的部分：项目记忆、研究地图、artifact 记录、实验记录和路线回溯；但不要求用户部署完整 DeepScientist 平台。
+研究任务一长，聊天记录很快就不够用了：换一个会话后，不知道上次为什么选这条路线；实验跑过，却找不到当时的命令、指标和日志；一个高分结果看起来不错，但没人确认它有没有偷看测试标签。
 
-> **独立项目声明：** DeepScientist Lite 是非官方第三方插件，与 ResearAI 不存在赞助、认证或背书关系。“DeepScientist”仅用于说明本项目所借鉴的工作流来源，详见 [NOTICE](NOTICE)。
+DeepScientist Lite 用一组 Codex 技能和普通项目文件解决这些交接问题。它不替你判断科学结论，也不在后台自动做研究；它负责把目标、路线、实验和审查结果留下来，让下一次会话或另一位同学能够接着做。
 
-它适合入门教学、组会演示、小型研究项目启动，以及让学生先理解“自动化科研为什么需要状态管理”。
+> **独立项目声明：** 这是一个非官方第三方插件，与 ResearAI 不存在赞助、认证或背书关系。“DeepScientist”仅用于说明工作流灵感来源，详见 [NOTICE](NOTICE)。
 
-## 它能做什么
+## 五分钟上手
 
-- 为新项目或旧项目建立 `PROJECT.md`、`STATUS.md` 和 `RESEARCH_MAP.md`。
-- 引导 Codex 按 intake、scout、idea、experiment、analysis/write 阶段推进。
-- 把想法、实验、失败和结论记录到 `research/artifacts/`。
-- 用 `research/state/graph.json` 保存轻量邻接表研究图。
-- 在不启动 daemon 的情况下回溯当前研究路线。
+### 1. 安装
 
-## 它不做什么
-
-DeepScientist Lite 不启动 daemon，不提供 Web/TUI，不安装本地模型，不暴露 MCP server，不接聊天 connector，也不替代完整 DeepScientist 平台。它是一个教学优先的插件和文件协议。
-
-## 安装
-
-运行要求为 Codex 与 Python 3.10 及以上版本。状态脚本仅使用 Python 标准库。
-
-本仓库采用 Codex marketplace 布局：`.agents/plugins/marketplace.json` 指向 `plugins/deepscientist-lite/`。
+需要 Codex 和 Python 3.10 或更高版本。插件运行脚本只使用 Python 标准库。
 
 ```bash
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-安装或升级后，如果新线程里没有看到 `$ds-lite-*` skills，先重启 Codex Desktop，再打开一个新线程测试。
+这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace，再安装 `deepscientist-lite`。安装或升级后重启 Codex Desktop，并打开一个新线程，核对插件版本和七个技能；旧线程不会自动刷新插件缓存。
 
-## 开始使用
+### 2. 从一个真实问题开始
 
-在一个研究项目目录里，可以让 Codex 使用这些技能：
+在你的项目目录里，把下面这段话交给 Codex：
 
 ```text
-$ds-lite-intake 从这个问题启动一个 DS Lite 研究项目：...
-$ds-lite-scout 审计 baseline 和 benchmark 路线
-$ds-lite-experiment 把这次实验记录进 research map
-$ds-lite-analysis-write 总结证据、限制和下一步
+$ds-lite-intake 请从这个问题启动一个轻量研究项目：
+“比较两个文本分类 baseline，在固定预算下判断哪个更值得继续。”
+先检查当前目录，不要覆盖已有文件；建立项目目标、验收标准、当前状态和下一步。
 ```
 
-如果在 Windows 命令行里直接调用 `ds_lite_state.py`，中文标题或问题建议写入 UTF-8 文本文件，再使用 `--title-file` 和 `--question-file`，避免命令行编码破坏内容。
+接下来可以继续：
 
-Graph v2 提供原子写入、revision 冲突检查，以及项目相对路径/外部符号路径协议。旧 Graph v1 会在首次写操作时迁移；含绝对路径的项目请先阅读 [迁移指南](docs/maintainers/graph-v2-migration.md)。
+```text
+$ds-lite-scout 检查可用数据、baseline、指标和主要风险，给出有来源的侦察记录。
 
-## 仓库结构
+$ds-lite-idea 基于已有证据提出 2–3 条可验证路线，说明取舍，并选择最小有用实验。
 
-- `plugins/deepscientist-lite/`：可安装的 Codex 插件包。
-- `docs/README.md`：实现说明和维护文档索引。
-- `teaching/README.zh.md`：教学材料和演示脚本。
-- `tools/validation/`：维护者验证工具。
-- `PACKAGE.md`：打包结构和发布边界。
+$ds-lite-experiment 为选中的路线先写实验契约，再运行或保存可复现命令，并封装证据。
 
-## 验证仓库
+$ds-lite-review 在进入分析前检查证据包、指标、引用和方法是否对得上。
 
-维护者可以运行：
+$ds-lite-analysis-write 只基于通过审查的证据总结结果、限制和下一步。
+
+$ds-lite-iterate 读取 Mission Board，只推进一轮有界研究动作，记录 frontier decision，更新 STATUS 后停止。
+```
+
+### 3. 看懂生成的文件
+
+第一次使用时，先看这四处：
+
+| 位置 | 它回答的问题 |
+| --- | --- |
+| `PROJECT.md` | 这个项目为什么做，目标和验收标准是什么？ |
+| `STATUS.md` | Mission Board：现在做到哪里、刚发生什么、下一步是什么、哪里可回退？ |
+| `RESEARCH_MAP.md` | 已经走过哪些路线，当前路线如何到达？ |
+| `research/artifacts/` | 每一步具体做了什么，有什么公开依据？ |
+
+实验阶段还会看到 `research/evidence/<run-id>/`。这里保存实验契约、日志、指标、环境说明、文件哈希和验证结果。
+
+## 它怎样帮助你
+
+- **换会话不丢线索**：Codex 可以从项目文件恢复目标、当前节点和下一步。
+- **失败也有去处**：失败实验和未选路线不会被成功结果覆盖。
+- **进度看得见**：`mission` 和 `render-status` 把 Graph 投影成任务板，避免把 artifact 当成用户体验。
+- **实验先约定再解释**：指标、阈值、seed、预算和失败条件在运行前写入契约。
+- **高分不自动通关**：文件完整、指标达标和结论可用是三个不同判断。
+- **图可以检查和重建**：机器状态保存在 `graph.json`，人读的地图可以重新渲染。
+
+## 它不会替你做什么
+
+- 不证明论文结论为真，也不保证消除错误引用或“幻觉”。
+- 不启动 daemon、Web/TUI、MCP server、聊天 connector 或本地模型。
+- 不在 Codex 关闭后继续运行任务。
+- 不把 `$ds-lite-iterate` 变成无限自动循环；一次调用只推进一轮并停在 checkpoint。
+- 不替代人工审查、领域知识、数据治理和研究伦理判断。
+- Review 是一个单独的检查步骤和记录，不代表使用了另一模型或隔离执行环境。
+
+## 遇到问题先看这里
+
+### 新线程里找不到技能
+
+先重启 Codex Desktop，再新建线程。旧线程可能仍使用升级前的插件缓存。
+
+### Windows 中文参数乱码
+
+直接调用状态 CLI 时，把较长中文写入 UTF-8 文件，再使用 `--title-file`、`--question-file`、`--summary-file` 或 `--reason-file`。
+
+### Graph 提示 revision 冲突
+
+不要覆盖文件，也不要手改 `graph.json`。重新读取最新状态，协调另一会话的改动，再带新的 `--expected-revision` 重试。
+
+### 项目外数据路径被拒绝
+
+Graph 不保存工作站绝对根目录。请使用 `external://<alias>/<relative-path>`，并通过 `DS_LITE_EXTERNAL_<ALIAS>` 提供本机根目录。
+
+### 地图显示 stale
+
+`graph.json` 已提交而 `RESEARCH_MAP.md` 还没同步时，运行 `render-map` 重建地图。Graph 才是机器权威状态。
+
+## 从哪里继续
+
+- 想理解 Graph、Evidence Pack 和 review 的设计：读[用户指南](docs/user-guide.zh.md)。
+- 想亲手做一遍：从[20分钟快速体验](teaching/quickstart-20.zh.md)开始。
+- 想讲课或组会演示：看[教学课程入口](teaching/README.zh.md)。
+- 要升级旧 Graph v1 项目：看[迁移指南](docs/maintainers/graph-v2-migration.md)。
+- 要参与维护：看[实现说明](docs/implementation.zh.md)和[仓库验证](tools/validation/)。
+
+维护者统一验证入口：
 
 ```bash
 bash tools/validation/run_validate.sh

@@ -1,0 +1,18 @@
+{
+  "schema_version": "ds-lite.review-result.v1",
+  "review_id": $review_id_json,
+  "work_unit_id": $work_unit_id_json,
+  "profile_id": $profile_id_json,
+  "review_node_id": $review_node_id_json,
+  "reviewed_node_id": $reviewed_node_id_json,
+  "reviewed_evidence_refs": $reviewed_evidence_refs_json,
+  "evidence_validator": $evidence_validator_json,
+  "evidence_digest": $evidence_digest_json,
+  "verdict": $verdict_json,
+  "claim_assessment": $claim_assessment_json,
+  "channels": $channels_json,
+  "limitations": $limitations_json,
+  "review_artifact_ref": $review_artifact_ref_json,
+  "completed_at": $completed_at_json,
+  "extensions": {}
+}
