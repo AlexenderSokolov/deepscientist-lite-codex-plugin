@@ -6,6 +6,26 @@
 - Teach `$ds-lite-idea` to compare six evidence-linked factors and run `validate-factor-card` without creating a weighted total or promoting the card as evidence.
 - Extend `$ds-lite-review` to reject unsupported novelty scores, reversed cost/risk semantics, and Factor Card claims that bypass typed evidence.
 
+## 0.5.0-beta.2
+
+- Re-import all 39 files from the three fixed humanizer commits as byte-verified, non-runtime audit snapshots and reduce the public adoption matrix to its fixed nine fields.
+- Add `ds-lite.communication-audit.v1` with `init`, `record-check`, `record-claim`, `finalize`, `validate`, and `render`; claims, protected-content hashes, eight `honor-*` checks, self-audit phases, and handoff are deterministic gates.
+- Close finalized communication receipts against later CLI writes and retain a second hash for the redacted command text so command evidence cannot be silently rewritten.
+- Expand the seven skills with the three-phase self-audit contract and explicit reflection/reporting requirements without adding a skill or changing Graph, Evidence Pack, or Work Unit schemas.
+- Add the optional four-event hook adapter and confirmation-only installer. Missing/invalid/closed audits, unsupported completion claims, direct Graph writes, destructive commands, and unprocessed iteration failures are blocked; `stop_hook_active` cannot convert a failure into success.
+- Replace the twelve A/B labels with complete fixed inputs containing Chinese/English prose, numbers, citation keys, commands, JSON, expected protected strings, profiles, and semantic fields. The cases remain `runtime_loaded: false`.
+- Bump the plugin and documentation release line to `0.5.0-beta.2`; source tests and isolated package tests are evidence, while fresh cache, new-thread, real-host hook registration, and human A/B remain manual gates.
+- Record the 2026-07-19 cross-platform source validation and isolated installation. The real CLI canary timed out without a final event, so fresh-agent communication and matched A/B remain explicitly unverified.
+
+## 0.5.0-beta.1
+
+- Add an optional project-root `STYLE.md` contract with four built-in communication profiles and custom extension points.
+- Add a progressively loaded communication core, Chinese/English humanization overlays, and conservative academic-writing rules without changing Graph, Evidence, Work Unit, or review schemas.
+- Preserve code, commands, paths, structured data, logs, metrics, formulas, citations, and formal definitions; add the eight engineering principles as operational guidance.
+- Add runtime MIT notices and source references for the three selectively adapted humanizer projects; no upstream workflow or dependency is bundled.
+- Extend repository and isolated acceptance validation with fixed communication references, twelve A/B prompts, and an anonymous scoring worksheet.
+- Keep the release gate manual: fresh cache, new-thread skill discovery, four-profile behavior, and human A/B results are not claimed until observed.
+
 ## 0.4.0-beta.2
 
 - Add `mission` and `render-status` state CLI commands that project Graph v2 into a user-visible Mission Board.

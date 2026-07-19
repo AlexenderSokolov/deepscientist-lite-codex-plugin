@@ -32,6 +32,10 @@ Analysis and writing translate artifacts into claims. Treat unsupported claims a
 - Use `../../references/teaching-guide.zh.md` when preparing a teaching explanation for a senior student or lab demo.
 - Use `update-node` and `set-status` for revisions; never edit `graph.json` directly. On exit code 4, reload and reconcile before retrying.
 
+## Communication Layer
+
+Before writing, read `../../references/communication/core.md`, `../../references/communication/self-audit.md`, and the project-root `STYLE.md` when present. Follow Phase 1 before action, Phase 2 after each material action, and Phase 3 before handoff. For analysis, paper, teaching, or explicit polishing work, load `../../references/communication/academic-writing.md` and the selected profile from `../../references/communication/profiles.md`; load the Chinese or English overlay only for that language. The layer changes narrative wording only. Protect numbers, formulas, citations, commands, paths, JSON/YAML, logs, metrics, and formal definitions;保护内容不因润色而改变。Keep evidence, limitations, claim strength, and verification explicit.
+
 ## Handoff
 
 End with the final claim status, artifact paths, active/final node id, known limitations, and the next defensible action.

@@ -46,6 +46,10 @@ Use these headings in `frontier-decision-<slug>.md`:
 - User or supervisor decision needed
 - Next visible checkpoint
 
+## Communication Layer
+
+Before iterating, read `../../references/communication/core.md`, `../../references/communication/self-audit.md`, and the project-root `STYLE.md` when present. Follow Phase 1 before action, Phase 2 after each material action, and Phase 3 before handoff. Use the selected profile only for the user-facing decision and handoff; it does not change the one-iteration boundary, graph authority, evidence gate, or execution permission. Protect commands, paths, JSON/YAML, logs, metrics, formulas, citations, and formal definitions（保护内容不因改写而改变）, and state exactly what was verified.
+
 ## Handoff
 
 End with a compact worker handoff: action taken, files changed, graph node or edge changed, status board path, remaining blocker, and the next single action.

@@ -12,7 +12,13 @@ This repository is a Codex marketplace repository.
 - `plugins/deepscientist-lite/scripts/ds_lite_evidence.py`: no-dependency Evidence Pack contract, finalize, and verification helper.
 - `plugins/deepscientist-lite/scripts/ds_lite_state_v1_legacy.py`: preserved v1 implementation for audit only; it is not the runtime entry point.
 - `plugins/deepscientist-lite/assets/templates/`: project file templates.
+- `plugins/deepscientist-lite/assets/templates/STYLE.md`: optional project communication contract generated only for new projects.
 - `plugins/deepscientist-lite/references/`: skill-facing protocol references only.
+- `plugins/deepscientist-lite/references/communication/`: progressively loaded communication core, profiles, humanizer overlays, and academic-writing overlay.
+- `plugins/deepscientist-lite/references/communication/self-audit.md`: three-phase observable self-check contract; `upstream/` and `upstream-adoption.json` are complete non-runtime source audit material.
+- `plugins/deepscientist-lite/scripts/ds_lite_communication_audit.py`: standard-library `ds-lite.communication-audit.v1` receipt CLI.
+- `plugins/deepscientist-lite/scripts/ds_lite_hook.py` and `hooks/hooks.json`: optional four-event deterministic adapter; disabled until the user confirms registration and the host format is verified.
+- `plugins/deepscientist-lite/THIRD_PARTY_NOTICES.md`: MIT attribution and license text for selectively adapted communication guidance.
 
 ## Non-Runtime Material
 
@@ -24,4 +30,4 @@ This repository is a Codex marketplace repository.
 
 ## Release Boundary
 
-The plugin remains lightweight: no MCP server, daemon, hooks, Web/TUI, connector, or local model bundle is declared in the manifest.
+The `0.5.0-beta.2` plugin remains lightweight: no MCP server, daemon, Web/TUI, connector, or host `hooks` field is declared in the manifest, and runtime operation still uses only the Python standard library. The hook files are inert until explicitly registered; an unconfirmed host returns `host_supported: false` and is never guessed into `.codex/config.toml`.

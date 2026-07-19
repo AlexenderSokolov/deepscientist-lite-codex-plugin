@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .validation-tmp/
+.tmp-windows-validate/
 .DS_Store
 Thumbs.db
 

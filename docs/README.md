@@ -22,6 +22,9 @@ This folder explains how the plugin is built and maintained. Start with the root
 - [Release status](maintainers/release-status.zh.md): current positioning and long-term maintenance notes.
 - [Roadmap and deferred gates](maintainers/roadmap.zh.md): active short-term work and the P1-P3 interfaces that remain explicitly deferred.
 - [Writing guide](maintainers/writing-guide.zh.md): Chinese terminology, claim strength, examples, and version-fact maintenance rules.
+- [v0.5.0-beta.2 acceptance record](maintainers/acceptance-beta2-20260719.zh.md): source/package, isolated install, canary timeout, and the remaining fresh-agent/A/B gates.
+- [Pre-existing dirty-worktree audit](maintainers/preexisting-dirty-worktree-audit.zh.md): path-level classification of the isolated original worktree and the narrowly reimplemented hook/iteration semantics.
+- The beta.2 communication layer lives in `plugins/deepscientist-lite/references/communication/`; its optional `STYLE.md`, four profiles, six progressive references, protected-content rules, complete non-runtime upstream snapshots, `ds-lite.communication-audit.v1`, hook boundary, and 12-case A/B fixture are documented in the Chinese user guide and implementation notes.
 
 ## Runtime References
 

@@ -6,7 +6,13 @@ Codex Desktop may not expose newly installed or upgraded skills until the app is
 
 ## Source release is not cache acceptance
 
-`v0.4.0-beta.2` may be validated, tagged, and published from a clean source package without changing the installed Codex cache. That proves the source/package surface only. Do not report the installed version, skill discovery, or fresh-thread behavior as verified until a separately authorized cache installation and new-thread probe records the exact loaded version.
+`v0.5.0-beta.2` may be validated from a clean source package without changing the installed Codex cache. That proves the source/package surface only. Do not report the installed version, skill discovery, four-profile behavior, real-host hook registration/blocking, human A/B result, or fresh-thread behavior as verified until separately authorized evidence records them.
+
+The 2026-07-19 isolated install was successful, but the first real `codex exec --ephemeral --json` canary produced no event, final message, or usage before the 180-second budget and was terminated with timeout code `124`. This is an external model/host acceptance blocker, not evidence that the communication layer worked or failed. Do not launch the seven-skill campaign or matched A/B until a canary returns a verifiable final result.
+
+## Host hook format is unconfirmed
+
+The plugin-local `hooks/hooks.json` is a proposed four-event adapter, not a manifest registration. `ds_lite_hook.py install --show` displays it; `--apply` returns `host_supported: false` and writes no `.codex/config.toml` until official host documentation or a real host acceptance run confirms the format. This is an intentional fail-closed boundary, not evidence that the host lacks hooks.
 
 ## Marketplace cache access denied
 

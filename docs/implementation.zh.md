@@ -1,10 +1,32 @@
 ﻿# DeepScientist Lite：设计、实现、现状与演进审视
 
-本文是 DeepScientist Lite 的主要中文设计文档，面向插件维护者、授课教师，以及希望深入理解实现方式的用户。它不是安装教程，也不是版本宣传稿；它要回答的是：插件为什么存在、当前代码实际做了什么、哪些能力只是设计目标、现在还存在哪些缺口，以及后续应按什么顺序完善。
+本文是 DeepScientist Lite 的主要中文设计文档，面向插件维护者、授课教师，以及想看懂实现方式的用户。它不是安装教程，也不是版本宣传稿，而是把几件容易混在一起的事分开说明：插件为什么存在，当前代码实际做了什么，哪些只是设计目标，哪里仍有缺口，以及后续该按什么顺序推进。
 
 第一次使用插件请先读[中文 README](../README.zh.md)；想理解文件和机制但不需要维护细节，请读[用户指南](user-guide.zh.md)。本文保留 schema、CLI、迁移和发布证据等维护者内容。
 
-本文保留 `0.1.4` / Graph v1 的审视记录，并以 `0.4.0-beta.2`、`ds-lite.graph.v2` 和 `ds-lite.evidence.v1` 作为当前实现基线；最近一次事实核对日期为 **2026-07-16**。当文档与实现不一致时，应依次以 manifest、skills、状态/证据脚本和验证结果为准，再同步修正文档。
+本文保留 `0.1.4` / Graph v1 的审视记录；当前实现以 `0.5.0-beta.2`、`ds-lite.graph.v2`、`ds-lite.evidence.v1` 和 `ds-lite.communication-audit.v1` 为基线，最近一次事实核对日期是 **2026-07-18**。如果文档和代码对不上，先查 manifest、skills、状态/证据/审计脚本和验证结果，再修正文档。
+
+## 0.5 沟通层实现边界
+
+这一版没有增加 skill、依赖、daemon、MCP 或状态 schema。它给七个科研 skill 加了一层统一的沟通约束，并提供一个只有用户确认后才可注册的可选 hook 适配器。
+
+沟通层分成四块：`core` 约束证据优先、过程透明、自然表达和完成前验证；`profile` 提供四个表达模板；`fixture` 只放在隔离 acceptance 包里，用于 12 个固定案例和人工盲评；`reject` 明确拒绝作者模仿、空泛哲思、强制冗长、修改数字/引用和外部 Agent 框架工作流。
+
+`STYLE.md` 通过模板和 `write_if_missing` 在新项目初始化时生成，已有文件按字节保留，已有 Graph 不会被静默补写。它不是运行时状态 schema，未知 profile 只提示一次并回退到 `research-peer`，冲突偏好局部忽略。七个 skill 读取 `core.md` 和项目 `STYLE.md`；分析、论文、教学或明确润色任务才加载学术/语言叠加层。结构化内容保护和证据规则不可由风格配置覆盖。
+
+三份上游项目的 MIT 归属信息和完整许可证文本位于插件运行时 `THIRD_PARTY_NOTICES.md`。我们只选择性化用固定提交中的高层表达经验，不整体复制上游 skill 或运行时，也不代表上游背书。
+
+### beta.2 审计与 hook 边界
+
+三个固定提交的全部 39 个文件保存在 `references/communication/upstream/`。`upstream/_manifests/source-files.json` 提供字节和 SHA-256 基线，`upstream-adoption.json` 为每个源文件保留一行、固定九个公开字段。具名作者档案和视觉资产都登记审读；作者模仿不进入运行时，二进制资产只作 `asset-only` 完整性审计。七个 skill 不直接读取 `upstream/`。
+
+`ds_lite_communication_audit.py` 生成项目内 `research/artifacts/communication-audit-<id>.json`。顶层固定包含 `checks`、`claims`、`protected_content`、`handoff`、`self_check`、`result` 和 `extensions`。
+
+`read/changed` 声明绑定项目内路径和哈希；`tested/verified/fixed/completed` 声明绑定观测到的成功命令或验收结果。最终完成态还要求受支持的 `completed` 声明。原始命令只用于计算 SHA-256，落盘文本会脱敏，并额外保存脱敏文本哈希来检测 receipt 篡改。`finalize` 后审计只读，后续工作必须新建审计；高风险或 `deep` 任务还必须明确写出验证和限制。审计是过程收据，不是科学真值证明。
+
+`ds_lite_hook.py` 把检查接到四个事件上：注入 profile/detail/审计清单，阻断无审计状态写入、直接 Graph 写入、递归删除、破坏性 Git 命令和显式提权，记录不含原始命令的 PostToolUse 哈希/退出码，并在 Stop 检查 handoff、八项检查、无证据完成声明、未处理失败和迭代反思/汇报。
+
+hook 默认不启用。`install --show` 只展示提案；`install --apply` 在宿主格式没有经过官方文档或真实主机确认时返回 `host_supported: false`，绝不猜写 `.codex/config.toml`。`stop_hook_active` 只允许一次补救回合，第二次仍为 `blocked`。
 
 ## 阅读约定
 
@@ -48,7 +70,7 @@ DeepScientist Lite 适合：
 - 本地模型安装、模型路由和算力调度。
 - 自动创建 Git worktree、自动提交或自动合并研究分支。
 
-所谓“持续科研”，在当前版本中是由 **Codex 会话 + 项目文件 + 可复现脚本 + 可选 Codex automation** 共同实现的。插件本身不会在后台醒来，也不会在用户不知情时继续运行实验。automation 可以成为外部调度手段，但不是 `0.4.0-beta.2` 插件包的一部分。
+所谓“持续科研”，在当前版本中是由 **Codex 会话 + 项目文件 + 可复现脚本 + 可选 Codex automation** 共同实现的。插件本身不会在后台醒来，也不会在用户不知情时继续运行实验。automation 可以成为外部调度手段，但不是 `0.5.0-beta.2` 插件包的一部分。
 
 ## 3. 核心设计原则
 
@@ -167,7 +189,7 @@ sequenceDiagram
 
 ## 5. Manifest 与分发设计
 
-`plugin.json` 当前声明插件名 `deepscientist-lite`、版本 `0.4.0-beta.2`、Apache-2.0 许可证、仓库地址、非官方身份说明、UI 描述和 `skills: "./skills/"`。manifest 没有 `mcpServers`、`apps` 或 `hooks` 字段。
+`plugin.json` 当前声明插件名 `deepscientist-lite`、版本 `0.5.0-beta.2`、Apache-2.0 许可证、仓库地址、非官方身份说明、UI 描述和 `skills: "./skills/"`。manifest 没有 `mcpServers`、`apps` 或 `hooks` 字段；hook 适配器留在插件目录但不由 manifest 自动注册。
 
 这种最小 manifest 有三个目的：
 
@@ -447,12 +469,12 @@ python tools/validation/validate_repo.py
 
 `run_validate.sh` 和 `run_validate.ps1` 是单一验证入口，依次执行 unittest、仓库 smoke 和 Python 语法检查；它们按任务类别留在 `tools/validation/`。
 
-截至 2026-07-16，当前 `0.4.0-beta.2` 分支的本地验证目标包括：
+截至 2026-07-18，当前 `0.5.0-beta.2` 源码包的本地验证目标包括：
 
 - 仓库验证器执行通过，并覆盖 `mission` / `render-status` 的 Mission Board smoke。
 - Codex 官方 `plugin-creator/scripts/validate_plugin.py` 在具备 PyYAML 的 Python 环境中执行通过。
-- 七个 `$ds-lite-*` skills 已进入插件结构；安装后仍需新线程复验 `0.4.0-beta.2` 的实际发现和触发。
-- manifest 已统一到 `0.4.0-beta.2`；source/package tag 不代表 cache 安装态已同步。
+- 七个 `$ds-lite-*` skills 已进入插件结构；安装后仍需新线程复验 `0.5.0-beta.2` 的实际发现和触发。
+- manifest 已统一到 `0.5.0-beta.2`；source/package tag 不代表 cache 安装态已同步。
 - Graph v2 单元测试覆盖并发无丢写、锁超时、revision 冲突、迁移和外部别名。
 - Evidence Pack 单元测试覆盖 UTF-8、空格路径、哈希、篡改、失败进程、重复 finalize、外部显式哈希和敏感字段拒绝。
 - OpenScience handoff 文档说明主管如何读取 `mission --format json`、触发一轮 `$ds-lite-iterate`、收集 Evidence Pack/review/analysis。
@@ -466,7 +488,7 @@ python tools/validation/validate_repo.py
 
 ## 13. 当前版本判断
 
-`v0.4.0-beta.2` 是面向 **worker-protocol beta / source-package prerelease** 的证据审查版本。它在 Graph v2、Evidence Pack 和 review gate 基础上补充 Mission Board、`mission`/`render-status` CLI、`ds-lite-iterate` 单轮 worker 协议和 AIResearch 复盘规则，但在获得独立安装、macOS、缓存升级和真实 OpenScience 调用证据前，仍不应被描述为 stable 或自动科研平台。
+`v0.5.0-beta.2` 是面向 **communication-audit / source-package prerelease** 的证据审查版本。它在 Graph v2、Evidence Pack、Mission Board 和 `ds-lite-iterate` 单轮 worker 协议基础上补充沟通 profile、八项自审、逐文件上游审计和可选 hook，但在获得独立安装、macOS、缓存升级、真实主机 hook 和人工 A/B 证据前，仍不应被描述为 stable 或自动科研平台。
 
 ### 已经成立
 
@@ -550,7 +572,7 @@ smoke 和 unittest 使用自然中文标题、问题和带空格路径，并检�
 
 ### Skill 协议缺少强制执行层
 
-Codex 可以按 skills 正确写入 artifact 和 graph，但当前没有 hook、事务或后台审计器阻止漏写、顺序错误或状态不同步。增加强制层会提升一致性，也会增加插件复杂度；是否引入必须服从教学轻量定位。
+在 beta.1 之前 Codex 可以按 skills 写入 artifact 和 graph，但没有沟通审计器阻止漏写、顺序错误或无证据完成声明。beta.2 增加轻量的项目内审计收据和可选 hook；它只做确定性事实门，不猜测模型意图、不证明科学结论，也不引入 daemon 或新状态 schema。
 
 ### Git、worktree 与 automation 不是内置能力
 

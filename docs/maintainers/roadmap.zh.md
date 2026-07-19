@@ -4,7 +4,7 @@
 
 ## 当前发布线
 
-`v0.4.0-beta.2` 发布 P0 的 work unit、typed evidence/review、Mission Board 和单轮 worker handoff。Graph v2、Evidence Pack v1、旧 CLI 与字符串 `next_action` 保持兼容。该版本可以作为 source/package prerelease 使用，但 fresh cache installation 和新线程发现仍未验证。
+`v0.5.0-beta.2` 完成三个固定提交的完整非运行时快照、逐文件九字段采用矩阵、八项自审、`ds-lite.communication-audit.v1`、四事件 opt-in hook 和 12 个完整 A/B 输入。Graph v2、Evidence Pack v1、Work Unit、旧 CLI 与字符串 `next_action` 保持兼容。源码三平台验证和隔离 package/安装已通过；fresh thread、四 profile 真实触发、真实 hook 注册/阻断、canary 最终反馈和人工 A/B 仍未验证。
 
 ## 下一条短期线
 

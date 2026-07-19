@@ -40,3 +40,11 @@ Experiments must be reproducible enough that another session can rerun or diagno
 - A user-created tmux surface is capacity, not progress. Do not claim a task or conversation is running until its actual PIDs, provider handle, logs, heartbeat, and attempt record are reconciled.
 - Never edit `graph.json` directly. On revision conflict, reload the graph and reconcile both sessions' evidence before retrying.
 - Keep generated shell scripts LF-encoded. On Windows, distinguish a launcher/preflight failure from a claim-bearing experiment attempt and record both honestly; do not spend a second declared run merely to hide an invocation error.
+
+## Communication Layer
+
+Before executing or recording an experiment, read `../../references/communication/core.md`, `../../references/communication/self-audit.md`, and the project-root `STYLE.md` when present. Follow Phase 1 before action, Phase 2 after each material action, and Phase 3 before handoff. Load the academic overlay only when explaining results or preparing teaching material. Style affects narrative explanations, never commands, paths, contracts, metrics, formulas, logs, or Evidence Pack fields;保护内容不因润色而改变。Explain the action, observable result, verification, limitation, and next gate without claiming a run that did not occur.
+
+## Handoff
+
+Report the run or preparation status, exact evidence paths, verification performed, blockers, and the next reviewable action.

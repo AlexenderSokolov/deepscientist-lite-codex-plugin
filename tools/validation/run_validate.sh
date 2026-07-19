@@ -34,8 +34,15 @@ fi
   tools/validation/prepare_codex_acceptance.py \
   tools/validation/audit_codex_acceptance.py \
   tools/validation/validate_repo.py \
+  tools/validation/audit_upstream_adoption.py \
+  plugins/deepscientist-lite/scripts/ds_lite_communication_audit.py \
+  plugins/deepscientist-lite/scripts/ds_lite_hook.py \
   tests/test_acceptance_tools.py \
   tests/test_evidence_pack.py \
   tests/test_protocols.py \
   tests/test_state_kernel.py \
-  tests/test_teaching_labs.py
+  tests/test_teaching_labs.py \
+  tests/test_communication_layer.py \
+  tests/test_communication_audit.py \
+  tests/test_communication_hook.py \
+  tests/test_upstream_adoption.py

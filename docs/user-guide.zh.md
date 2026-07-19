@@ -1,10 +1,38 @@
 # DeepScientist Lite 用户指南
 
-这篇指南解释插件为什么要生成这些文件，以及它们怎样配合。若你只想尽快试用，先回到[中文 README](../README.zh.md)完成五分钟上手。
+这篇指南从项目文件出发，说明插件为什么留下这些记录，以及它们怎样接起来。只想先跑通一遍，请先看[中文 README](../README.zh.md)的五分钟上手。
 
-## 1. 先建立一个简单的心智模型
+## 1. 沟通与文风层
 
-DeepScientist Lite 不接管科研项目。它更像一本有格式的实验台账，由 Codex 帮你维护。
+`STYLE.md` 是项目级的可选表达合同，不是 Graph 或 Evidence 的新 schema。它支持 `language: auto|zh|en`、`detail: adaptive|concise|deep`、`academic: auto|on|off`、四个内置 profile，以及 `profile: custom` 和 `extends`。优先级是本轮明确要求、项目规则、`STYLE.md`、内置默认；证据纪律和受保护内容不受覆盖。
+
+四个 profile 的定位分别是：`research-peer` 面向科研同行，`teaching-explainer` 解释术语、机制、例子和限制，`compact-operator` 聚焦动作/证据/结果/阻塞/下一步，`reflective-researcher` 在同行表达上增加前提、可证伪性、偏差和失败含义。后者只做方法论反思，不模仿名人或作者，也不以哲思代替证据。
+
+沟通层只改聊天与叙述性 Markdown。代码、命令、路径、JSON/YAML、日志、指标、公式、引用键和正式定义必须保持原样。新项目初始化时生成 `STYLE.md`；已有文件按字节保留；旧 Graph 缺失时只提示，不静默补写。
+
+### 审计、自查与可选 hook
+
+`0.5.0-beta.2` 为每个有边界的任务留下一份 `ds-lite.communication-audit.v1` 收据。开始前写目标、已知事实、待确认规则、准备复用的资源、风险和停止条件；行动后写实际读取、修改、命令退出码、失败和负结果；交付前写结果、项目内证据路径、验证、限制、不确定性、反思和下一步。`read/changed` 声明必须绑定项目内文件及 SHA-256，`tested/verified/fixed/completed` 必须绑定观测到的成功命令或验收结果；最终 `completed` 状态还必须存在受支持的完成声明。命令文本在落盘前会脱敏，同时保留原始命令哈希和脱敏文本哈希；审计一旦 `finalize` 即封存，后续工作必须新建审计。`detail: concise` 只压缩句子，不能删掉适用的审计字段；`deep` 会要求更完整地说明失败和方法论反思；简单问答仍只填最小适用语义字段。
+
+八个检查 ID 是 `honor-01` 到 `honor-08`，分别对应查档求证、需求对齐、规则确认、复用存量、完备验证、架构边界、坦诚存疑和分步迭代。它们不是口号：每项都必须是 `pass`、`fail` 或 `not-applicable`，并写出事实或不适用原因。
+
+可以手动运行：
+
+```bash
+python <plugin>/scripts/ds_lite_communication_audit.py init \
+  --root <project> --skill ds-lite-intake --task-class repository-change \
+  --profile research-peer --detail-mode adaptive
+python <plugin>/scripts/ds_lite_communication_audit.py validate \
+  --root <project> --audit research/artifacts/communication-audit-<id>.json
+```
+
+`ds_lite_hook.py` 默认未启用。`install --show` 先展示四个事件和配置路径；只有用户明确确认后才可尝试 `--apply`。如果宿主格式没有官方文档或真实主机证据，注册器必须返回 `host_supported: false`，不写 `.codex/config.toml`。启用后，UserPromptSubmit 注入 profile/detail/清单，PreToolUse 阻断无审计状态写入、直接 Graph 写入、递归删除、破坏性 Git 命令和显式提权，PostToolUse 记录不含原始命令的哈希与退出码，Stop 检查 handoff、失败、完成声明和反思。Stop 最多补救一次；`stop_hook_active` 不得把失败改成成功。
+
+审计收据能阻断无证据的“已完成/已验证/已修复”声明，但不能证明科学结论真实，也不判断模型是否故意欺骗。完整上游快照在 `references/communication/upstream/`，标记 `runtime_loaded: false`；它们只供逐文件审计，具名作者档案不构成可用 profile。
+
+## 2. 先看它留下什么
+
+DeepScientist Lite 不接管科研项目。它更像一份可追踪的实验台账，由 Codex 帮你维护。
 
 每次推进都围绕四个问题：
 
@@ -27,7 +55,7 @@ flowchart LR
 
 `research/work-unit.json` 使用 `ds-lite.work-unit.v1`。新项目起初没有 claim requirement，所以证据状态是 planning；开始 claim-bearing experiment 前，才声明 profile、typed validator 和 canonical evidence refs。普通 Markdown、日志、PROJECT/STATUS 或任意非空路径都不是 typed evidence。schema 不认识的字段只能放进 `extensions`。
 
-## 2. 七个技能分别在什么时候用
+## 3. 七个技能分别在什么时候用
 
 ### Intake：先把问题和边界说清楚
 
@@ -120,7 +148,7 @@ Review 会同时写人类可读的 `review-<slug>.md` 和机器可读的 `ds-lit
 
 它不能保证：后台持续运行。一次调用只推进一轮；GPU、长跑、依赖安装或外部数据访问仍需要用户或主管系统授权。
 
-## 3. Mission Board 是什么
+## 4. Mission Board 是什么
 
 `mission --format json|markdown` 会从 Graph、artifact、Evidence Pack 和验证结果派生出一个任务板。`render-status` 会把同样的信息写进 `STATUS.md`，让用户或上层系统不用读完整 JSON 图也能知道当前状态。
 
@@ -141,7 +169,7 @@ Mission Board 重点回答：
 
 它还会显示几条硬规则：artifact 不是进度，ready 不是完成，idea 不是实验，metric 错误是协议失败，没有可见闭环就没有智能体体验。
 
-## 4. Graph 到底保存什么
+## 5. Graph 到底保存什么
 
 `research/state/graph.json` 保存公开的研究状态：节点、边、当前活跃节点和文件路径。它不保存隐藏思维链，也不保存每次 revision 的完整快照。
 
@@ -158,7 +186,7 @@ Mission Board 重点回答：
 
 Active Route 默认只沿 `next`、`branch` 和 `supersedes`。因此，`supports` 捷径和 `rollback` 回边不会把当前路线缩短成一条误导性的路径。
 
-## 5. Revision 和事务写入解决什么问题
+## 6. Revision 和事务写入解决什么问题
 
 两个 Codex 会话可能同时读到 revision 7。会话 A 先提交后，Graph 变成 revision 8；会话 B 再携带 `--expected-revision 7` 写入时，CLI 会以退出码 4 拒绝。
 
@@ -174,7 +202,7 @@ Graph 写入还会经过跨平台锁、完整语义校验、临时文件落盘�
 
 如果 Graph 已提交而地图未更新，`status` 或 `validate` 会报告 stale；`render-map` 可以修复地图。
 
-## 6. Artifact 与 Evidence Pack 有什么区别
+## 7. Artifact 与 Evidence Pack 有什么区别
 
 Artifact 是给人读的阶段记录，例如为什么做这个实验、结果意味着什么、下一步怎么选。
 
@@ -188,7 +216,7 @@ Evidence Pack 是机器可复核的实验记录：
 
 一个失败进程也可以有完整 Evidence Pack，因为“实验失败”与“证据损坏”不是同一回事。反过来，一个高分结果如果哈希变化、指标口径不符或使用了禁止输入，也不能进入通过状态。
 
-## 7. 项目内路径和外部数据
+## 8. 项目内路径和外部数据
 
 Graph 只保存两类路径：
 
@@ -205,7 +233,7 @@ DS_LITE_EXTERNAL_DATASET=D:\Data\my-dataset
 
 外部文件默认不计算哈希，只有明确使用 `--hash-external` 时才会读取和哈希。这样可以避免插件在不知情时扫描大型数据集或未授权资源。
 
-## 8. 换一个会话后怎样恢复
+## 9. 换一个会话后怎样恢复
 
 新会话按这个顺序读取：
 
@@ -246,7 +274,7 @@ DS_LITE_EXTERNAL_DATASET=D:\Data\my-dataset
 
 本协议不建立“tmux 子会话”对象。用户要求子会话时，Codex 只能将它解释为已分配 pane 中的 pane-scoped Codex CLI child worker。必须记录 CLI PID、精确 provider/model 版本、thread/task ID、查询命令和实际验证过的恢复命令。tmux 保留了 pane，并不自动保证 provider 对话、认证连接或实验进程仍然有效。
 
-## 9. 一条完整但不夸大的路线
+## 10. 一条完整但不夸大的路线
 
 ```text
 intake → scout → idea → experiment → review → analysis
@@ -258,7 +286,7 @@ intake → scout → idea → experiment → review → analysis
 
 失败审查有一个容易混淆的细节：review 节点应当是 `blocked`，但不能同时设为 active。active 应留在仍可操作的 experiment，或转到一个明确的补救节点；`STATUS.md` 再列出 blocked review 和最小补做动作。这样“不能提升结论”和“现在还能做什么”不会混成同一件事。
 
-## 10. 下一步练习
+## 11. 下一步练习
 
 - [20分钟快速体验](../teaching/quickstart-20.zh.md)
 - [45分钟证据审查](../teaching/evidence-lab-45.zh.md)

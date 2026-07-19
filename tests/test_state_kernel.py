@@ -528,6 +528,31 @@ class StateKernelTests(unittest.TestCase):
         )
         self.assertEqual(western_graph["nodes"]["intake-root"]["summary"], "状态图是否可靠？")
 
+    def test_init_creates_default_style_contract(self) -> None:
+        style = self.root / "STYLE.md"
+        self.assertTrue(style.is_file())
+        content = style.read_text(encoding="utf-8")
+        self.assertIn("profile: research-peer", content)
+        self.assertIn("language: auto", content)
+        self.assertIn("detail: adaptive", content)
+        self.assertIn("academic: auto", content)
+
+    def test_init_preserves_existing_style_bytes(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-style-preserve-"))
+        style = root / "STYLE.md"
+        original = "# Custom style\nprofile: custom\nextends: research-peer\n"
+        style.write_bytes(original.encode("utf-8"))
+        result = run_cli(root, "init", "--title", "Custom style project")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(style.read_bytes(), original.encode("utf-8"))
+
+    def test_existing_graph_does_not_silently_create_missing_style(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-old-project-"))
+        make_v1_graph(root)
+        result = run_cli(root, "init")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse((root / "STYLE.md").exists())
+
     def test_mutation_api_and_revision_conflict(self) -> None:
         self.write_artifact("research/artifacts/scout.md")
         added = run_cli(

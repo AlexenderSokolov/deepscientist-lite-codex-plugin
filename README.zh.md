@@ -2,9 +2,11 @@
 
 [English README](README.md) · [用户指南](docs/user-guide.zh.md) · [教学课程](teaching/README.zh.md) · [维护文档](docs/README.md)
 
-研究任务一长，聊天记录很快就不够用了：换一个会话后，不知道上次为什么选这条路线；实验跑过，却找不到当时的命令、指标和日志；一个高分结果看起来不错，但没人确认它有没有偷看测试标签。
+研究任务一旦拉长，聊天记录很快就不够用了。换个会话，前一轮为什么选这条路线可能说不清；实验跑过，命令、指标和日志却散落不见；结果分数很高，也未必有人核对过它有没有偷看测试标签。`0.5.0-beta.2` 给每个有边界的任务加了一张项目内收据：Agent 需要说清查过什么、做过什么、验证到哪里、哪里失败，以及当前能不能交付。
 
 DeepScientist Lite 用一组 Codex 技能和普通项目文件解决这些交接问题。它不替你判断科学结论，也不在后台自动做研究；它负责把目标、路线、实验和审查结果留下来，让下一次会话或另一位同学能够接着做。
+
+它的出发点很简单：科研不只需要一个结论，还需要让后来的人看懂这个结论怎样来的、在哪些条件下成立，以及哪里还不能确定。
 
 > **独立项目声明：** 这是一个非官方第三方插件，与 ResearAI 不存在赞助、认证或背书关系。“DeepScientist”仅用于说明工作流灵感来源，详见 [NOTICE](NOTICE)。
 
@@ -58,6 +60,16 @@ $ds-lite-iterate 读取 Mission Board，只推进一轮有界研究动作，记�
 | `research/artifacts/` | 每一步具体做了什么，有什么公开依据？ |
 
 实验阶段还会看到 `research/evidence/<run-id>/`。这里保存实验契约、日志、指标、环境说明、文件哈希和验证结果。
+
+### 4. 选择沟通风格
+
+创建新项目时，插件会提供可选的 `STYLE.md`。默认使用 `research-peer`、自动语言、自适应详细度和自动学术叠加；你也可以选择 `teaching-explainer`、`compact-operator` 或 `reflective-researcher`，或者写自己的 `custom` profile。这个文件只影响聊天和叙述性 Markdown，不会改变 Graph、Evidence Pack、命令、路径、数字、公式或引用。
+
+沟通层会先说明查了什么、做了什么、结果是什么、哪里仍不确定，以及下一步如何复核。旧项目缺少 `STYLE.md` 时不会静默补写；`$ds-lite-intake` 会说明默认行为，并在得到同意后创建。详见[用户指南](docs/user-guide.zh.md)和[实现说明](docs/implementation.zh.md)。
+
+每次有边界的任务都可以留下项目内 `research/artifacts/communication-audit-<id>.json`，即 `ds-lite.communication-audit.v1` 收据。它逐条记录八荣八耻检查、文件哈希或命令结果、受保护内容、自审三阶段、失败/限制、反思和 handoff；没有证据的“已完成/已验证”会被 Stop 阻断。`ds_lite_hook.py` 默认不注册，只有用户确认后才尝试接入；宿主格式未由官方文档或真实主机确认时只展示变更并返回 `host_supported: false`，不猜写 `.codex/config.toml`。它能阻断无证据声明，但不能证明科学结论真实，也不记录隐藏推理。
+
+三个固定上游仓库的完整快照位于 `plugins/deepscientist-lite/references/communication/upstream/`，仅用于逐文件审计，`runtime_loaded: false`。具名作者档案会登记但不进入运行时；只化用可泛化的节奏、结构和反模式，不提供作者模仿或外部 Agent 工作流。
 
 ## 它怎样帮助你
 

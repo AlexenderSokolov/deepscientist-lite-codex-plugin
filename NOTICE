@@ -16,3 +16,17 @@ The Factor Card workflow independently adapts high-level research-process ideas 
 DeepScientist v0.1.5 wq-alpha-research material: mechanism-first hypotheses, staged validation,
 explicit uncertainty, failure diagnosis, and bounded next tests. No source text, financial fields,
 formulas, datasets, credentials, or domain thresholds from that distribution are included here.
+
+Communication-layer attribution:
+The 0.5.0-beta.2 communication references selectively adapt high-level wording observations from
+ai-zixun/humanizer-zh@f75f1ac9, blader/humanizer@1b485648, and
+AIScientists-Dev/academic-humanizer@94b88b23. The runtime package includes the corresponding
+MIT notices in plugins/deepscientist-lite/THIRD_PARTY_NOTICES.md. No upstream runtime code, skill,
+workflow, dependency, or endorsement is included or implied.
+
+The complete fixed-commit snapshots are retained under
+`plugins/deepscientist-lite/references/communication/upstream/` solely for
+offline source, hash, adoption, and license auditing (`runtime_loaded: false`).
+Only original, selectively adapted rules are loaded by the seven runtime skills;
+the snapshots do not represent upstream endorsement and do not add a runtime
+dependency or external Agent workflow.

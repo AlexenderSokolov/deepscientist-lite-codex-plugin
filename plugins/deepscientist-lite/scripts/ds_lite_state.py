@@ -1646,6 +1646,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         created = []
         for relative, template_name in (
             ("PROJECT.md", "PROJECT.md"),
+            ("STYLE.md", "STYLE.md"),
             ("STATUS.md", "STATUS.md"),
             ("run_research.sh", "run_research.sh"),
             ("run_experiment.sh", "run_experiment.sh"),

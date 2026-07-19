@@ -28,6 +28,10 @@ Review is a separate evidence gate between experiment and analysis. It does not 
 - Do not upgrade a threshold miss, unresolved citation, missing log, or method mismatch into a prose-only limitation.
 - Keep `run_review.sh` LF-encoded and replayable from the project root on Windows Git Bash and Unix-like shells. If the resolver is missing or damaged, stop and repair it from the plugin template before reviewing evidence.
 
+## Communication Layer
+
+Before reviewing, read `../../references/communication/core.md`, `../../references/communication/self-audit.md`, and the project-root `STYLE.md` when present. Follow Phase 1 before action, Phase 2 after each material action, and Phase 3 before handoff. Use `../../references/communication/academic-writing.md` only when the review includes academic prose; otherwise keep the review compact and evidence-led. The layer affects narrative wording only. Protect numbers, formulas, citations, commands, paths, JSON/YAML, logs, metrics, and formal definitions;保护内容不因润色而改变，never polish a missing check into a passing result.
+
 ## Handoff
 
 End with the overall decision, four lane statuses, verification result, review node id, artifact and manifest paths, and the smallest required follow-up.

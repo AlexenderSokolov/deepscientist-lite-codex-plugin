@@ -28,6 +28,10 @@ Start with files, not chat memory. Build a small project contract that future Co
 - A recovered conversation or project does not prove that an external process is alive. Preserve `prepared`, `running`, `suspect`, `interrupted`, and `recovering` task records in the intake handoff until their owner, process, logs, checkpoints, and Evidence Pack have been reconciled.
 - A `verified` tmux capacity plan proves only the recorded server fingerprint and probe scope. It does not prove that a workload, Codex CLI child worker, or provider conversation is still alive or resumable.
 
+## Communication Layer
+
+Before intake, read `../../references/communication/core.md`, `../../references/communication/self-audit.md`, and the project-root `STYLE.md` when present. Follow Phase 1 before action, Phase 2 after each material action, and Phase 3 before handoff. If an old project lacks `STYLE.md`, explain the default `research-peer` behavior and ask before creating it. Load profiles or language overlays only when requested or needed for teaching/polishing. Protect code, commands, paths, JSON/YAML, logs, metrics, formulas, citations, and formal definitions;保护内容不因润色而改变。Keep assumptions, inspected files, decisions, and verification visible.
+
 ## Handoff
 
 End intake with: project title, active node id, acceptance target, first scout or experiment action, files created or updated, every tmux plan awaiting user bootstrap or marked stale, verified unused slots, and any non-terminal external task with its query or recovery entry.

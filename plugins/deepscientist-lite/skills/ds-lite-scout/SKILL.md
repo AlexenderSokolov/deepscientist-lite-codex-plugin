@@ -24,3 +24,11 @@ Scout narrows a vague research direction into a verifiable route. It should leav
 - Record why a benchmark or metric is appropriate for the project goal.
 - If evidence is insufficient, mark the node `blocked` and name the missing input.
 - Use `set-status`, `update-node`, and `link-path` for later changes. Never edit `graph.json` directly; reload and reconcile on revision conflict.
+
+## Communication Layer
+
+Before scouting, read `../../references/communication/core.md`, `../../references/communication/self-audit.md`, and the project-root `STYLE.md` when present. Follow Phase 1 before action, Phase 2 after each material action, and Phase 3 before handoff. Load the teaching overlay only when the scout is being explained to a learner; otherwise use the selected profile for a clear peer-facing summary. Keep source paths, citations, and metrics unchanged. Protect structured content（保护内容不因改写而改变）, and mark guesses and missing sources as unknowns instead of smoothing them into facts.
+
+## Handoff
+
+End with the question, inspected sources, confirmed facts, open unknowns, artifact path, graph node, and the next bounded check.

@@ -48,12 +48,31 @@ class CodexAcceptanceToolTests(unittest.TestCase):
 
         acceptance = read_json(output / "acceptance.json")
         self.assertEqual(acceptance["schema_version"], "ds-lite.codex-acceptance.v1")
-        self.assertEqual(acceptance["plugin"]["version"], "0.4.0-beta.2+codex.test-20260705")
+        self.assertEqual(acceptance["plugin"]["version"], "0.5.0-beta.2+codex.test-20260705")
         self.assertEqual(acceptance["plugin"]["expected_skill_count"], 7)
         self.assertEqual(len(acceptance["fixtures"]), 7)
         self.assertFalse(acceptance["safety"]["modifies_codex_configuration"])
         self.assertTrue((output / "projects" / "manual-main").is_dir())
         self.assertFalse(any(output.glob("fixtures/**/REFERENCE_ANSWER.md")))
+        self.assertEqual(len(acceptance["communication_fixture"]["case_ids"]), 12)
+        self.assertTrue((output / "communication" / "BLIND_AB_SCORECARD.md").is_file())
+        cases = read_json(output / "communication" / "cases.json")["cases"]
+        self.assertEqual(len(cases), 12)
+        for case in cases:
+            self.assertEqual(
+                set(case),
+                {"id", "task_class", "profile", "detail_mode", "language", "prompt", "expected_protected", "expected_semantic_fields"},
+            )
+            self.assertGreaterEqual(len(case["prompt"]), 120)
+            self.assertTrue(case["expected_semantic_fields"])
+            for protected in case["expected_protected"]:
+                self.assertIn(protected, case["prompt"])
+        copied_plugin = output / "plugins" / "deepscientist-lite"
+        self.assertTrue((copied_plugin / "scripts" / "ds_lite_communication_audit.py").is_file())
+        self.assertTrue((copied_plugin / "scripts" / "ds_lite_hook.py").is_file())
+        self.assertTrue((copied_plugin / "hooks" / "hooks.json").is_file())
+        adoption = read_json(copied_plugin / "references" / "communication" / "upstream-adoption.json")
+        self.assertEqual(len(adoption["entries"]), 39)
 
         self.run_tool(AUDIT, "--root", str(output), "--record", str(record))
         audit = read_json(record)
@@ -92,6 +111,22 @@ class CodexAcceptanceToolTests(unittest.TestCase):
 
         completed = self.run_tool(AUDIT, "--root", str(output), expected=1)
         self.assertIn("plugin version differs", completed.stdout)
+
+    def test_audit_rejects_missing_communication_attribution(self) -> None:
+        output = self.parent / "communication tampered package"
+        self.run_tool(
+            PREPARE,
+            "--output",
+            str(output),
+            "--cachebuster",
+            "test-communication",
+            "--marketplace-name",
+            "ds-lite-communication-test",
+        )
+        notice = output / "plugins" / "deepscientist-lite" / "THIRD_PARTY_NOTICES.md"
+        notice.write_text("incomplete\n", encoding="utf-8")
+        completed = self.run_tool(AUDIT, "--root", str(output), expected=1)
+        self.assertIn("communication runtime assets", completed.stdout)
 
 
 if __name__ == "__main__":

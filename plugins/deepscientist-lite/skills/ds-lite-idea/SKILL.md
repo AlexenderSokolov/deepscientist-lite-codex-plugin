@@ -27,6 +27,14 @@ Idea work turns scout evidence into a small decision, not a brainstorm dump. Kee
 - Link the idea artifact to every candidate node it explains.
 - Use `link-path --type artifact` and `update-node` for changes. Never edit `graph.json` directly; reload and reconcile on exit code 4.
 
+## Communication Layer
+
+Before comparing ideas, read `../../references/communication/core.md`, `../../references/communication/self-audit.md`, and the project-root `STYLE.md` when present. Follow Phase 1 before action, Phase 2 after each material action, and Phase 3 before handoff. Load `../../references/communication/profiles.md` when the user selects a profile; load teaching or academic overlays only for those tasks. Style affects the candidate explanation, never Factor Card values, source refs, graph relations, or evidence status. Protect code, commands, paths, JSON/YAML, logs, metrics, formulas, citations, and formal definitions;保护内容不因润色而改变。
+
 ## Output
 
 End with the chosen idea, its Factor Card decision and uncertainty, why it is the cheapest useful test, the artifact/card paths, active node id, and the first experiment to run.
+
+## Handoff
+
+Report the selected route, preserved alternatives, evidence and artifact paths, verification performed, uncertainty, and the next smallest test.

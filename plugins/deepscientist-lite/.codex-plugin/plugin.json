@@ -1,6 +1,6 @@
 {
   "name": "deepscientist-lite",
-  "version": "0.4.0-beta.2",
+  "version": "0.5.0-beta.2",
   "description": "Keep a Codex research project recoverable: record goals, routes, experiments, evidence, reviews, and next steps in local files.",
   "author": {
     "name": "DeepScientist Lite maintainers"
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "DeepScientist Lite",
     "shortDescription": "Keep research goals, experiments, evidence, and next steps easy to recover and review.",
-    "longDescription": "DeepScientist Lite is an independent, unofficial Codex plugin for teaching and small research projects. Seven skills help users define a project, scout evidence, compare ideas, record reproducible experiments, review claims, write bounded conclusions, and advance one visible worker iteration at a time. Local project files preserve the current route and supporting evidence across sessions. The plugin does not run a daemon, deploy models, expose an MCP server, or prove that a scientific claim is true. It is not sponsored, certified, or endorsed by ResearAI.",
+    "longDescription": "DeepScientist Lite is an independent, unofficial Codex plugin for teaching and small research projects. Seven skills help users define a project, scout evidence, compare ideas, record reproducible experiments, review claims, write bounded conclusions, and advance one visible worker iteration at a time. An optional STYLE.md contract, progressive communication references, project-relative communication-audit.v1 receipts, and a user-confirmed host-gated hook adapter make handoffs clearer without changing evidence or state schemas. Local project files preserve the current route and supporting evidence across sessions. The plugin does not run a daemon, deploy models, expose an MCP server, or prove that a scientific claim is true. It is not sponsored, certified, or endorsed by ResearAI.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
     "capabilities": [

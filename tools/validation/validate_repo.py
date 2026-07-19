@@ -18,6 +18,21 @@ EXPECTED_SKILLS = [
     "ds-lite-analysis-write",
     "ds-lite-iterate",
 ]
+EXPECTED_VERSION = "0.5.0-beta.2"
+EXPECTED_COMMUNICATION_REFERENCES = {
+    "core.md",
+    "profiles.md",
+    "humanizer-zh.md",
+    "humanizer-en.md",
+    "academic-writing.md",
+    "self-audit.md",
+}
+EXPECTED_PROFILES = {
+    "research-peer",
+    "teaching-explainer",
+    "compact-operator",
+    "reflective-researcher",
+}
 
 
 def fail(message: str) -> None:
@@ -61,8 +76,8 @@ def validate_manifest(plugin_root: Path) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("name") != "deepscientist-lite":
         fail("plugin name must be deepscientist-lite")
-    if manifest.get("version") != "0.4.0-beta.2":
-        fail("plugin version must be 0.4.0-beta.2")
+    if manifest.get("version") != EXPECTED_VERSION:
+        fail(f"plugin version must be {EXPECTED_VERSION}")
     if manifest.get("skills") != "./skills/":
         fail("plugin skills path must be ./skills/")
     for forbidden in ("mcpServers", "apps", "hooks"):
@@ -74,6 +89,9 @@ def validate_manifest(plugin_root: Path) -> None:
 
 def validate_skills(plugin_root: Path) -> None:
     skills_root = plugin_root / "skills"
+    actual_skills = {item.name for item in skills_root.iterdir() if item.is_dir() and (item / "SKILL.md").is_file()}
+    if actual_skills != set(EXPECTED_SKILLS):
+        fail(f"expected exactly seven skills, found: {', '.join(sorted(actual_skills))}")
     for skill_name in EXPECTED_SKILLS:
         skill_file = skills_root / skill_name / "SKILL.md"
         if not skill_file.exists():
@@ -88,6 +106,52 @@ def validate_skills(plugin_root: Path) -> None:
             fail(f"{skill_file} name mismatch")
         if len(data["description"]) < 80:
             fail(f"{skill_file} description is too short to trigger reliably")
+        for marker in ("references/communication/core.md", "references/communication/self-audit.md", "STYLE.md", "保护", "Phase 1", "Handoff"):
+            if marker not in text:
+                fail(f"{skill_file} is missing communication marker: {marker}")
+
+
+def validate_communication(plugin_root: Path) -> None:
+    communication_root = plugin_root / "references" / "communication"
+    actual = {path.name for path in communication_root.glob("*.md")} if communication_root.is_dir() else set()
+    if actual != EXPECTED_COMMUNICATION_REFERENCES:
+        fail("communication reference set does not match the fixed six-file contract")
+    profiles = (communication_root / "profiles.md").read_text(encoding="utf-8")
+    for profile in EXPECTED_PROFILES:
+        if profile not in profiles:
+            fail(f"missing communication profile: {profile}")
+    if "八荣八耻" not in (communication_root / "core.md").read_text(encoding="utf-8"):
+        fail("communication core is missing the eight engineering principles")
+    notice = plugin_root / "THIRD_PARTY_NOTICES.md"
+    notice_text = notice.read_text(encoding="utf-8") if notice.is_file() else ""
+    if not notice.is_file() or notice_text.count("MIT License") < 3:
+        fail("runtime third-party MIT notices are incomplete")
+    upstream_root = communication_root / "upstream"
+    for snapshot_name in (
+        "ai-zixun-humanizer-zh/LICENSE",
+        "blader-humanizer/LICENSE",
+        "AIScientists-Dev-academic-humanizer/LICENSE",
+    ):
+        license_path = upstream_root / snapshot_name
+        if not license_path.is_file() or license_path.read_text(encoding="utf-8") not in notice_text:
+            fail(f"third-party notice does not preserve the exact license: {snapshot_name}")
+    template = plugin_root / "assets" / "templates" / "STYLE.md"
+    if not template.is_file():
+        fail("STYLE.md template is missing")
+    style_text = template.read_text(encoding="utf-8")
+    for field in ("language:", "detail:", "academic:", "profile:", "extends:"):
+        if field not in style_text:
+            fail(f"STYLE.md template is missing {field}")
+    audit_script = plugin_root / "scripts" / "ds_lite_communication_audit.py"
+    hook_script = plugin_root / "scripts" / "ds_lite_hook.py"
+    hook_config = plugin_root / "hooks" / "hooks.json"
+    if not audit_script.is_file() or not hook_script.is_file() or not hook_config.is_file():
+        fail("communication audit and hook adapter files are incomplete")
+    hook_payload = json.loads(hook_config.read_text(encoding="utf-8"))
+    if set(hook_payload.get("hooks", {})) != {"UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"}:
+        fail("hook adapter must declare exactly four lifecycle events")
+    adoption_tool = Path(__file__).with_name("audit_upstream_adoption.py")
+    run([sys.executable, str(adoption_tool)], adoption_tool.parents[2])
 
 
 def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
@@ -630,6 +694,8 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         plugin_root / "assets" / "templates" / "research" / "artifacts" / "review-result.json",
         plugin_root / "assets" / "templates" / "research" / "evidence" / "contract.json",
         plugin_root / "assets" / "templates" / "research" / "evidence" / "environment.json",
+        plugin_root / "assets" / "templates" / "STYLE.md",
+        plugin_root / "THIRD_PARTY_NOTICES.md",
         plugin_root / "assets" / "templates" / "run_review.sh",
         plugin_root / "assets" / "templates" / "tools" / "ds_lite_runtime.sh",
         repo_root / "LICENSE",
@@ -696,6 +762,26 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         for required_text in required_texts:
             if required_text not in text:
                 fail(f"{path} missing P0 protocol documentation anchor: {required_text}")
+
+    communication_doc_requirements = {
+        repo_root / "PROJECT.md": ("0.5.0-beta.2", "STYLE.md", "八荣八耻", "runtime_loaded: false", "communication-audit.v1"),
+        repo_root / "README.md": ("Communication Style", "STYLE.md", "reflective-researcher", "hook"),
+        repo_root / "README.zh.md": ("STYLE.md", "research-peer", "沟通层", "审计"),
+        repo_root / "docs" / "user-guide.zh.md": ("STYLE.md", "reflective-researcher", "可证伪性", "communication-audit.v1"),
+        repo_root / "docs" / "implementation.zh.md": ("0.5.0-beta.2", "STYLE.md", "THIRD_PARTY_NOTICES.md", "communication-audit.v1"),
+        repo_root / "docs" / "maintainers" / "writing-guide.zh.md": ("0.5", "受保护内容", "reflective-researcher"),
+        repo_root / "docs" / "maintainers" / "release-checklist.md": ("0.5.0-beta.2", "runtime_loaded: false", "human blind A/B", "hook"),
+        repo_root / "docs" / "maintainers" / "release-status.zh.md": ("0.5.0-beta.2", "four-profile", "human A/B", "hook"),
+        repo_root / "NOTICE": ("ai-zixun/humanizer-zh@f75f1ac9", "THIRD_PARTY_NOTICES.md", "No upstream runtime code"),
+        plugin_root / "THIRD_PARTY_NOTICES.md": ("ai-zixun/humanizer-zh@f75f1ac9", "blader/humanizer@1b485648", "AIScientists-Dev/academic-humanizer@94b88b23"),
+        repo_root / "docs" / "maintainers" / "upstream-adoption-audit.zh.md": ("39", "逐文件", "runtime_loaded: false", "具名作者"),
+        repo_root / "docs" / "maintainers" / "preexisting-dirty-worktree-audit.zh.md": ("45 个已跟踪修改", "21 个未跟踪路径", "未移植", "独立 worktree"),
+    }
+    for path, required_texts in communication_doc_requirements.items():
+        text = path.read_text(encoding="utf-8")
+        for required_text in required_texts:
+            if required_text not in text:
+                fail(f"{path} missing communication-layer documentation anchor: {required_text}")
 
     p0_skill_requirements = {
         "ds-lite-intake": ("research/work-unit.json", "claim requirement"),
@@ -1005,6 +1091,7 @@ def main() -> int:
     plugin_root = repo_root / "plugins" / "deepscientist-lite"
     validate_manifest(plugin_root)
     validate_skills(plugin_root)
+    validate_communication(plugin_root)
     validate_docs(repo_root, plugin_root)
     validate_teaching_runner(repo_root)
     validate_state_script(repo_root, plugin_root)

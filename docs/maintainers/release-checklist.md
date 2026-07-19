@@ -2,9 +2,16 @@
 
 ## Beta release
 
+- For `0.5.0-beta.2`, confirm `STYLE.md` is generated only for a new project, preserves existing bytes, and is not silently added to an old Graph project.
+- Confirm the fixed six communication references, four profile names, protected-content rules, eight `honor-*` checks, three self-audit phases, and runtime `THIRD_PARTY_NOTICES.md` are present.
+- Run the upstream adoption auditor; confirm all 39 fixed-commit files have matching SHA-256, exactly one nine-field matrix row, exact licenses, and no runtime skill loads `upstream/`.
+- Prepare the isolated acceptance package and confirm its twelve complete fixed inputs contain real Chinese/English prose, numbers, citation keys, commands, JSON, expected protection, profiles, and semantic fields; keep `runtime_loaded: false` and use the anonymous scorecard for human blind A/B only.
+- Run communication-audit schema tests for unknown fields, absolute/external paths, missing command hashes, unredacted secrets, fake command results, claim-specific evidence, unsupported completion, protected-content changes, missing handoff, missing failure, explicit privilege escalation, and `stop_hook_active` re-entry. Do not mark the release ready until fresh cache/new-thread discovery, four-profile behavior, hook registration/blocking, and the human A/B acceptance bar have separate evidence.
+
 - Run `bash tools/validation/run_validate.sh` or `tools/validation/run_validate.ps1`.
 - Confirm the Windows/Ubuntu Python 3.10 and 3.x CI matrix is green.
 - Confirm `.codex-plugin/plugin.json` version and repository URL.
+- Keep the manifest free of host `hooks`; the local hook adapter is opt-in only.
 - Confirm `CHANGELOG.md`, `LICENSE`, `NOTICE`, and the Graph v2 migration guide match the release.
 - Confirm skill frontmatter contains only `name` and `description`.
 - Run the official plugin validator from the installed `plugin-creator` skill.
@@ -30,6 +37,7 @@
 - Record any installation or cache failure in `known-issues.md`.
 - Confirm contract/environment JSON contains no credentials, process environment dump, or workstation absolute root.
 - If publishing source/package-only, state that cache installation and new-thread discovery are not verified; do not silently perform those external state changes.
+- If the host hook format is not confirmed by official documentation or real-host evidence, record `host_supported: false` and do not write `.codex/config.toml`.
 
 ## Stable public release
 
