@@ -1,27 +1,33 @@
 ---
 name: ds-lite-iterate
-description: "Use when Codex should advance a DeepScientist Lite project by exactly one bounded worker iteration: read the mission board, choose one action, record a frontier decision, update artifacts, graph, STATUS, and stop at a checkpoint."
+description: "Use when resuming a cross-session research or engineering workspace, advancing exactly one bounded action, updating recoverable artifacts and Mission Board state, reflecting on the result, reporting to the user, and stopping."
 ---
 
 # DS Lite Iterate
 
 Run one visible research-worker iteration. This skill is for a Codex worker supervised by a user or OpenScience-style controller; it is not a daemon, scheduler, or permission to run indefinitely.
 
+Before acting, read [the Responsible Exploration Covenant](../../references/responsible-exploration-covenant.md) and use the shared start / progress / end protocol. Send the mandatory Start report before registering the iteration, use Progress reports during long work, and finish with the mandatory End report after reflection; missing evidence becomes `blocked` or `not-verified`, never polished success prose.
+
 ## Workflow
 
-1. Read `PROJECT.md`, `STATUS.md`, `RESEARCH_MAP.md`, `research/work-unit.json`, and `research/state/graph.json`.
-2. Run `python <plugin>/scripts/ds_lite_state.py mission --root <project> --format json` and treat it as the current task board. Check `claim_readiness`, `evidence_detail`, compatibility warnings, and active-route waiting separately from off-route blocked debt before choosing an action.
-3. Check `research/artifacts/external-tmux-plan-*.md` before `external-task-*.md`. If an active or linked plan's gate state is not `verified`, it cannot authorize a slot. For `draft`, `awaiting-user-bootstrap`, `observed`, `probe-pending`, or `stale`, perform exactly one evidence-preserving status check or `ask-human`, then stop; `rejected` and `superseded` remain unavailable and require a new plan if tmux is still needed. Codex must not create or expand tmux capacity. If any task is non-terminal (`prepared`, `running`, `suspect`, `interrupted`, or `recovering`), read [the external long-task protocol](../../references/external-long-task-protocol.md), perform exactly one bounded status check, evidence backup, repair, recovery decision, `stop`, or `ask-human` action, update the handoff, and end this iteration without starting new work.
-4. Choose exactly one action: `exploit`, `branch`, `debug`, `review`, `analysis`, `stop`, or `ask-human`.
-5. Write `research/artifacts/frontier-decision-<slug>.md` with: current hypothesis, parent line, latest evidence, chosen action, rejected actions, promotion status, metric tradeoff, budget check, rollback target, supersede reason, and stop condition.
-6. If the action is `review`, use `$ds-lite-review`; if `analysis`, use `$ds-lite-analysis-write`; if `exploit`, `branch`, or `debug`, create or update only the minimum idea/experiment/checkpoint needed for the next bounded step.
-7. Update graph only through `ds_lite_state.py`, attach the frontier decision artifact, and preserve branch/rollback/supersedes relationships.
-8. Run `render-status` so `STATUS.md` becomes the visible Mission Board.
-9. Stop after this one iteration. Report the chosen action, artifact path, active node, next action, and whether user/OpenScience approval is needed.
+1. Read `PROJECT.md`, `STATUS.md`, `RESEARCH_MAP.md`, `research/work-unit.json`, and `research/state/graph.json`. Give the covenant's start feedback before mutation.
+2. Run `python <plugin>/scripts/ds_lite_state.py mission --root <project> --format json` and treat it as the current task board. Check `claim_readiness`, `evidence_detail`, `latest_iteration`, `hypothesis_pool`, compatibility warnings, and active-route waiting separately from off-route blocked debt.
+3. Check `research/artifacts/external-tmux-plan-*.md` before `external-task-*.md`. If a gate state is not `verified`, it cannot authorize a slot. Codex must not create or expand tmux capacity. If any task is non-terminal (`prepared`, `running`, `suspect`, `interrupted`, or `recovering`), read [the external long-task protocol](../../references/external-long-task-protocol.md), choose only one status check, evidence backup, repair, recovery decision, `stop`, or `ask-human`, and keep the plan's single launch authority. A non-authority worker must not race another launcher.
+4. Choose exactly one action kind from `scout`, `idea`, `collect-evidence`, `execute`, `debug`, `review`, `analysis`, `write`, `branch`, `rollback`, `stop`, `ask-human`, or `status-check`. Map legacy `exploit` explicitly to `execute`; reject any other unregistered action. State its prediction, falsification condition, resource limits, authorization, and stop condition.
+5. Write `research/artifacts/frontier-decision-<slug>.md` with the current situation, hypothesis, latest evidence, chosen and rejected actions, metric tradeoff, budget, rollback or supersede target, and checkpoint. Prepare the action JSON required by the iteration helper without secrets or workstation roots.
+6. Before the action, run `python <plugin>/scripts/ds_lite_iteration.py init --root <project> --iteration-id <id> --selected-skill <target-skill> --action-json <action-json> --input-ref <ref> --expected-revision <revision>`. Confirm the receipt is `running`; if registration fails, do not act.
+7. Complete exactly one `plan -> act -> verify -> reflect -> report -> stop` cycle. Invoke at most one narrower skill or perform one status/stop action, update Graph only through `ds_lite_state.py` with expected revision, retain negative results, and run the smallest relevant validation. Do not begin a second action when the first is partial or blocked.
+8. Build one terminal result with status `completed|partial|blocked|failed|ambiguous`, after revision, outputs, Graph changes, validations, stop reason, `reflection`, and `user_report`. Reflection records observable outcomes, hypothesis updates, expectation gap, negative results, authorization and obligations, learned boundaries, next candidates, and the minimal discriminating test. It never stores hidden reasoning or a full transcript.
+9. Run `python <plugin>/scripts/ds_lite_iteration.py finalize --root <project> --path <iteration-ref> --result-json <terminal-result-json>`. An error, timeout, or ambiguous transport still needs a factual terminal receipt; do not retry an ambiguous or duplicate-risk action.
+10. Run `python <plugin>/scripts/ds_lite_iteration.py verify --root <project> --path <iteration-ref>`. If verification fails, report the receipt as partial or blocked rather than completed.
+11. Run `render-status` so `STATUS.md` projects the terminal `latest_iteration`, updated hypothesis pool, evidence gate, blocker, and string `next_action`.
+12. Give the covenant's end feedback and stop. This minimal receipt is not an exactly-once transaction and does not claim full P1 execution semantics.
 
 ## Hard Rules
 
 - One invocation equals one iteration. Do not loop.
+- Do not start a reflection loop. Reflection is the mandatory tail of the one action.
 - Artifact is not progress; API or graph readiness is not completion.
 - An idea line is not an experiment. Without smoke/default/review/analysis evidence, the next action remains experiment preparation.
 - Do not choose `analysis` unless a direct passing review and Evidence Pack exist. If evidence is absent, choose `debug`, `review`, `ask-human`, or `stop`.

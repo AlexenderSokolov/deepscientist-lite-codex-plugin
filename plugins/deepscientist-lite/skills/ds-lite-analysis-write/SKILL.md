@@ -1,11 +1,23 @@
 ---
 name: ds-lite-analysis-write
-description: Use when Codex should analyze DS Lite experiment evidence, compare early and final metrics, consolidate claims, limitations, confidence, missing checks, mathematical notes, summaries, paper sections, or final handoffs without inventing unsupported results.
+description: Use when reviewed research or engineering evidence must become bounded claims, limitations, negative results, confidence notes, mathematical analysis, summaries, reports, paper sections, or a recoverable final handoff.
 ---
 
 # DS Lite Analysis And Write
 
 Analysis and writing translate artifacts into claims. Treat unsupported claims as blockers, not prose problems.
+
+Before acting, read [the Responsible Exploration Covenant](../../references/responsible-exploration-covenant.md) and use the shared start / progress / end protocol. Send the mandatory Start report before analysis or writing, use Progress reports during long work, and finish with the mandatory End report; missing evidence becomes `blocked` or `not-verified`, never polished success prose.
+
+## Writing And Polishing Router
+
+Choose the route before editing prose:
+
+- For a reviewed experiment, claim-bearing analysis, conclusion, paper section, or final handoff, use the evidence workflow below. Pure polishing requests do not bypass the typed review gate, and polishing never promotes evidence strength.
+- For an existing manuscript paragraph or section whose facts and citation intent are already supplied, load the complete [`nature-polishing`](../nature-polishing/SKILL.md) workflow. Detect paper type, section, language, and journal from its manifest; repair structural problems before sentence-level style, and preserve claims, numbers, uncertainty, terminology, and citation intent.
+- For drafting a new manuscript argument or initial-submission package rather than revising existing prose, route to [`nature-writing`](../nature-writing/SKILL.md). Post-decision correspondence belongs to `nature-response`.
+
+The polishing route must still emit the DS Lite start / progress / end reports. Its artifact records the original text, polished text, structural changes, unresolved evidence or logic problems, and a relative source/output reference. If the requested wording would conceal missing evidence or change a claim, stop and report the conflict instead of polishing it away.
 
 ## Workflow
 

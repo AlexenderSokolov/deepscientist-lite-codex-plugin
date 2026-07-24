@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build 2>&1)",
+      "Read(//Users/wang/code/github/claude-code/.codex-run/df184a2a-0bdd-4160-9cd4-d981efd3d749/**)",
+      "Bash(cd /Users/wang/code/github/claude-code/.codex-run/df184a2a-0bdd-4160-9cd4-d981efd3d749 && python3 -c \"\nimport json\nwith open\\('events.jsonl'\\) as f:\n    for i, line in enumerate\\(f, 1\\):\n        try:\n            e = json.loads\\(line\\)\n            t = e.get\\('type',''\\)\n            item = e.get\\('item',{}\\)\n            it = item.get\\('type',''\\)\n            status = item.get\\('status',''\\)\n            iid = item.get\\('id',''\\)\n            if it == 'file_change':\n                changes = item.get\\('changes',[]\\)\n                paths = [c.get\\('path',''\\).split\\('/'\\)[-1] for c in changes]\n                print\\(f'{i:3d} {t:20s} {it:20s} {status:12s} {paths}'\\)\n            elif it == 'command_execution':\n                cmd = item.get\\('command',''\\)[:80]\n                print\\(f'{i:3d} {t:20s} {it:20s} {status:12s} {cmd}'\\)\n            elif it == 'reasoning':\n                txt = item.get\\('text',''\\)[:60]\n                print\\(f'{i:3d} {t:20s} {it:20s}              {txt}'\\)\n            elif it == 'todo_list':\n                items = item.get\\('items',[]\\)\n                done = sum\\(1 for x in items if x.get\\('completed'\\)\\)\n                print\\(f'{i:3d} {t:20s} {it:20s}              {done}/{len\\(items\\)} done'\\)\n            else:\n                print\\(f'{i:3d} {t:20s} {it or t:20s} {status}'\\)\n        except: print\\(f'{i:3d} parse error'\\)\n\")",
+      "Bash(python3 -c \"\nline = open\\('/Users/wang/code/my/codex-autoresearch/src/engine/job.ts'\\).readlines\\(\\)[116]\nfor i, c in enumerate\\(line\\):\n    if ord\\(c\\) > 127:\n        print\\(f'pos {i}: U+{ord\\(c\\):04X} \\({c}\\)'\\)\n\")",
+      "Bash(npm test 2>&1)",
+      "Bash(codex --help 2>&1 | head -30)",
+      "Bash(codex exec --help 2>&1 | head -40)",
+      "Bash(codex exec --help 2>&1 | grep -i profile)",
+      "Bash(codex exec --profile default \"echo hello\" 2>&1 | head -5)",
+      "Bash(npm install 2>&1 | tail -5)",
+      "Bash(git -C /Users/wang/code/my/codex-autoresearch show HEAD:src/mcp/server.ts)",
+      "Bash(find /Users/wang/code/my/codex-autoresearch -path \"*/codex-run/*/events.jsonl\" 2>/dev/null | head -1; find /Users/wang/code/my/codex-autoresearch -name \"*.jsonl\" 2>/dev/null | head -3)"
+    ]
+  }
+}

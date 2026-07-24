@@ -1,11 +1,15 @@
 ---
 name: ds-lite-coordinate
-description: Use when a DeepScientist Lite work unit has two or three independent bounded subtasks that may be delegated after explicit user or OpenScience approval, with disjoint path ownership and parent-owned integration.
+description: Use when a research or engineering work unit has two or three independent bounded subtasks that may be delegated only after explicit user or OpenScience approval, with disjoint path ownership and parent-owned integration.
 ---
 
 # DS Lite Coordinate
 
 Plan and collect one bounded delegation without turning DeepScientist Lite into a scheduler. Use the host's child-agent capability only after approval; the parent worker remains the integration owner.
+
+Before acting, read [the Responsible Exploration Covenant](../../references/responsible-exploration-covenant.md) and use the shared start / progress / end protocol. Send the mandatory Start report before preparing a delegation plan, use Progress reports during collection, and finish with the mandatory End report; missing approval or result evidence becomes `blocked` or `not-verified`, never polished success prose.
+
+Before approval, prepare a `ds-lite.handoff.v1` projection for each child with only its objective, input refs, allowed paths, validation commands, resource limits, stop conditions, and result ref. Use the CLI boundary protocol for every shell surface. Do not forward a full conversation, raw JSONL, hidden reasoning, credentials, or unredacted command output.
 
 ## Workflow
 
@@ -15,9 +19,10 @@ Plan and collect one bounded delegation without turning DeepScientist Lite into 
 4. Run `python <plugin>/scripts/ds_lite_protocol.py validate-delegation --path <delegation.json>`. Resolve every schema, path, ownership, or budget error before asking for approval.
 5. While approval is `required`, present the plan and stop. Do not launch a child task until explicit user or OpenScience approval exists. Record only a minimal project-relative approval artifact, then set `approval.authority`, `approval.approval_ref`, and `approval.status=approved`; do not preserve hidden reasoning, credentials, or full conversation text.
 6. After approval, invoke no more than the declared tasks through a host-provided child-agent facility. Use `parallel` only for truly independent path owners; otherwise follow `sequential`. Give each child only its declared objective, refs, paths, validation, resource limits, stop conditions, and result path. A child must not delegate again, expand scope, integrate siblings, or retry automatically.
-7. Require every child to write or return its declared result ref. Update task status and `result_ref`, validate the sidecar again, and preserve `partial`, `blocked`, or `cancelled` outcomes instead of hiding them or launching replacements.
-8. As the integration owner, inspect all returned artifacts and scoped diffs, reject ownership conflicts, run each declared validation command, then run the repository-wide validation required by `PROJECT.md`. The parent alone decides whether accepted changes enter the work unit and graph.
-9. Mark the delegation terminal only when its task states and result refs agree. Report completed, partial, and blocked tasks separately, record the next bounded suggestion, and stop after this one coordination cycle.
+7. Require each receiver to acknowledge the handoff digest, authorization boundary, configuration, and stop condition before it starts. A missing or mismatched acknowledgement blocks dispatch.
+8. Require every child to write or return its declared result ref. Update task status and `result_ref`, validate the sidecar again, and preserve `partial`, `blocked`, or `cancelled` outcomes instead of hiding them or launching replacements.
+9. As the integration owner, inspect all returned artifacts and scoped diffs, reject ownership conflicts, run each declared validation command, then run the repository-wide validation required by `PROJECT.md`. The parent alone decides whether accepted changes enter the work unit and graph.
+10. Mark the delegation terminal only when its task states and result refs agree. Report completed, partial, and blocked tasks separately, record the next bounded suggestion, and stop after this one coordination cycle.
 
 ## Hard Rules
 

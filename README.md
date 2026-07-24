@@ -8,13 +8,14 @@ DeepScientist Lite is a lightweight Codex plugin for learning and practicing a t
 
 It is designed for onboarding, teaching demos, and small research projects where the first goal is to make the research process clear and recoverable.
 
-The [Chinese user guide](docs/user-guide.zh.md) explains the eight skills, Graph revisions, Mission Board, Evidence Packs, review boundaries, bounded delegation, path aliases, and cross-session recovery with user-facing examples. The teaching area separates deterministic lab preparation from the judgments students or Codex must make.
+The [Chinese user guide](docs/user-guide.zh.md) explains the 26 runtime skills: nine DS Lite continuity/evidence skills and the complete 17-skill nature-skills academic workflow family. It also covers Graph revisions, Mission Board, reflective iterations, Evidence Packs, review boundaries, bounded delegation, path aliases, first-use MCP/API onboarding, and cross-session recovery. The teaching area separates deterministic lab preparation from the judgments students or Codex must make.
 
 ## What It Does
 
 - Starts or audits a research project with `PROJECT.md`, `STATUS.md`, and `RESEARCH_MAP.md`.
 - Guides Codex through intake, scout, idea, experiment, review, analysis/write, one bounded iterate step, and an optional explicitly approved coordination step.
 - Renders a user-visible Mission Board with `mission` and `render-status` so `STATUS.md` shows what happened, what is next, and where rollback is possible.
+- Records one bounded action, verification, reflection, user report, and stop reason in `ds-lite.iteration.v1`, then stops.
 - Records ideas, experiments, failures, and conclusions as files under `research/artifacts/`.
 - Packages logs, metrics, and output hashes under `research/evidence/` before claim review.
 - Maintains a small adjacency-list state graph in `research/state/graph.json`.
@@ -23,7 +24,7 @@ The [Chinese user guide](docs/user-guide.zh.md) explains the eight skills, Graph
 
 ## What It Does Not Do
 
-DeepScientist Lite does not start a daemon, run a Web/TUI, install local models, expose MCP servers, connect chat channels, or replace the full DeepScientist platform. It is a teaching-first plugin and file protocol.
+DeepScientist Lite does not start a daemon, run a Web/TUI, install local models, expose an MCP server, connect chat channels, or replace the full DeepScientist platform. Nature MCP/API integrations are opt-in workspace configuration and require explicit user authorization. It is a teaching-first plugin and file protocol.
 
 ## Install From A Marketplace Repository
 
@@ -35,19 +36,20 @@ This repository follows the Codex marketplace layout: `.agents/plugins/marketpla
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-This command adds a plugin source; it does not by itself prove that the plugin is installed. Open `/plugins`, select this marketplace, and install `deepscientist-lite`. After installing or upgrading, restart Codex Desktop and use a fresh thread to verify the plugin version and all eight `$ds-lite-*` skills.
+This command adds a plugin source; it does not by itself prove that the plugin is installed. Open `/plugins`, select this marketplace, and install `deepscientist-lite`. After installing or upgrading, restart Codex Desktop and use a fresh thread to verify the actual plugin version and skill count. The published `0.4.0-beta.2` has seven skills; the current source candidate `0.6.0-beta.1` has 26. Do not infer cache state from the source tree.
 
 ## Start Using It
 
 In a project folder, ask Codex to use one of the DS Lite skills, for example:
 
 ```text
+$ds-lite inspect this research or engineering workspace, explain why the plugin applies, and route to one next action
 $ds-lite-intake start a DS Lite research project from this question: ...
 $ds-lite-scout audit the baseline and benchmark route
 $ds-lite-experiment record this experiment in the research map
 $ds-lite-review review the Evidence Pack before analysis
 $ds-lite-analysis-write summarize the evidence and limitations
-$ds-lite-iterate advance exactly one visible research iteration and stop
+$ds-lite-iterate register one action, verify it, reflect, report, update STATUS, and stop
 $ds-lite-coordinate plan two independent tasks, stop for approval, then collect and verify their results
 ```
 

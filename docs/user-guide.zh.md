@@ -4,6 +4,8 @@
 
 ## 1. 先建立一个简单的心智模型
 
+遇到 provider、认证、Windows/WSL 路径、编码、命令行或配置格式冲突时，先查插件内的[环境兼容性排障手册](../plugins/deepscientist-lite/references/environment-compatibility-playbook.md)。它要求先分类故障、保留证据，再决定是否继续，不把环境故障写成科研结论。
+
 DeepScientist Lite 不接管科研项目。它更像一本有格式的实验台账，由 Codex 帮你维护。
 
 每次推进都围绕四个问题：
@@ -23,11 +25,21 @@ flowchart LR
     E --> R["review<br/>是否允许提升结论"]
 ```
 
-这些文件不是重复记录。它们的更新频率和职责不同：PROJECT 很少改，STATUS 经常改，Graph 管路线，`research/work-unit.json` 管当前有界任务，artifact 讲清一步工作，Evidence Pack 保存实验事实，review 记录检查决定；需要两到三个独立 worker 时，`delegation-*.json` 只记录授权、路径所有权、回传和父 worker 的整合责任。
+这些文件不是重复记录。它们的更新频率和职责不同：PROJECT 很少改，STATUS 经常改，Graph 管路线，`research/work-unit.json` 管当前有界任务，artifact 讲清一步工作，Evidence Pack 保存实验事实，review 记录检查决定，`research/iterations/*.json` 保存一次行动、验证、反思、汇报与停止理由；需要两到三个独立 worker 时，`delegation-*.json` 只记录授权、路径所有权、回传和父 worker 的整合责任。
 
 `research/work-unit.json` 使用 `ds-lite.work-unit.v1`。新项目起初没有 claim requirement，所以证据状态是 planning；开始 claim-bearing experiment 前，才声明 profile、typed validator 和 canonical evidence refs。普通 Markdown、日志、PROJECT/STATUS 或任意非空路径都不是 typed evidence。schema 不认识的字段只能放进 `extensions`。
 
-## 2. 八个技能分别在什么时候用
+## 2. 26 个技能分别在什么时候用
+
+前九个 `ds-lite-*` skill 负责项目接手、证据、实验、审查和有界迭代；十七个 `nature-*` skill 负责文献检索、引用、数据、图表、论文阅读与写作、统计、回复信和投稿辅助。Nature skill 保留上游完整工作流，不是摘要说明；每个入口都先执行依赖和授权检查。
+
+### DS Lite：不知道从哪里开始时的统一入口
+
+`$ds-lite` 用于接手或恢复科研/工程项目、跨轮连续工作、实验比较、证据审查、假设管理、上下文重启和任务式指挥。它先判断当前目录是不是 DS Lite 工作区，读取 Mission Board，说明为什么插件适用，然后只选择下面一个动作 skill。
+
+你应当看到：开始反馈中明确本轮目标、选择的 skill、唯一动作、风险和检查点。
+
+它不能保证：一次调用自动完成 intake 到 write 的完整流程。总入口不自行循环、不执行多个阶段，也不能绕过 evidence、review 或用户审批。
 
 ### Intake：先把问题和边界说清楚
 
@@ -114,11 +126,11 @@ Review 会同时写人类可读的 `review-<slug>.md` 和机器可读的 `ds-lit
 
 ### Iterate：只推进一轮，然后停在 checkpoint
 
-`$ds-lite-iterate` 用于 OpenScience 或用户希望 worker 自主推进一个小步时。它先读取 Mission Board，再从 `exploit`、`branch`、`debug`、`review`、`analysis`、`stop`、`ask-human` 中选择一个动作。
+`$ds-lite-iterate` 用于 OpenScience 或用户希望 worker 自主推进一个小步时。它先读取 Mission Board，在当前 revision 登记 running receipt，再从 `scout`、`idea`、`collect-evidence`、`execute`、`debug`、`review`、`analysis`、`write`、`branch`、`rollback`、`stop`、`ask-human`、`status-check` 中选择一个动作。旧 `exploit` 必须显式映射为 `execute`。
 
-你应当看到：`frontier-decision-*.md`、必要的 Graph 变化，以及由 `render-status` 更新的 `STATUS.md`。
+你应当看到：`ds-lite.iteration.v1` sidecar、动作产物、验证结果、reflection、user report、必要的 Graph 变化，以及由 `render-status` 更新的 `STATUS.md`。终态只能是 `completed`、`partial`、`blocked`、`failed` 或 `ambiguous`。
 
-它不能保证：后台持续运行。一次调用只推进一轮；GPU、长跑、依赖安装或外部数据访问仍需要用户或主管系统授权。
+它不能保证：后台持续运行或 exactly-once transaction。一次调用只推进一轮；`completed` 只表示本轮闭合，不表示假设成立。GPU、长跑、依赖安装或外部数据访问仍需要用户或主管系统授权，transport 不明或有重复风险时必须停止。
 
 ### Coordinate：先划清任务和写入边界，再决定是否委派
 
@@ -152,11 +164,29 @@ Mission Board 重点回答：
 - 指标方向、early/final/aggregate/AUC 等指标面是否已经在契约中说清；
 - 当前证据强度是 planning、needs-evidence、has-evidence 还是 reviewed；
 - 当前 `claim_readiness` 是 none、blocked、inconclusive、refuted 还是 supportable，以及 `evidence_detail` 中的 validated/negative evidence、typed review 数量、最新 refs 和 blocking reasons；
+- 最新一轮 `latest_iteration` 的状态、skill、revision、stop reason 和用户报告；
+- 派生 `hypothesis_pool` 中哪些候选仍是 untested，哪些已 supported、weakened、refuted、inconclusive 或 parked；
 - 是否需要用户或 OpenScience 主管决策。
 
 `waiting_for_user` 只看当前 active route、当前路线的 blocker、typed needs-human review 或 blocked work unit。off-route blocked 节点和 `off_route_warnings` 仍会显示为保留债务，但不会因为存在就无条件卡住当前路线。
 
 它还会显示几条硬规则：artifact 不是进度，ready 不是完成，idea 不是实验，metric 错误是协议失败，没有可见闭环就没有智能体体验。
+
+### Hook 能做什么，不能做什么
+
+候选 `0.6.0-beta.1` 带有一个插件局部 `hooks/hooks.json` 和标准库 helper。它只尝试附加脱敏状态、阻断确定违规、运行轻量一致性检查，并在 iteration 未闭合时让 Stop 最多续跑一次；不会保存原 prompt、完整工具参数、输出、stderr 或 secret，也不会自创批准事实。
+
+当前只能确认 Hook helper 和配置通过源码测试；`trusted-hook-05` 已观察到真实 UserPromptSubmit、PreToolUse 和 PostToolUse，但任务在 `turn.failed` 前没有出现阻断决定或 Stop 续行，完整四事件序列仍未通过。manifest 已显式声明 `hooks: "./hooks/hooks.json"`，但不能把配置文件或单个事件说成完整运行时保护已经生效。若宿主后续仍不支持，继续依靠 26 个 skill、iteration CLI 和仓库 validator。
+
+### Nature skill 的首次配置
+
+第一次使用需要 MCP、外部 API、浏览器、下载器、LaTeX、Node 或 Python 的 Nature skill 前，运行：
+
+```text
+python plugins/deepscientist-lite/scripts/ds_lite_nature_setup.py onboarding --workspace .
+```
+
+`doctor` 只报告环境变量是否存在和工具是否可见，不读取密钥；`apply` 只写当前工作区 `.ds-lite/nature/`，不会修改正式 `CODEX_HOME`、全局 MCP、credential 或 marketplace。缺少依赖时结果必须保留 `needs-config`、`missing-dependency` 或 `not-observed`，不能假装外部能力可用。
 
 ## 4. Graph 到底保存什么
 
@@ -285,6 +315,11 @@ intake → scout → idea → experiment → review → analysis
 - [30分钟路线语义](../teaching/route-lab-30.zh.md)
 - [30分钟路径可移植](../teaching/path-lab-30.zh.md)
 - [30分钟 revision 冲突](../teaching/revision-lab-30.zh.md)
+- [45分钟行动与反思](../teaching/action-reflection-student.zh.md)
 - [四案例三组 matched-control pilot](../teaching/matched-control-pilot.zh.md)
 
-matched pilot 比较普通 Codex、单个 `NOTES.md` 和 DS Lite workspace。runner 只准备 12 个隔离 arm、分轮提示和空白评分面；真实运行前仍要固定模型/预算/工具并取得授权。不要把 `prepared-not-run` 当成插件效果证据。
+matched pilot 比较普通 Codex、单个 `NOTES.md` 和 DS Lite workspace。runner 准备 12 个隔离 arm、分轮提示和空白评分面；`pilot_runtime.py` 在授权后按 `prepare → isolated install → preflight → one-shot canary → run → score` 推进。这里的 install 只建立隔离 skill home，不是插件 cache 安装。preflight 不调用模型；canary 只验证一次隐式、只读、ephemeral 入口，不能代替完整 trigger 或效果实验。2026-07-17 的首个真实运行在第一个调用后以 `process-failed` 停止，完成数为 `0/18`，因此没有效果结论。不要把 `prepared-not-run`、`incomplete`、preflight 通过或一次正确停止当成插件优越性证据。
+
+2026-07-18 的第二次验收通过了 preflight，但唯一一次 canary 只建立 thread，随后以 `rate-limit` 类别和 `timeout` 结束：0 token、0 tool、没有 turn terminal event 或最终反馈，工作区未修改。因此本轮冻结且没有进入 trigger/18-call 阶段。参见[canary 失败案例](../teaching/canary-failure-case-20260718.zh.md)。这说明“九技能已注入 prompt”与“模型实际隐式选择了技能”是两个不同的证据门。
+
+外部验收现在还会附加统一审计门。看到 `extensions.acceptance_gate.status=blocked|ambiguous|not-verified` 时，含义是“本门证据不足，下一门没有启动”，不是插件已经完成或已经失败。只有 receipt 中同时有预期/实际事件、非零 usage、相对证据引用、失败层和下一动作，才可以进入后续 Hook、cache、delegation 或 matched comparison 门。

@@ -18,7 +18,7 @@ DeepScientist Lite 用一组 Codex 技能和普通项目文件解决这些交接
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace，再安装 `deepscientist-lite`。安装或升级后重启 Codex Desktop，并打开一个新线程，核对插件版本和八个技能；旧线程不会自动刷新插件缓存。
+这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace，再安装 `deepscientist-lite`。安装或升级后重启 Codex Desktop，并打开一个新线程，核对实际插件版本和技能数；旧线程不会自动刷新插件缓存。已发布 `0.4.0-beta.2` 是七技能，当前候选 `0.6.0-beta.1` 是 26 技能（9 个 DS Lite 核心 skill + 17 个 nature skill），不能用源码数量反推 cache。
 
 ### 2. 从一个真实问题开始
 
@@ -33,6 +33,8 @@ $ds-lite-intake 请从这个问题启动一个轻量研究项目：
 接下来可以继续：
 
 ```text
+$ds-lite 接手这个科研或工程工作区，读取 Mission Board，说明为什么插件适用，并只路由到一个下一动作。
+
 $ds-lite-scout 检查可用数据、baseline、指标和主要风险，给出有来源的侦察记录。
 
 $ds-lite-idea 基于已有证据提出 2–3 条可验证路线，用 Factor Card 分开记录新颖性、可行性、证据、成本、风险和任务对齐，再选择最小有用实验。
@@ -43,7 +45,7 @@ $ds-lite-review 在进入分析前检查证据包、指标、引用和方法是�
 
 $ds-lite-analysis-write 只基于通过审查的证据总结结果、限制和下一步。
 
-$ds-lite-iterate 读取 Mission Board，只推进一轮有界研究动作，记录 frontier decision，更新 STATUS 后停止。
+$ds-lite-iterate 读取 Mission Board，先登记 running receipt，只推进一轮有界动作，再验证、反思、汇报、更新 STATUS 并停止。
 
 $ds-lite-coordinate 把两到三个彼此独立的任务写成有界委派计划，先停下来等明确批准，再收集、核验并由父 worker 整合结果。
 ```
@@ -74,7 +76,7 @@ $ds-lite-coordinate 把两到三个彼此独立的任务写成有界委派计划
 ## 它不会替你做什么
 
 - 不证明论文结论为真，也不保证消除错误引用或“幻觉”。
-- 不启动 daemon、Web/TUI、MCP server、聊天 connector 或本地模型。
+- 不启动 daemon、Web/TUI、MCP server、聊天 connector 或本地模型。Nature 的 MCP/API 只通过工作区配置按需启用，不会静默修改全局配置。
 - 不在 Codex 关闭后继续运行任务。
 - 不把 `$ds-lite-iterate` 变成无限自动循环；一次调用只推进一轮并停在 checkpoint。
 - 不把 `$ds-lite-coordinate` 变成队列或后台 worker 服务；没有用户或 OpenScience 明确批准时只生成计划并停止。

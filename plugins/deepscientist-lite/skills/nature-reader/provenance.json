@@ -1,0 +1,43 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-reader",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-reader",
+    "source_skill_sha256": "b52745af2f1dc91777fd5166a6f63aee633b982775720ca0ad2e257e9b33d0a1"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-reader",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "browser": [
+      "references/output-spec.md",
+      "static/core/output-contract.md",
+      "static/core/workflow.md"
+    ],
+    "download": [
+      "README.md",
+      "README_EN.md"
+    ],
+    "latex": [
+      "static/fragments/source/doi-arxiv.md",
+      "static/fragments/source/html.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

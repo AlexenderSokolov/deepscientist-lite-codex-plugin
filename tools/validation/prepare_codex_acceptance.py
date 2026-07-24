@@ -8,6 +8,7 @@ does not register a marketplace, install a plugin, or modify Codex user state.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
@@ -57,6 +58,30 @@ def git_head(repo_root: Path) -> str | None:
     return completed.stdout.strip() if completed.returncode == 0 else None
 
 
+def git_dirty(repo_root: Path) -> bool:
+    completed = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=repo_root,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+    )
+    return completed.returncode != 0 or bool(completed.stdout.strip())
+
+
+def tree_digest(root: Path) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        if "__pycache__" in path.parts or path.suffix == ".pyc":
+            continue
+        relative = path.relative_to(root).as_posix()
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(hashlib.sha256(path.read_bytes()).digest())
+    return digest.hexdigest()
+
+
 def acceptance_version(release_version: str, cachebuster: str) -> str:
     if not SAFE_NAME.fullmatch(cachebuster):
         raise PreparationError("cachebuster must start with a letter and contain only lowercase letters, digits, dots, or hyphens")
@@ -99,7 +124,7 @@ def manual_guide(marketplace_name: str, version: str) -> str:
 
 1. 在 Codex CLI 中执行 `codex plugin marketplace add <此目录>`，只添加 marketplace 来源。
 2. 重启 Codex，在 `/plugins` 中选择 `{marketplace_name}`，再安装 `deepscientist-lite`。
-3. 新建线程，确认界面显示副本版本，并能发现八个技能。
+3. 新建线程，确认界面显示副本版本，并能发现 26 个技能。
 
 “marketplace 已添加”不等于“插件已安装”。如果当前 Codex 构建没有 `/plugins` 或相应插件浏览能力，记录为宿主能力缺失，不要删除旧缓存或伪造安装成功。
 
@@ -172,8 +197,10 @@ def prepare(repo_root: Path, output: Path, cachebuster: str, marketplace_name: s
         "schema_version": SCHEMA_VERSION,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "source": {
-            "repository": str(repo_root),
+            "repository_ref": "<SOURCE_ROOT>",
             "git_head": git_head(repo_root),
+            "plugin_tree_digest": tree_digest(source_plugin),
+            "working_tree_snapshot": git_dirty(repo_root),
             "release_version": release_version,
         },
         "marketplace": {
@@ -186,7 +213,7 @@ def prepare(repo_root: Path, output: Path, cachebuster: str, marketplace_name: s
             "version": version,
             "path": f"plugins/{PLUGIN_NAME}",
             "installation": "not-verified",
-            "expected_skill_count": 8,
+            "expected_skill_count": 26,
         },
         "fixtures": fixture_paths,
         "manual_project": "projects/manual-main",
@@ -220,7 +247,7 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    print(f"Prepared acceptance package: {args.output.resolve()}")
+    print("Prepared acceptance package at the requested fresh output path.")
     print("Next: add this directory as a marketplace source, then install the plugin from /plugins in a new Codex session.")
     return 0
 

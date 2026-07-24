@@ -7,8 +7,11 @@ Use `ds-lite.factor-card.v1` to compare a small set of research or engineering i
 - The card is a decision artifact, not a claim validator, paper review, experiment result, or automatic truth score.
 - Keep the six factors fixed: `novelty`, `feasibility`, `evidence_strength`, `cost`, `risk`, and `alignment`.
 - Record every factor exactly once. Use `score=null` and `confidence=unknown` when the factor has not been checked.
+- Treat unmeasured values as unknown. Never substitute zero, an estimate, or polished prose for a measurement.
 - Use scores from 0 to 4. Higher novelty, feasibility, evidence strength, and alignment are favorable. Higher cost and risk mean a larger burden. There is no weighted total and no automatic winner.
 - Every non-null score needs at least one project-relative or `external://` evidence ref. A Factor Card cannot cite itself as support.
+- Candidate promotion requires real checks, evidence refs, and an explicit decision reason. A requested, submitted, or pending external action is not a verified state.
+- Retain failed checks and negative probes as search-boundary evidence; do not erase them when a candidate is parked or rejected.
 - Do not store hidden reasoning, complete environments, credentials, tokens, secrets, or workstation absolute roots.
 - Put forward-compatible data only under `extensions`; unknown fields elsewhere fail validation.
 
@@ -48,7 +51,7 @@ Choose exactly one:
 - `reject`: recorded evidence makes the current formulation unsuitable.
 - `needs-human`: authorization, domain judgment, or source access is required.
 
-Do not derive the decision by summing scores. Explain tradeoffs in the idea artifact and record one `minimal_test` that could change the assessment. The test must include a question, method, expected evidence, open resource limits, and a stop condition.
+Do not derive the decision by summing scores. Explain tradeoffs in the idea artifact and record one `minimal_test` that could change the assessment. Prefer a single-axis ablation after stating the mechanism hypothesis. The test must include a question, method, expected evidence, open resource limits, and a stop condition.
 
 ## File And Validation
 
@@ -63,4 +66,4 @@ Link a valid card to its idea node as an artifact. Do not link it as claim-beari
 
 ## Provenance
 
-The process framing was independently adapted from high-level workflow ideas audited in the DeepScientist v0.1.5 `wq-alpha-research` material: start from a mechanism hypothesis, distinguish ideation from validation status, diagnose failure modes, preserve uncertainty, and choose the next bounded test. This plugin does not redistribute that skill's source text, financial fields, formulas, datasets, credentials, or domain thresholds. Finance remains a pressure-case fixture rather than a default DS Lite domain.
+The process framing was independently adapted from high-level workflow ideas audited in DeepScientist V2 v2.1.8 at commit `49ffdcda6ce159505f6119b1e26d79c8503a8286`; the audited `wq-alpha-research/SKILL.md` blob is `6f58083e8f0a951a0773d94f5b0812484febc8c3`. The upstream repository declares `AGPL-3.0-only`. This plugin does not copy or redistribute upstream code, schemas, skill text, financial fields, formulas, datasets, credentials, domain thresholds, registry behavior, or submission automation. Finance remains a pressure-case fixture rather than a default DS Lite domain. See `docs/maintainers/deepscientist-v2.1.8-factor-transfer-audit.zh.md` for the fact-to-invariant mapping.

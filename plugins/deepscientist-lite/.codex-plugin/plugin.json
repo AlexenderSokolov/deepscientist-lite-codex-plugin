@@ -1,6 +1,6 @@
 {
   "name": "deepscientist-lite",
-  "version": "0.4.0-beta.2",
+  "version": "0.6.0-beta.1",
   "description": "Keep a Codex research project recoverable: record goals, routes, experiments, evidence, reviews, and next steps in local files.",
   "author": {
     "name": "DeepScientist Lite maintainers"
@@ -18,10 +18,11 @@
     "evidence-review"
   ],
   "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "DeepScientist Lite",
     "shortDescription": "Keep research goals, experiments, evidence, and next steps easy to recover and review.",
-    "longDescription": "DeepScientist Lite is an independent, unofficial Codex plugin for teaching and small research projects. Eight skills help users define a project, scout evidence, compare ideas, record reproducible experiments, review claims, write bounded conclusions, advance one visible worker iteration, and coordinate up to three explicitly approved tasks. Local project files preserve the current route and supporting evidence across sessions. The plugin does not run a daemon, queue, scheduler, deploy models, expose an MCP server, or prove that a scientific claim is true. It is not sponsored, certified, or endorsed by ResearAI.",
+    "longDescription": "DeepScientist Lite is an independent, unofficial Codex plugin for teaching and small research projects. Twenty-six skills combine the nine DS Lite continuity and evidence workflows with the complete nature-skills academic search, writing, review, data, figure, citation, response, statistics, and submission workflows. Local project files preserve the current route and supporting evidence across sessions. MCP and external integrations are opt-in through a workspace onboarding guide; the plugin does not silently change global configuration or prove that a scientific claim is true. It is not sponsored, certified, or endorsed by ResearAI.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
     "capabilities": [
@@ -30,12 +31,9 @@
       "Write"
     ],
     "defaultPrompt": [
-      "$ds-lite-intake turn this research question into a project with clear goals and a next step",
-      "$ds-lite-scout check the available evidence, baselines, metrics, and risks",
-      "$ds-lite-experiment define the contract first, then record this run and its evidence",
-      "$ds-lite-review check whether this experiment is ready to support an analysis",
-      "$ds-lite-iterate advance exactly one visible research iteration and stop at a checkpoint",
-      "$ds-lite-coordinate plan up to three independent tasks, stop for approval, then collect their declared results"
+      "$ds-lite take over or resume this research or engineering project, explain why the plugin applies, route one bounded action, and stop",
+      "$ds-lite-iterate advance one plan-execute-verify-reflect-report cycle and stop at a visible checkpoint",
+      "$ds-lite-review check whether this experiment is ready to support an analysis"
     ],
     "brandColor": "#245A7A",
     "screenshots": []

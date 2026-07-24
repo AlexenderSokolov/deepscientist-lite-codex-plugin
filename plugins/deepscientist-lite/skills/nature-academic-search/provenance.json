@@ -1,0 +1,113 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-academic-search",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-academic-search",
+    "source_skill_sha256": "65f44bb5d31f8b2d26687dcdcbc22d3def3ab2b5a26c810cd5e18a6a98d5e681"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-academic-search",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "mcp": [
+      "README.md",
+      "README_EN.md",
+      "SKILL.md",
+      "config/mcp-snippet.json",
+      "config/settings-snippet.json",
+      "manifest.yaml",
+      "mcp-server/README.md",
+      "mcp-server/academic_search_server.py",
+      "mcp-server/sources/crossref.py",
+      "mcp-server/sources/elsevier_common.py",
+      "mcp-server/tests/test_elsevier_live.py",
+      "mcp-server/tests/test_mcp_tools.py",
+      "references/citation-parser.md",
+      "references/dedup-engine.md",
+      "references/workflows/wf1-multi-source-search.md",
+      "references/workflows/wf2-citation-verification.md",
+      "references/workflows/wf4-citation-file-mgmt.md",
+      "scripts/academic_search.py",
+      "scripts/format-converter.py",
+      "scripts/preflight.py",
+      "static/core/routing-and-ops.md",
+      "static/core/tools.md"
+    ],
+    "api": [
+      "README.md",
+      "README_EN.md",
+      "manifest.yaml",
+      "mcp-server/README.md",
+      "mcp-server/academic_search_server.py",
+      "mcp-server/config.toml",
+      "mcp-server/sources/arxiv.py",
+      "mcp-server/sources/crossref.py",
+      "mcp-server/sources/pubmed.py",
+      "mcp-server/sources/sciencedirect.py",
+      "mcp-server/sources/scopus.py",
+      "mcp-server/tests/test_elsevier_live.py",
+      "mcp-server/tests/test_sources.py",
+      "mcp-server/utils/config.py",
+      "references/source-tiers.md",
+      "scripts/academic_search.py",
+      "scripts/converters.py",
+      "scripts/format-converter.py",
+      "scripts/preflight.py",
+      "static/core/routing-and-ops.md"
+    ],
+    "download": [
+      "SKILL.md",
+      "config/triggers-academic-search.toml",
+      "manifest.yaml",
+      "mcp-server/academic_search_server.py",
+      "mcp-server/sources/crossref.py",
+      "mcp-server/sources/pubmed.py",
+      "mcp-server/tests/test_sources.py",
+      "references/citation-parser.md",
+      "references/source-tiers.md",
+      "references/workflows/wf2-citation-verification.md",
+      "references/workflows/wf4-citation-file-mgmt.md",
+      "references/workflows/wf5-reference-mgmt.md",
+      "scripts/academic_search.py",
+      "scripts/format-converter.py",
+      "scripts/preflight.py",
+      "static/core/routing-and-ops.md",
+      "static/core/tools.md"
+    ],
+    "latex": [
+      "references/citation-parser.md",
+      "references/ris-bibtex-format.md",
+      "references/workflows/wf4-citation-file-mgmt.md",
+      "scripts/format-converter.py"
+    ],
+    "python": [
+      "README.md",
+      "README_EN.md",
+      "config/mcp-snippet.json",
+      "mcp-server/README.md",
+      "references/citation-parser.md",
+      "references/workflows/wf4-citation-file-mgmt.md",
+      "scripts/academic_search.py",
+      "scripts/format-converter.py",
+      "scripts/preflight.py",
+      "static/core/routing-and-ops.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

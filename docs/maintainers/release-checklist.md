@@ -10,7 +10,7 @@
 - Run the official plugin validator from the installed `plugin-creator` skill.
 - Install or upgrade from the GitHub marketplace source.
 - Restart Codex Desktop and open a fresh thread.
-- Verify the release-specific `$ds-lite-*` skill count is visible and triggerable. `0.4.0-beta.2` has seven; a v0.5 candidate must expose eight, including `$ds-lite-review`, `$ds-lite-iterate`, and `$ds-lite-coordinate`.
+- Verify the release-specific skill count is visible and triggerable. Historical `0.4.0-beta.2` has seven skills; the unreleased v0.5 source line had nine DS Lite skills; the current `0.6.0-beta.1` candidate exposes 26 skills (nine DS Lite core plus 17 nature skills). Do not treat source count as cache or fresh-thread evidence.
 - Verify `mission --format json`, `mission --format markdown`, and `render-status` expose a readable Mission Board after a branch, rollback, and blocked review.
 - Verify a blank project creates `ds-lite.work-unit.v1` with planning/none, and ordinary artifacts or logs cannot promote evidence strength.
 - Verify a claim-bearing work unit stays needs-evidence until its profile validator passes, including missing/damaged Evidence Pack fixtures.

@@ -1,0 +1,948 @@
+{
+  "schema_version": "ds-lite.nature-skill-registry.v1",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "vendor_root": "plugins/deepscientist-lite/vendor/nature-skills/91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b"
+  },
+  "runtime_skill_count": 17,
+  "shared_layer": {
+    "name": "nature-shared",
+    "discoverable": false,
+    "path": "plugins/deepscientist-lite/references/nature-shared"
+  },
+  "skills": [
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-academic-search",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-academic-search",
+        "source_skill_sha256": "65f44bb5d31f8b2d26687dcdcbc22d3def3ab2b5a26c810cd5e18a6a98d5e681"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-academic-search",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "mcp": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "config/mcp-snippet.json",
+          "config/settings-snippet.json",
+          "manifest.yaml",
+          "mcp-server/README.md",
+          "mcp-server/academic_search_server.py",
+          "mcp-server/sources/crossref.py",
+          "mcp-server/sources/elsevier_common.py",
+          "mcp-server/tests/test_elsevier_live.py",
+          "mcp-server/tests/test_mcp_tools.py",
+          "references/citation-parser.md",
+          "references/dedup-engine.md",
+          "references/workflows/wf1-multi-source-search.md",
+          "references/workflows/wf2-citation-verification.md",
+          "references/workflows/wf4-citation-file-mgmt.md",
+          "scripts/academic_search.py",
+          "scripts/format-converter.py",
+          "scripts/preflight.py",
+          "static/core/routing-and-ops.md",
+          "static/core/tools.md"
+        ],
+        "api": [
+          "README.md",
+          "README_EN.md",
+          "manifest.yaml",
+          "mcp-server/README.md",
+          "mcp-server/academic_search_server.py",
+          "mcp-server/config.toml",
+          "mcp-server/sources/arxiv.py",
+          "mcp-server/sources/crossref.py",
+          "mcp-server/sources/pubmed.py",
+          "mcp-server/sources/sciencedirect.py",
+          "mcp-server/sources/scopus.py",
+          "mcp-server/tests/test_elsevier_live.py",
+          "mcp-server/tests/test_sources.py",
+          "mcp-server/utils/config.py",
+          "references/source-tiers.md",
+          "scripts/academic_search.py",
+          "scripts/converters.py",
+          "scripts/format-converter.py",
+          "scripts/preflight.py",
+          "static/core/routing-and-ops.md"
+        ],
+        "download": [
+          "SKILL.md",
+          "config/triggers-academic-search.toml",
+          "manifest.yaml",
+          "mcp-server/academic_search_server.py",
+          "mcp-server/sources/crossref.py",
+          "mcp-server/sources/pubmed.py",
+          "mcp-server/tests/test_sources.py",
+          "references/citation-parser.md",
+          "references/source-tiers.md",
+          "references/workflows/wf2-citation-verification.md",
+          "references/workflows/wf4-citation-file-mgmt.md",
+          "references/workflows/wf5-reference-mgmt.md",
+          "scripts/academic_search.py",
+          "scripts/format-converter.py",
+          "scripts/preflight.py",
+          "static/core/routing-and-ops.md",
+          "static/core/tools.md"
+        ],
+        "latex": [
+          "references/citation-parser.md",
+          "references/ris-bibtex-format.md",
+          "references/workflows/wf4-citation-file-mgmt.md",
+          "scripts/format-converter.py"
+        ],
+        "python": [
+          "README.md",
+          "README_EN.md",
+          "config/mcp-snippet.json",
+          "mcp-server/README.md",
+          "references/citation-parser.md",
+          "references/workflows/wf4-citation-file-mgmt.md",
+          "scripts/academic_search.py",
+          "scripts/format-converter.py",
+          "scripts/preflight.py",
+          "static/core/routing-and-ops.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-citation",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-citation",
+        "source_skill_sha256": "58928bef2e20b3501eb87bbe0065d1096e359e65e079faac78c93ff5e7779afc"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-citation",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "api": [
+          "references/journal-scope.md",
+          "scripts/nature_citation.py",
+          "static/core/principles.md"
+        ],
+        "browser": [
+          "SKILL.md",
+          "evals/evals.json",
+          "manifest.yaml",
+          "references/script-usage.md",
+          "scripts/nature_citation.py",
+          "static/core/workflow.md"
+        ],
+        "download": [
+          "evals/evals.json",
+          "scripts/nature_citation.py",
+          "static/core/workflow.md"
+        ],
+        "python": [
+          "references/script-usage.md",
+          "static/core/workflow.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-data",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-data",
+        "source_skill_sha256": "06e10a29462ec691e43314f82bc3e14402c97ec68a701c45a213db92b0576386"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-data",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "python": [
+          "references/fair-metadata-checklist.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-downloader",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-downloader",
+        "source_skill_sha256": "3ed848f0815c8bed80c96922fe56ca29d958a9ab81067c45f81c332779b2731b"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-downloader",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "api": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "agents/openai.yaml",
+          "data/publishers.json",
+          "docs/nature-downloader-reference-research-2026-07-15.md",
+          "manifest.yaml",
+          "scripts/configure_credentials.py",
+          "tests/python/test_config_credentials.py"
+        ],
+        "browser": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "docs/superpowers/plans/2026-06-21-nature-downloader-merge.md",
+          "manifest.yaml"
+        ],
+        "download": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "agents/openai.yaml",
+          "data/schools.yaml",
+          "docs/nature-downloader-reference-research-2026-07-15.md",
+          "docs/superpowers/plans/2026-06-21-nature-downloader-merge.md",
+          "manifest.yaml",
+          "scripts/configure_credentials.py",
+          "scripts/configure_school.py",
+          "scripts/extract_pdf_text.py"
+        ],
+        "node": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "docs/superpowers/plans/2026-06-21-nature-downloader-merge.md"
+        ],
+        "python": [
+          "README.md",
+          "SKILL.md",
+          "docs/nature-downloader-reference-research-2026-07-15.md",
+          "docs/superpowers/plans/2026-06-21-nature-downloader-merge.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-experiment-log",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-experiment-log",
+        "source_skill_sha256": "fd079f111119c6746f63d8d5367286d2cc37b500b0af97b3e9506294c0f0ef8c"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-experiment-log",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "download": [
+          "SKILL.md"
+        ],
+        "python": [
+          "SKILL.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-figure",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-figure",
+        "source_skill_sha256": "fbc78556785feba7a145a15150e33ebeee805bd9a529459cc51d9ef736fa6963"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-figure",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "api": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "assets/figures4papers/figure_Dispersion/plot_illustration.py",
+          "assets/figures4papers/figure_VIGIL/plot_comparison_radar.py",
+          "manifest.yaml",
+          "references/api.md",
+          "references/chart-types.md",
+          "references/common-patterns.md",
+          "references/demos.md",
+          "references/design-theory.md",
+          "references/openrouter-image-generation.md",
+          "references/tutorials.md",
+          "scripts/generate_openrouter_schematic.py",
+          "static/core/stance.md",
+          "static/fragments/backend/python.md"
+        ],
+        "download": [
+          "references/r-template-index.md"
+        ],
+        "latex": [
+          "references/api.md",
+          "references/design-theory.md",
+          "static/fragments/backend/python.md"
+        ],
+        "python": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "evals/evals.json",
+          "manifest.yaml",
+          "references/api.md",
+          "references/asset-adaptation.md",
+          "references/backend-selection.md",
+          "references/chart-types.md",
+          "references/common-patterns.md",
+          "references/demos.md",
+          "references/design-theory.md",
+          "references/figure-contract.md",
+          "references/nature-2026-observations.md",
+          "references/openrouter-image-generation.md",
+          "references/qa-contract.md",
+          "references/r-workflow.md",
+          "references/template-catalog.md",
+          "references/tutorials.md",
+          "scripts/nature_figure_backend.py",
+          "scripts/plot_templates.py",
+          "scripts/validate_figure.py",
+          "static/core/contract.md",
+          "static/core/stance.md",
+          "static/fragments/backend/python.md",
+          "static/fragments/backend/r.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-literature-pipeline",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-literature-pipeline",
+        "source_skill_sha256": "10db6158d5596904f55d6e205dc0a6d1b0a1b6f5f8602fb3889020aade5f250e"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-literature-pipeline",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "api": [
+          "SKILL.md",
+          "references/cron-setup.md",
+          "templates/literature-push-template.md"
+        ],
+        "browser": [
+          "references/gap-analysis.md"
+        ],
+        "python": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "manifest.yaml",
+          "references/note-template.md",
+          "references/push-format.md",
+          "references/review-compilation-workflow.md",
+          "references/scoring-system.md",
+          "templates/literature-push-template.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-paper-to-patent",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-paper-to-patent",
+        "source_skill_sha256": "1a57ae613bb545debba02ce4d9d36a53974e717cdafb1a5feb2cbd341bcf36b0"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-paper-to-patent",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "api": [
+          "scripts/disclosure/cnipa_epub_crawler.py"
+        ],
+        "browser": [
+          "references/disclosure/prior_art_search.md",
+          "references/disclosure/tooling.md",
+          "scripts/disclosure/cnipa_epub_crawler.py",
+          "scripts/disclosure/cnipa_epub_search.py",
+          "scripts/disclosure/package-lock.json"
+        ],
+        "download": [
+          "scripts/disclosure/cnipa_epub_crawler.py",
+          "scripts/disclosure/cnipa_epub_search.py",
+          "scripts/disclosure/package-lock.json"
+        ],
+        "latex": [
+          "SKILL.md",
+          "references/disclosure/correction_handler.md",
+          "references/disclosure/disclosure_builder.md",
+          "references/disclosure/disclosure_self_check.md",
+          "references/disclosure/template_reference.md",
+          "references/disclosure/tooling.md",
+          "references/draft-schema.md",
+          "scripts/build_patent_package.py",
+          "scripts/disclosure/math_render.py",
+          "scripts/disclosure/md_to_docx.py",
+          "scripts/disclosure/mermaid_render.py",
+          "scripts/math_to_omml.py",
+          "scripts/render_patent_docx.py",
+          "scripts/validate_patent_draft.py",
+          "tests/test_validation.py"
+        ],
+        "node": [
+          "SKILL.md",
+          "references/disclosure/disclosure_builder.md",
+          "references/disclosure/tooling.md",
+          "references/draft-schema.md",
+          "references/patent-figure-guide.md",
+          "scripts/disclosure/mermaid_render.py",
+          "scripts/disclosure/package-lock.json",
+          "scripts/math_to_omml.py",
+          "scripts/render_flowchart_svg.py",
+          "scripts/validate_patent_draft.py",
+          "static/core/output-contract.md"
+        ],
+        "python": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "references/corpus-derived-patterns.md",
+          "references/corpus-pair-audit.md",
+          "references/disclosure/disclosure_builder.md",
+          "references/disclosure/prior_art_search.md",
+          "references/disclosure/project_scan.md",
+          "references/disclosure/tooling.md",
+          "scripts/disclosure/cnipa_epub_parse.py",
+          "scripts/disclosure/cnipa_epub_search.py",
+          "scripts/disclosure/docx_to_md.py",
+          "scripts/disclosure/math_render.py",
+          "scripts/disclosure/md_to_docx.py",
+          "scripts/disclosure/mermaid_render.py",
+          "scripts/disclosure/package-lock.json",
+          "scripts/disclosure/pptx_to_md.py",
+          "scripts/math_to_omml.py",
+          "scripts/render_flowchart_svg.py"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-paper2ppt",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-paper2ppt",
+        "source_skill_sha256": "945136f112001f3584360956a3dc8c98575bc426b7252e2fd0ccc4abc30e77a8"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-paper2ppt",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "api": [
+          "static/fragments/paper_type/clinical.md"
+        ],
+        "node": [
+          "scripts/audit_pptx_quality.py"
+        ],
+        "python": [
+          "SKILL.md",
+          "references/design-and-layout.md",
+          "references/self-review.md",
+          "scripts/audit_pptx_quality.py",
+          "static/core/toolchain.md",
+          "static/core/workflow.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-polishing",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-polishing",
+        "source_skill_sha256": "9485cb680931074cc0671e8c1cb2501b2faefb4a20b5e648d8bffedc3ddbce59"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-polishing",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "latex": [
+          "SKILL.md",
+          "manifest.yaml",
+          "references/latex-layout.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-proposal-writer",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-proposal-writer",
+        "source_skill_sha256": "ff7f76cb29a7bd071d8dfb3db11c949335d2cb2f6822d874198ba11501adeaac"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-proposal-writer",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "download": [
+          "references/review-paper-framework.md"
+        ],
+        "python": [
+          "SKILL.md",
+          "manifest.yaml",
+          "references/export-archive.md",
+          "references/ref-renumbering-cascade.md",
+          "references/worked-example-quaternary-proposal.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-reader",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-reader",
+        "source_skill_sha256": "b52745af2f1dc91777fd5166a6f63aee633b982775720ca0ad2e257e9b33d0a1"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-reader",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "browser": [
+          "references/output-spec.md",
+          "static/core/output-contract.md",
+          "static/core/workflow.md"
+        ],
+        "download": [
+          "README.md",
+          "README_EN.md"
+        ],
+        "latex": [
+          "static/fragments/source/doi-arxiv.md",
+          "static/fragments/source/html.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-ref-verifier",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-ref-verifier",
+        "source_skill_sha256": "0b33e5cc36c626a482f0b0bdbf52ec60167b787350f185c328992961a77fe3bb"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-ref-verifier",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "mcp": [
+          "SKILL.md"
+        ],
+        "api": [
+          "SKILL.md",
+          "references/common-patterns.md"
+        ],
+        "download": [
+          "SKILL.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-response",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-response",
+        "source_skill_sha256": "790aa49a26d46e5075ce7ec81ce9e3c518fc78de5976ae14ce13050067d944ce"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-response",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "latex": [
+          "README.md",
+          "README_EN.md",
+          "SKILL.md",
+          "manifest.yaml",
+          "references/intake-and-routing.md",
+          "references/latex-templates.md",
+          "references/qa-checklist.md",
+          "references/response-structure.md",
+          "static/core/stance.md",
+          "static/core/workflow.md",
+          "tests/rubric.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-reviewer",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-reviewer",
+        "source_skill_sha256": "8922de83a2bed9b5ac790da447cb07ffd7b6a768cd5764619c7b172685b61065"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-reviewer",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "api": [
+          "references/technical-concern-taxonomy.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-statistics",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-statistics",
+        "source_skill_sha256": "339997c5a7afd3d9e34d328d9798d95f79ab5c512e10efe6e88e3222ef0ec4aa"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-statistics",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "api": [
+          "SKILL.md",
+          "references/common-failure-modes.md",
+          "references/statistical-reporting.md"
+        ]
+      },
+      "nature_shared_internal": true
+    },
+    {
+      "schema_version": "ds-lite.nature-skill-provenance.v1",
+      "skill": "nature-writing",
+      "upstream": {
+        "repository": "https://github.com/Yuan1z0825/nature-skills",
+        "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+        "license": "Apache-2.0",
+        "source_path": "skills/nature-writing",
+        "source_skill_sha256": "ee5a26c639e40ee1d2df71684873626b3e207651f72662e93d46f9bb14f2b42b"
+      },
+      "runtime_path": "plugins/deepscientist-lite/skills/nature-writing",
+      "preserved_material": [
+        "SKILL.md",
+        "manifest.yaml",
+        "static",
+        "references",
+        "scripts",
+        "templates",
+        "tests"
+      ],
+      "adaptations": [
+        "DS Lite lifecycle protocol",
+        "dependency/onboarding boundary",
+        "relative evidence policy",
+        "redacted failure handling"
+      ],
+      "dependency_signals": {
+        "latex": [
+          "README.md",
+          "README_EN.md",
+          "references/examples/abstract/template-a.md",
+          "references/examples/abstract/template-b.md",
+          "references/examples/abstract/template-c.md",
+          "references/examples/introduction/novel-task-challenge-decomposition.md",
+          "references/examples/introduction/pipeline-not-recommended-abstract-only.md",
+          "references/examples/introduction/pipeline-version-1-one-contribution-multi-advantages.md",
+          "references/examples/introduction/pipeline-version-2-two-contributions.md",
+          "references/examples/introduction/pipeline-version-3-new-module-on-existing-pipeline.md",
+          "references/examples/introduction/pipeline-version-4-observation-driven.md",
+          "references/examples/introduction/technical-challenge-version-1-existing-task.md",
+          "references/examples/introduction/technical-challenge-version-2-existing-task-insight-backed-by-traditional.md",
+          "references/examples/introduction/technical-challenge-version-3-novel-task.md",
+          "references/examples/introduction/version-1-task-then-application.md",
+          "references/examples/introduction/version-2-application-first.md",
+          "references/examples/introduction/version-3-general-to-specific-setting.md",
+          "references/examples/introduction/version-4-open-with-challenge.md",
+          "references/examples/method/example-of-the-three-elements.md",
+          "references/examples/method/module-design-instant-ngp.md",
+          "references/examples/method/overview-template.md",
+          "references/examples/method/section-skeleton.md",
+          "references/experiments.md",
+          "references/introduction.md",
+          "references/method.md",
+          "references/submission-package.md",
+          "static/fragments/task/submission-package.md"
+        ],
+        "python": [
+          "manifest.yaml",
+          "references/examples/abstract/template-c.md",
+          "references/examples/index.md",
+          "references/examples/introduction-examples.md",
+          "references/examples/introduction/novel-task-challenge-decomposition.md",
+          "references/examples/introduction/pipeline-not-recommended-abstract-only.md",
+          "references/examples/introduction/pipeline-version-1-one-contribution-multi-advantages.md",
+          "references/examples/introduction/pipeline-version-2-two-contributions.md",
+          "references/examples/introduction/pipeline-version-3-new-module-on-existing-pipeline.md",
+          "references/examples/introduction/pipeline-version-4-observation-driven.md",
+          "references/examples/introduction/technical-challenge-version-3-novel-task.md",
+          "references/examples/method/neural-body-annotated-figure-text.md",
+          "references/examples/method/overview-template.md",
+          "references/experiments.md",
+          "references/introduction.md",
+          "references/method.md",
+          "references/nature-summary-paragraph.md",
+          "references/paper-review.md",
+          "static/fragments/paper_type/algorithmic.md",
+          "static/fragments/section/intro.md",
+          "static/fragments/section/method.md"
+        ]
+      },
+      "nature_shared_internal": true
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "ds-lite.skill-trigger-matrix.v1",
+  "validation_status": "static-only / forward-test-not-verified",
+  "relevant": [
+    {"id": "gateway-takeover", "prompt": "接手这个科研工程目录，先告诉我现在做到哪里，再推进一个动作。", "expected_skill": "ds-lite"},
+    {"id": "gateway-recovery", "prompt": "上下文重启了，请恢复这个实验项目的路线、证据和下一步。", "expected_skill": "ds-lite"},
+    {"id": "intake-new", "prompt": "把这个新的工程研究问题整理成目标、约束、验收标准和首个检查点。", "expected_skill": "ds-lite-intake"},
+    {"id": "scout-evidence", "prompt": "先查清这个研究问题的基线、指标、数据来源和主要风险。", "expected_skill": "ds-lite-scout"},
+    {"id": "idea-compare", "prompt": "比较这三个机制假设的新颖性、可行性、成本和最小判别实验。", "expected_skill": "ds-lite-idea"},
+    {"id": "experiment-repair", "prompt": "修复这个小实验，写清预测、反证条件、预算、停止条件和可复现命令。", "expected_skill": "ds-lite-experiment"},
+    {"id": "review-gate", "prompt": "独立检查这份实验结果能不能支持分析，特别核对证据完整性和来源。", "expected_skill": "ds-lite-review"},
+    {"id": "analysis-negative", "prompt": "把已经审查过的负结果写成有边界的分析和下一步，不要过度宣称。", "expected_skill": "ds-lite-analysis-write"},
+    {"id": "iterate-one", "prompt": "继续这个跨轮工程，只做一轮计划、执行、验证、反思和汇报。", "expected_skill": "ds-lite-iterate"},
+    {"id": "coordinate-three", "prompt": "这三个子任务路径互不重叠，先给我委派方案并停下来等批准。", "expected_skill": "ds-lite-coordinate"}
+  ],
+  "near_miss": [
+    {"id": "office-todo", "prompt": "帮我整理今天的办公室待办清单。", "expected_skill": "none"},
+    {"id": "translation", "prompt": "把这句话翻译成英文。", "expected_skill": "none"},
+    {"id": "marketing-copy", "prompt": "给咖啡店写三条促销文案。", "expected_skill": "none"},
+    {"id": "file-cleanup", "prompt": "把下载目录里不用的文件删掉。", "expected_skill": "none"}
+  ],
+  "extensions": {}
+}

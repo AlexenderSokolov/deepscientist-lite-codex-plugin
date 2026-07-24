@@ -1,0 +1,45 @@
+name: Validate repository metadata
+
+on:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'README_EN.md'
+      - 'skills/**'
+      - 'scripts/validate-repository.py'
+      - 'scripts/validate-readmes.py'
+      - 'scripts/validate-readme-mirror.py'
+      - 'scripts/validate-skill-index.py'
+      - 'scripts/validate-skill-metadata.py'
+      - '.github/workflows/validate-repository.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'README.md'
+      - 'README_EN.md'
+      - 'skills/**'
+      - 'scripts/validate-repository.py'
+      - 'scripts/validate-readmes.py'
+      - 'scripts/validate-readme-mirror.py'
+      - 'scripts/validate-skill-index.py'
+      - 'scripts/validate-skill-metadata.py'
+      - '.github/workflows/validate-repository.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-repository:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run repository validation
+        run: python3 scripts/validate-repository.py
