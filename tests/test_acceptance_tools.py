@@ -48,19 +48,29 @@ class CodexAcceptanceToolTests(unittest.TestCase):
 
         acceptance = read_json(output / "acceptance.json")
         self.assertEqual(acceptance["schema_version"], "ds-lite.codex-acceptance.v1")
-        self.assertEqual(acceptance["plugin"]["version"], "0.4.0-beta.2+codex.test-20260705")
-        self.assertEqual(acceptance["plugin"]["expected_skill_count"], 8)
+        self.assertEqual(acceptance["plugin"]["version"], "0.6.0-beta.1+codex.test-20260705")
+        self.assertEqual(acceptance["plugin"]["expected_skill_count"], 26)
+        self.assertEqual(acceptance["source"]["repository_ref"], "<SOURCE_ROOT>")
+        self.assertRegex(acceptance["source"]["plugin_tree_digest"], r"^[0-9a-f]{64}$")
+        self.assertIsInstance(acceptance["source"]["working_tree_snapshot"], bool)
         self.assertEqual(len(acceptance["fixtures"]), 7)
         self.assertFalse(acceptance["safety"]["modifies_codex_configuration"])
+        marketplace = read_json(output / ".agents" / "plugins" / "marketplace.json")
+        self.assertEqual(marketplace["plugins"][0]["policy"]["installation"], "AVAILABLE")
         self.assertTrue((output / "projects" / "manual-main").is_dir())
         self.assertFalse(any(output.glob("fixtures/**/REFERENCE_ANSWER.md")))
+        acceptance_text = (output / "acceptance.json").read_text(encoding="utf-8")
+        self.assertNotIn(str(REPO_ROOT), acceptance_text)
+        self.assertNotIn(str(self.parent), acceptance_text)
 
         self.run_tool(AUDIT, "--root", str(output), "--record", str(record))
         audit = read_json(record)
         self.assertTrue(audit["package_valid"])
         self.assertFalse(audit["installation_verified"])
         self.assertFalse(audit["skill_discovery_verified"])
-        self.assertIn("all eight skills are discoverable", audit["observations_required"])
+        self.assertIn("all 26 skills are discoverable", audit["observations_required"])
+        self.assertEqual(audit["acceptance_root_ref"], ".")
+        self.assertNotIn(str(output), record.read_text(encoding="utf-8"))
 
         invalid_launcher = self.parent / "not-an-executable.txt"
         invalid_launcher.write_text("not executable\n", encoding="utf-8")
@@ -69,6 +79,8 @@ class CodexAcceptanceToolTests(unittest.TestCase):
         self.assertTrue(probed_payload["package_valid"])
         self.assertFalse(probed_payload["host_supported"])
         self.assertEqual(probed_payload["host_probes"][0]["status"], "unavailable")
+        rendered_probe = json.dumps(probed_payload)
+        self.assertNotIn(str(invalid_launcher), rendered_probe)
 
     def test_prepare_refuses_existing_output(self) -> None:
         output = self.parent / "existing"

@@ -12,6 +12,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LAB_RUNNER = REPO_ROOT / "teaching" / "lab_runner.py"
 STATE_SCRIPT = REPO_ROOT / "plugins" / "deepscientist-lite" / "scripts" / "ds_lite_state.py"
+ACTION_REFLECTION_STUDENT = REPO_ROOT / "teaching" / "action-reflection-student.zh.md"
+ACTION_REFLECTION_INSTRUCTOR = REPO_ROOT / "teaching" / "action-reflection-instructor.zh.md"
 
 
 def run_lab(output: Path, lab: str, mode: str = "student", case: str = "clean") -> subprocess.CompletedProcess[str]:
@@ -196,6 +198,89 @@ class TeachingLabTests(unittest.TestCase):
         graph = read_json(output / "project" / "research" / "state" / "graph.json")
         self.assertIn("scout-session-a", graph["nodes"])
         self.assertIn("scout-session-b", graph["nodes"])
+
+    def test_action_reflection_student_keeps_probe_and_receipt_unexecuted(self) -> None:
+        output = self.root / "action reflection student"
+        result = run_lab(output, "action-reflection")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        summary = self.assert_state_handoff(output)
+        project = output / "project"
+        self.assertEqual(summary["expected_hypothesis_status"], "untested")
+        self.assertTrue((project / "materials" / "run_probe.py").is_file())
+        self.assertTrue(
+            (project / "research" / "artifacts" / "action-contract-length.json").is_file()
+        )
+        self.assertTrue((output / "hook-cases.json").is_file())
+        self.assertFalse(
+            (project / "research" / "artifacts" / "probe-result-length.json").exists()
+        )
+        self.assertEqual(list((project / "research" / "iterations").glob("*.json")), [])
+        readme = (output / "LAB_README.md").read_text(encoding="utf-8")
+        self.assertIn("$ds-lite-iterate", readme)
+        self.assertFalse((output / "REFERENCE_ANSWER.md").exists())
+
+    def test_action_reflection_reference_preserves_refutation_and_user_report(self) -> None:
+        output = self.root / "action reflection reference"
+        result = run_lab(output, "action-reflection", mode="reference")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assert_state_handoff(output)
+        project = output / "project"
+        receipt_paths = list((project / "research" / "iterations").glob("*.json"))
+        self.assertEqual(len(receipt_paths), 1)
+        receipt = read_json(receipt_paths[0])
+        self.assertEqual(receipt["schema_version"], "ds-lite.iteration.v1")
+        self.assertEqual(receipt["status"], "completed")
+        updates = receipt["reflection"]["hypothesis_updates"]
+        self.assertEqual(updates[0]["status"], "refuted")
+        self.assertEqual(
+            updates[0]["evidence_refs"],
+            ["research/artifacts/probe-result-length.json"],
+        )
+        self.assertTrue(receipt["reflection"]["negative_results"])
+        self.assertTrue(receipt["user_report"]["summary"])
+        probe = read_json(project / "research" / "artifacts" / "probe-result-length.json")
+        self.assertFalse(probe["supports_hypothesis"])
+        self.assertEqual(probe["counterexample"], "a--b")
+        saved = receipt_paths[0].read_text(encoding="utf-8")
+        self.assertNotIn(str(output.resolve()), saved)
+
+    def test_action_reflection_student_and_instructor_guides_cover_execution_boundary(self) -> None:
+        for path in (ACTION_REFLECTION_STUDENT, ACTION_REFLECTION_INSTRUCTOR):
+            with self.subTest(path=path.name):
+                self.assertTrue(path.is_file())
+                text = path.read_text(encoding="utf-8")
+                for anchor in (
+                    "逐步命令",
+                    "预期产物",
+                    "常见错误",
+                    "答案边界",
+                    "Windows",
+                    "WSL",
+                    "OpenScience",
+                ):
+                    self.assertIn(anchor, text)
+        if not ACTION_REFLECTION_INSTRUCTOR.is_file():
+            return
+        instructor = ACTION_REFLECTION_INSTRUCTOR.read_text(encoding="utf-8")
+        self.assertIn("rubric", instructor.lower())
+        self.assertIn("Hook", instructor)
+        self.assertIn("60 秒", instructor)
+
+    def test_action_reflection_is_indexed_by_shared_teaching_entrypoints(self) -> None:
+        readme = (REPO_ROOT / "teaching" / "README.zh.md").read_text(encoding="utf-8")
+        self.assertIn("action-reflection-student.zh.md", readme)
+        self.assertIn("--lab action-reflection", readme)
+        wrapper = (REPO_ROOT / "teaching" / "run_lab.ps1").read_text(encoding="utf-8")
+        self.assertIn('"action-reflection"', wrapper)
+        instructor = (REPO_ROOT / "teaching" / "instructor-guide.zh.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("未发布 v0.5 源码为九个", instructor)
+        worksheet = (REPO_ROOT / "teaching" / "student-worksheet.zh.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("行动与反思", worksheet)
+        self.assertIn("假设状态", worksheet)
 
     def test_matched_pilot_prepares_four_cases_across_three_arms(self) -> None:
         output = self.root / "matched pilot"

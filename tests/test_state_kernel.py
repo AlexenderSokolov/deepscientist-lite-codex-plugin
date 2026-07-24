@@ -21,6 +21,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import ds_lite_protocol
+import ds_lite_iteration
 
 REVIEW_RESULT_TEMPLATE = (
     REPO_ROOT
@@ -1304,6 +1305,224 @@ class StateKernelTests(unittest.TestCase):
         self.assertIn("simple_regret_final", status)
         self.assertIn("normalized_auc", status)
         self.assertIn("Claim readiness: inconclusive", status)
+
+    def test_mission_projects_latest_iteration_and_merged_hypothesis_pool(self) -> None:
+        evidence_ref = "research/artifacts/hypothesis-check.md"
+        self.write_artifact(evidence_ref, "# Bounded check\n\nRoute A failed its discriminating condition.\n")
+        route_a_artifact = "research/artifacts/idea-route-a.md"
+        route_b_artifact = "research/artifacts/idea-route-b.md"
+        factor_ref = "research/artifacts/factor-card-route-b.json"
+        self.write_artifact(route_a_artifact, "# Route A\n")
+        self.write_artifact(route_b_artifact, "# Route B\n")
+        factor = {
+            "schema_version": "ds-lite.factor-card.v1",
+            "factor_card_id": "factor-card-route-b",
+            "work_unit_id": "work-intake",
+            "profile_id": "core-planning",
+            "subject_ref": route_b_artifact,
+            "status": "draft",
+            "factors": [
+                {
+                    "name": name,
+                    "score": None,
+                    "confidence": "unknown",
+                    "evidence_refs": [],
+                    "summary": f"{name} is not measured.",
+                    "uncertainty": ["One bounded check remains."],
+                    "extensions": {},
+                }
+                for name in (
+                    "novelty",
+                    "feasibility",
+                    "evidence_strength",
+                    "cost",
+                    "risk",
+                    "alignment",
+                )
+            ],
+            "decision": "explore",
+            "minimal_test": {
+                "question": "Does Route B survive one bounded probe?",
+                "method": "Run one single-axis comparison.",
+                "expected_evidence": ["A reproducible positive or negative result."],
+                "resource_limits": [{"dimension": "actions", "unit": "count", "value": 1}],
+                "stop_condition": "Stop after one probe.",
+                "extensions": {},
+            },
+            "created_at": utc_now(),
+            "updated_at": utc_now(),
+            "extensions": {},
+        }
+        (self.root / factor_ref).write_text(
+            json.dumps(factor, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        route_a = run_cli(
+            self.root,
+            "add-node",
+            "--id",
+            "idea-route-a",
+            "--kind",
+            "idea",
+            "--parent",
+            "intake-root",
+            "--relation",
+            "branch",
+            "--title",
+            "Route A",
+            "--summary",
+            "Candidate mechanism A.",
+            "--artifact-path",
+            route_a_artifact,
+            "--active",
+        )
+        self.assertEqual(route_a.returncode, 0, route_a.stdout + route_a.stderr)
+        route_b = run_cli(
+            self.root,
+            "add-node",
+            "--id",
+            "idea-route-b",
+            "--kind",
+            "idea",
+            "--parent",
+            "intake-root",
+            "--relation",
+            "branch",
+            "--title",
+            "Route B",
+            "--summary",
+            "Candidate mechanism B.",
+            "--artifact-path",
+            route_b_artifact,
+            "--artifact-path",
+            factor_ref,
+        )
+        self.assertEqual(route_b.returncode, 0, route_b.stdout + route_b.stderr)
+        revision = self.graph()["revision"]
+        running = ds_lite_iteration.initialize_iteration(
+            self.root,
+            iteration_id="iteration-reflection-001",
+            selected_skill="ds-lite-iterate",
+            action={
+                "kind": "idea",
+                "summary": "Reassess the current hypothesis pool.",
+                "prediction": "Route A will weaken under the bounded check.",
+                "falsification_condition": "Route A satisfies the declared condition.",
+                "resource_limits": [{"dimension": "actions", "unit": "count", "value": 1}],
+                "stop_condition": "Stop after one check and reflection.",
+                "extensions": {},
+            },
+            input_refs=["PROJECT.md", route_a_artifact, factor_ref],
+            expected_revision=revision,
+        )
+        updates = []
+        for hypothesis_id, status in (
+            ("idea-route-a", "refuted"),
+            ("hypothesis-supported", "supported"),
+            ("hypothesis-weakened", "weakened"),
+            ("hypothesis-inconclusive", "inconclusive"),
+            ("hypothesis-parked", "parked"),
+        ):
+            updates.append(
+                {
+                    "hypothesis_id": hypothesis_id,
+                    "status": status,
+                    "evidence_refs": [evidence_ref] if status in {"refuted", "supported", "weakened"} else [],
+                    "summary": f"Reflection recorded {status} without changing typed evidence strength.",
+                    "extensions": {},
+                }
+            )
+        result = {
+            "status": "completed",
+            "after_revision": revision,
+            "output_refs": [evidence_ref],
+            "graph_changes": [
+                {
+                    "kind": "none",
+                    "subject_id": "idea-route-a",
+                    "summary": "Reflection changed no Graph authority.",
+                    "extensions": {},
+                }
+            ],
+            "validations": [
+                {
+                    "command": "python plugins/deepscientist-lite/scripts/ds_lite_state.py mission --root .",
+                    "status": "pass",
+                    "summary": "Mission projection remained valid.",
+                    "extensions": {},
+                }
+            ],
+            "stop_reason": "action-completed",
+            "reflection": {
+                "observed_outcomes": ["Route A failed the declared condition."],
+                "hypothesis_updates": updates,
+                "expectation_gap": "The negative result was stronger than expected.",
+                "negative_results": [
+                    {
+                        "summary": "Route A failed the bounded check.",
+                        "evidence_refs": [evidence_ref],
+                        "extensions": {},
+                    }
+                ],
+                "responsibility": {
+                    "authorization_basis": "Local bounded check only.",
+                    "boundaries_respected": ["No external execution."],
+                    "unresolved_obligations": ["Route B remains untested."],
+                    "extensions": {},
+                },
+                "learned_boundaries": ["Candidate selection is not claim evidence."],
+                "next_candidates": [
+                    {
+                        "hypothesis_id": "idea-route-b",
+                        "title": "Route B",
+                        "status": "untested",
+                        "minimal_test": "Run the Factor Card minimal test.",
+                        "extensions": {},
+                    }
+                ],
+                "minimal_discriminating_test": "Run one single-axis Route B probe.",
+                "extensions": {},
+            },
+            "user_report": {
+                "summary": "Refuted Route A and preserved Route B as untested.",
+                "files_changed": [evidence_ref],
+                "validation_summary": "Mission projection passed.",
+                "failure_layer": "none",
+                "unverified": ["Route B mechanism and novelty remain untested."],
+                "hypothesis_changes": ["idea-route-a: untested -> refuted"],
+                "next_action": "Run one bounded Route B probe.",
+                "decision_needed": "none",
+                "extensions": {},
+            },
+            "completed_at": utc_now(),
+            "extensions": {},
+        }
+        ds_lite_iteration.finalize_iteration(
+            self.root, running["extensions"]["iteration_ref"], result
+        )
+
+        mission = parse_output(run_cli(self.root, "mission"))
+        self.assertEqual(mission["latest_iteration"]["iteration_id"], "iteration-reflection-001")
+        self.assertEqual(mission["latest_iteration"]["status"], "completed")
+        self.assertIn("stronger than expected", mission["latest_iteration"]["reflection"]["expectation_gap"])
+        statuses = {item["hypothesis_id"]: item["status"] for item in mission["hypothesis_pool"]}
+        self.assertEqual(statuses["idea-route-a"], "refuted")
+        self.assertEqual(statuses["idea-route-b"], "untested")
+        self.assertEqual(statuses["hypothesis-supported"], "supported")
+        self.assertEqual(statuses["hypothesis-weakened"], "weakened")
+        self.assertEqual(statuses["hypothesis-inconclusive"], "inconclusive")
+        self.assertEqual(statuses["hypothesis-parked"], "parked")
+        route_a_record = next(item for item in mission["hypothesis_pool"] if item["hypothesis_id"] == "idea-route-a")
+        self.assertEqual(route_a_record["negative_result_count"], 1)
+        route_b_record = next(item for item in mission["hypothesis_pool"] if item["hypothesis_id"] == "idea-route-b")
+        self.assertIn(factor_ref, route_b_record["source_refs"])
+        self.assertEqual(mission["evidence_strength"], "planning")
+
+        markdown = run_cli(self.root, "mission", "--format", "markdown")
+        self.assertEqual(markdown.returncode, 0, markdown.stderr)
+        self.assertIn("## Latest Iteration", markdown.stdout)
+        self.assertIn("## Hypothesis Pool", markdown.stdout)
+        self.assertIn("idea-route-a", markdown.stdout)
+        self.assertIn("refuted", markdown.stdout)
 
     def test_t07_off_route_blocked_review_does_not_force_waiting_for_user(self) -> None:
         self.write_artifact("research/artifacts/experiment-needs-review.md")

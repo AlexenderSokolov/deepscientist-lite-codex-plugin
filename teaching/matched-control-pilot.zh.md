@@ -2,7 +2,11 @@
 
 这套 pilot 用四个小型科研/工程任务比较三种工作方式。它研究的不是“哪次回答看起来更聪明”，而是任务在需求变化、上下文重启、负结果和证据审查下能否保持连续、可核验、少返工。
 
-本课程只准备材料和评分协议。真实 Codex 调用、子智能体 forward test 和成本消耗必须另行取得用户明确授权。未执行时，所有结果都保持 `prepared-not-run` / `pending`。
+课程 runner 可以准备材料、执行清单和评分协议；真实 Codex 调用、子智能体 forward test 和成本消耗必须另行取得用户明确授权。未执行时，所有结果都保持 `prepared-not-run` / `pending`。
+
+2026-07-17 的首个授权 pilot `matched-pilot-20260717-01` 已按固定顺序启动，但在第一个 plain 工程调用中以 `process-failed` 停止，完成数为 `0/18`。执行器没有启动后续 arm，也没有自动重试。该运行只能作为 fail-closed 教学失败案例，不能用于 arm 效果比较；详见[失败案例记录](pilot-failure-case-20260717.zh.md)。
+
+2026-07-18 的第二次验收使用九技能隔离 home。preflight 通过，但唯一隐式 canary 建立 thread 后以 `rate-limit` 类别、0 token/tool、无 terminal turn/反馈和 `timeout` 结束；因此没有启动 trigger 或任何 arm。该案例同时暴露并修复了 Windows `.cmd` 子进程树超时收束问题，但该缺陷不能解释 provider failure。详见[canary 失败案例](canary-failure-case-20260718.zh.md)。
 
 ## 一、实验问题
 
@@ -82,6 +86,25 @@ python3 teaching/lab_runner.py \
 ```
 
 `pilot-manifest.json` 为每个 run 保存唯一 id、相对 workspace、提示引用、输入 SHA-256 摘要和待写结果引用。它是教学执行清单，不是插件运行时 schema。
+
+获得真实执行授权后，维护者使用统一入口分阶段运行：
+
+```powershell
+$windowsRoot = '<FRESH_WINDOWS_PILOT_ROOT>'
+$wslRoot = '<FRESH_WSL_PILOT_ROOT>'
+$codex = '<CODEX_0_144_5>'
+powershell -ExecutionPolicy Bypass -File teaching/run_pilot.ps1 -Action prepare `
+  -WindowsRoot $windowsRoot -WslRoot $wslRoot -PilotId <FRESH_PILOT_ID> `
+  -AuthorizationRef <AUTHORIZATION_REF>
+powershell -ExecutionPolicy Bypass -File teaching/run_pilot.ps1 -Action install `
+  -WindowsRoot $windowsRoot
+powershell -ExecutionPolicy Bypass -File teaching/run_pilot.ps1 -Action preflight `
+  -WindowsRoot $windowsRoot -WslRoot $wslRoot -CodexBin $codex
+powershell -ExecutionPolicy Bypass -File teaching/run_pilot.ps1 -Action canary `
+  -WindowsRoot $windowsRoot -CodexBin $codex -TimeoutSeconds 180
+```
+
+Bash 入口使用同样的 `prepare|install|preflight|canary|run|resume|score` action，并从 `PILOT_WINDOWS_ROOT`、`PILOT_WSL_ROOT`、`PILOT_ID`、`PILOT_AUTHORIZATION_REF` 和 `CODEX_BIN` 读取显式参数。`install` 只是隔离 skill home，不是 cache 安装。preflight 不调用模型；canary receipt 已存在时拒绝重试。只有 canary 通过并取得新的阶段授权后才能执行 `run`。`resume` 只跳过已确认 completed 的调用；发现 running、failed、timeout、ambiguous 或 duplicate risk 时会拒绝继续。它不是“从失败处再试一次”的快捷方式。
 
 ## 四、执行前预注册
 

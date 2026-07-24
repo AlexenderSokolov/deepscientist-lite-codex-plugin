@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("quickstart", "evidence", "branches", "route", "paths", "revision", "matched-pilot")]
+    [ValidateSet("quickstart", "evidence", "branches", "route", "paths", "revision", "action-reflection", "matched-pilot")]
     [string]$Lab,
     [ValidateSet("student", "reference")]
     [string]$Mode = "student",

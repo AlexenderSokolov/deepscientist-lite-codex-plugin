@@ -4,7 +4,7 @@
 
 1. 在授课机器上运行 `python teaching/lab_runner.py --help`。
 2. 用 student 模式准备课程，确认目录中没有 `REFERENCE_ANSWER.md`。
-3. 新开 Codex 线程，记录实际加载版本与技能数：`0.4.0-beta.2` 发布包为七个，未发布 v0.5 源码为八个；不要从源码反推 cache。
+3. 新开 Codex 线程，记录实际加载版本与技能数：`0.4.0-beta.2` 发布包为七个，未发布 v0.5 源码为九个；不要从源码反推 cache。
 4. 准备纯 CLI 备用路线；插件缓存失效时，课程仍可检查 Graph 和 Evidence Pack。
 5. 不使用学生真实数据、凭据或未授权外部文件。
 
@@ -36,6 +36,10 @@ reference 模式只用于备课和课后核对。它生成的 review/analysis �
 ## Matched-control pilot 怎么用
 
 [四案例三组 pilot](matched-control-pilot.zh.md) 只用 student workspace；教师指南和 rubric 在生成包根目录独立保存。每次只打开一个 arm，工程案例分三轮投递并在第三轮更换上下文。真实 12-arm 调用前固定模型、预算、工具和计时规则并取得明确授权。首批结果只做描述性比较，不作统计显著性宣称。
+
+## 行动与反思课程怎么用
+
+先用 student 模式让学生写出事实、假设、预测、反证条件、预算和停止条件，再允许执行唯一 probe。检查重点不是反思文字是否漂亮，而是 `ds-lite.iteration.v1` 是否保留可观察结果、假设状态变化、负结果、授权边界和面向用户的报告。危险命令只用于 Hook 分类演示，不在课堂中实际执行；参考流程见[教师讲义](action-reflection-instructor.zh.md)。
 
 ## 收集反馈
 

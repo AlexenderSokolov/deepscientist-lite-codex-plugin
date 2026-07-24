@@ -21,7 +21,17 @@ from typing import Any, Iterable
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STATE_SCRIPT = REPO_ROOT / "plugins" / "deepscientist-lite" / "scripts" / "ds_lite_state.py"
 EVIDENCE_SCRIPT = REPO_ROOT / "plugins" / "deepscientist-lite" / "scripts" / "ds_lite_evidence.py"
-LABS = ("quickstart", "evidence", "branches", "route", "paths", "revision", "matched-pilot")
+ITERATION_SCRIPT = REPO_ROOT / "plugins" / "deepscientist-lite" / "scripts" / "ds_lite_iteration.py"
+LABS = (
+    "quickstart",
+    "evidence",
+    "branches",
+    "route",
+    "paths",
+    "revision",
+    "action-reflection",
+    "matched-pilot",
+)
 EVIDENCE_CASES = ("clean", "tampered", "threshold-miss")
 PILOT_CASES = ("engineering-continuity", "math-counterexample", "numerical-seeds", "idea-evaluation")
 PILOT_ARMS = ("plain", "scratchpad", "ds-lite")
@@ -118,6 +128,9 @@ class LabBuilder:
 
     def evidence(self, command: str, *args: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
         return self.run_tool(EVIDENCE_SCRIPT, command, *args, **kwargs)
+
+    def iteration(self, command: str, *args: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        return self.run_tool(ITERATION_SCRIPT, command, *args, **kwargs)
 
     def init_project(self, title: str, question: str) -> None:
         title_file = self.workspace / "title.txt"
@@ -273,6 +286,7 @@ class LabBuilder:
             "route": "Compare progression and all-edge traces; explain why supports and rollback do not redefine the active route.",
             "paths": "Set DS_LITE_EXTERNAL_DATASET on this machine, then run strict validation.",
             "revision": "Reconstruct the stale write, reload, reconcile, and retry sequence from the saved evidence.",
+            "action-reflection": "Run one probe through $ds-lite-iterate, preserve the counterexample, update the hypothesis, and finish the user report.",
         }
         def format_nodes(node_ids: list[str]) -> str:
             return ", ".join(f"`{node_id}`" for node_id in node_ids) if node_ids else "None."
@@ -331,7 +345,7 @@ class LabBuilder:
 
     def build(self) -> None:
         self.create_workspace()
-        getattr(self, f"build_{self.lab}")()
+        getattr(self, f"build_{self.lab.replace('-', '_')}")()
         self.sync_status()
         self.result["project"] = "project"
         write_json(self.workspace / "lab-result.json", self.result)
@@ -431,6 +445,247 @@ class LabBuilder:
                 ),
                 add_analysis=expected_decision == "pass",
             )
+
+    def build_action_reflection(self) -> None:
+        self.init_project(
+            "行动与反思实验",
+            "一个看似被样例支持的字符串机制，遇到反例后应怎样更新假设并向用户负责地汇报？",
+        )
+        scout = self.add_artifact(
+            "scout-length-observations",
+            """# 可观察事实
+
+- 样例 `ab` 与 `a-b` 在压缩重复分隔符后长度不变。
+- `a--b` 尚未测量。
+- 当前只允许一次标准库 probe；没有外部调用或删除授权。
+""",
+        )
+        idea = self.add_artifact(
+            "idea-length-preserved",
+            """# 待检验假设
+
+假设：把连续连字符压成一个连字符，对给定样例总是保持字符串长度。
+
+最小判别：按固定顺序检查 `ab`、`a-b`、`a--b`，遇到第一个长度变化就停止并保留反例。
+""",
+        )
+        alternative = self.add_artifact(
+            "idea-separator-count",
+            """# 保留候选
+
+更窄的候选机制是“规范化只保持字母顺序，不保持原始长度”。本轮不执行第二个 probe。
+""",
+        )
+        self.add_node(
+            "scout-length-observations",
+            "scout",
+            "区分已测样例与未测输入",
+            parent="intake-root",
+            artifact=scout,
+            active=True,
+        )
+        self.add_node(
+            "idea-length-preserved",
+            "idea",
+            "压缩分隔符保持长度",
+            parent="scout-length-observations",
+            artifact=idea,
+            active=True,
+        )
+        self.add_node(
+            "idea-separator-count",
+            "idea",
+            "规范化只保持字母顺序",
+            parent="scout-length-observations",
+            relation="branch",
+            artifact=alternative,
+        )
+
+        material = self.project / "materials" / "run_probe.py"
+        write_text(
+            material,
+            """import argparse
+import json
+from pathlib import Path
+
+
+def normalize(value: str) -> str:
+    while '--' in value:
+        value = value.replace('--', '-')
+    return value
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--output', required=True)
+args = parser.parse_args()
+observations = []
+counterexample = ''
+for value in ('ab', 'a-b', 'a--b'):
+    normalized = normalize(value)
+    preserved = len(normalized) == len(value)
+    observations.append({'input': value, 'normalized': normalized, 'length_preserved': preserved})
+    if not preserved:
+        counterexample = value
+        break
+payload = {
+    'schema_version': 'ds-lite.teaching-probe-result.v1',
+    'hypothesis_id': 'idea-length-preserved',
+    'supports_hypothesis': not counterexample,
+    'counterexample': counterexample,
+    'observations': observations,
+}
+Path(args.output).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\\n', encoding='utf-8')
+print('counterexample=' + (counterexample or 'none'))
+""",
+        )
+        action_ref = "research/artifacts/action-contract-length.json"
+        action = {
+            "kind": "collect-evidence",
+            "summary": "Probe whether separator normalization preserves length.",
+            "prediction": "All three declared examples keep their original length.",
+            "falsification_condition": "Any normalized example has a different length.",
+            "resource_limits": [{"dimension": "actions", "unit": "count", "value": 1}],
+            "stop_condition": "Stop at the first counterexample or after three examples.",
+            "extensions": {},
+        }
+        write_json(self.project / action_ref, action)
+        write_json(
+            self.workspace / "hook-cases.json",
+            {
+                "schema_version": "ds-lite.teaching-hook-cases.v1",
+                "display_only": True,
+                "cases": [
+                    {"id": "read-graph", "operation": "read Graph v2", "expected": "allow"},
+                    {"id": "edit-graph", "operation": "directly edit graph.json", "expected": "block"},
+                    {"id": "recursive-delete", "operation": "recursive delete", "expected": "block"},
+                    {"id": "create-tmux", "operation": "create tmux capacity", "expected": "block"},
+                    {"id": "stop-running", "operation": "stop with running iteration", "expected": "continue-once"},
+                ],
+            },
+        )
+        self.result.update(
+            {
+                "expected_hypothesis_status": "untested" if self.mode == "student" else "refuted",
+                "expected_probe_result": "research/artifacts/probe-result-length.json",
+                "hook_cases": "hook-cases.json",
+            }
+        )
+        if self.mode != "reference":
+            return
+
+        graph = read_json(self.project / "research" / "state" / "graph.json")
+        iteration_id = "iteration-action-reflection"
+        iteration_ref = f"research/iterations/{iteration_id}.json"
+        self.iteration(
+            "init",
+            "--iteration-id",
+            iteration_id,
+            "--selected-skill",
+            "ds-lite-experiment",
+            "--action-json",
+            str(self.project / action_ref),
+            "--input-ref",
+            "research/artifacts/idea-length-preserved.md",
+            "--expected-revision",
+            str(graph["revision"]),
+        )
+        probe_ref = "research/artifacts/probe-result-length.json"
+        completed = subprocess.run(
+            [sys.executable, str(material), "--output", str(self.project / probe_ref)],
+            cwd=self.project,
+            text=True,
+            encoding="utf-8",
+            errors="backslashreplace",
+            capture_output=True,
+        )
+        if completed.returncode != 0:
+            raise LabError("reference action-reflection probe failed")
+        terminal_result = self.workspace / "terminal-result-action-reflection.json"
+        write_json(
+            terminal_result,
+            {
+                "status": "completed",
+                "after_revision": graph["revision"],
+                "output_refs": [probe_ref],
+                "graph_changes": [
+                    {
+                        "kind": "none",
+                        "subject_id": "idea-length-preserved",
+                        "summary": "Preserved the refuting probe without rewriting Graph history.",
+                        "extensions": {},
+                    }
+                ],
+                "validations": [
+                    {
+                        "command": "python materials/run_probe.py --output research/artifacts/probe-result-length.json",
+                        "status": "pass",
+                        "summary": "The bounded probe found the declared falsifying example.",
+                        "extensions": {},
+                    }
+                ],
+                "stop_reason": "negative-result-preserved",
+                "reflection": {
+                    "observed_outcomes": ["The first length-changing input was a--b."],
+                    "hypothesis_updates": [
+                        {
+                            "hypothesis_id": "idea-length-preserved",
+                            "status": "refuted",
+                            "evidence_refs": [probe_ref],
+                            "summary": "Separator compression changed the observed length.",
+                            "extensions": {},
+                        }
+                    ],
+                    "expectation_gap": "Two supporting examples did not generalize to a repeated separator.",
+                    "negative_results": [
+                        {
+                            "summary": "The universal length-preservation hypothesis failed on a--b.",
+                            "evidence_refs": [probe_ref],
+                            "extensions": {},
+                        }
+                    ],
+                    "responsibility": {
+                        "authorization_basis": "Reference-mode deterministic teaching fixture.",
+                        "boundaries_respected": ["One standard-library probe; no external action."],
+                        "unresolved_obligations": ["Test the narrower letter-order hypothesis separately."],
+                        "extensions": {},
+                    },
+                    "learned_boundaries": ["Supporting examples do not establish a universal mechanism."],
+                    "next_candidates": [
+                        {
+                            "hypothesis_id": "idea-separator-count",
+                            "title": "Letter order survives normalization",
+                            "status": "untested",
+                            "minimal_test": "Compare letter sequences across one repeated-separator case.",
+                            "extensions": {},
+                        }
+                    ],
+                    "minimal_discriminating_test": "Check letter order on a--b without asserting length preservation.",
+                    "extensions": {},
+                },
+                "user_report": {
+                    "summary": "Ran one bounded probe and preserved a counterexample that refutes length preservation.",
+                    "files_changed": [probe_ref, iteration_ref],
+                    "validation_summary": "The standard-library probe exited 0 and recorded a--b.",
+                    "failure_layer": "claim",
+                    "unverified": ["The narrower letter-order hypothesis remains untested."],
+                    "hypothesis_changes": ["idea-length-preserved changed from untested to refuted."],
+                    "next_action": "Test the narrower letter-order hypothesis once.",
+                    "decision_needed": "none",
+                    "extensions": {},
+                },
+                "completed_at": "2026-07-17T12:00:00Z",
+                "extensions": {},
+            },
+        )
+        self.iteration(
+            "finalize",
+            "--path",
+            iteration_ref,
+            "--result-json",
+            str(terminal_result),
+        )
+        self.iteration("verify", "--path", iteration_ref)
+        self.result["reference_iteration_ref"] = iteration_ref
 
     def add_reference_review(
         self,
@@ -736,6 +991,7 @@ print(f"branch={branch} early={payload['early_score']} final={payload['final_sco
             "route": "比较 progression-trace.json 与 all-edges-trace.json，解释 supports 与 rollback 的作用。",
             "paths": "检查 graph.json 中保存的是项目相对路径和 external:// 别名，而不是本机绝对根目录。",
             "revision": "查看 logs/stale-revision.log，解释为什么退出码4要求重新读取而不是强行覆盖。",
+            "action-reflection": "读取假设和 action contract，调用 $ds-lite-iterate 完成一次 probe、反思、用户汇报和停止；不要开启第二个实验。",
         }[self.lab]
         return f"""# {self.lab} 教学工作区
 
@@ -764,6 +1020,7 @@ print(f"branch={branch} early={payload['early_score']} final={payload['final_sco
             "route": "progression 只沿 next、branch、supersedes。supports 是证据关系，rollback 记录返回意图；二者都不应制造 Active Route 捷径。",
             "paths": "项目内路径使用 POSIX 相对路径；项目外数据使用 external://dataset/...。Graph 不保存外部绝对根目录。",
             "revision": "会话 B 的旧 revision 写入以退出码4被拒绝。正确恢复是重读 graph、协调差异，再携带新 revision 提交。",
+            "action-reflection": "反例 a--b 推翻了长度保持假设。正确结果是 refuted，并保留 probe、负结果、授权边界、用户报告和更窄的未测试候选。",
         }
         return "# 教师参考答案\n\n" + answers[self.lab] + "\n\n该答案只解释当前教学 fixture，不是通用科研结论。"
 
@@ -786,7 +1043,7 @@ Use `materials/check_conjecture.py` or an equivalent reproducible check, search 
 """,
             "numerical-seeds": """# Audit a multi-seed simulation
 
-Use only the Python standard library. Run `materials/run_simulation.py` first with 2 seeds and then with at least 20 seeds. Compare the early and expanded estimates for methods A and B, retain per-seed results, and write `REPORT.md` stating what is supported, inconclusive, or contradicted. Do not turn a small mean difference into a significance claim.
+Use only the Python standard library. This pilot requires WSL computation: run `materials/run_simulation_wsl.sh 2 early.json early-wsl-proof.json`, then `materials/run_simulation_wsl.sh 20 expanded.json wsl-proof.json`, through the assigned `DS-Lite-Ubuntu-24.04` distribution. Compare the early and expanded estimates for methods A and B, retain per-seed results and both WSL proof files, and write `REPORT.md` stating what is supported, inconclusive, or contradicted. Do not turn a small mean difference into a significance claim.
 """,
             "idea-evaluation": """# Evaluate three research ideas
 
@@ -919,6 +1176,51 @@ payload = {
 }
 args.output.write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
 print(json.dumps({key: value for key, value in payload.items() if key != "rows"}))
+""",
+                "run_simulation_wsl.sh": """#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 3 ]]; then
+  echo "usage: run_simulation_wsl.sh SEED_COUNT OUTPUT_REF PROOF_REF" >&2
+  exit 2
+fi
+if [[ -z "${WSL_DISTRO_NAME:-}" ]]; then
+  echo "this wrapper must run inside WSL" >&2
+  exit 3
+fi
+
+SEED_COUNT="$1"
+OUTPUT_REF="$2"
+PROOF_REF="$3"
+for value in "$OUTPUT_REF" "$PROOF_REF"; do
+  if [[ "$value" = /* || "$value" = *".."* || "$value" = *\\* ]]; then
+    echo "output and proof refs must be relative POSIX paths" >&2
+    exit 4
+  fi
+done
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ARM_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$ARM_ROOT"
+python3 materials/run_simulation.py --seed-count "$SEED_COUNT" --output "$OUTPUT_REF"
+python3 - "$PROOF_REF" "$SEED_COUNT" "$OUTPUT_REF" <<'PY'
+import json
+import os
+import platform
+import sys
+from pathlib import Path
+
+proof_ref, seed_count, output_ref = sys.argv[1:]
+payload = {
+    "schema_version": "ds-lite.wsl-computation-proof.v1",
+    "distribution": os.environ.get("WSL_DISTRO_NAME", "unknown"),
+    "kernel": platform.system(),
+    "seed_count": int(seed_count),
+    "output_ref": output_ref,
+    "execution": "wsl-proof",
+}
+Path(proof_ref).write_text(json.dumps(payload, indent=2) + "\\n", encoding="utf-8")
+PY
 """,
             }
         if case_id == "idea-evaluation":
