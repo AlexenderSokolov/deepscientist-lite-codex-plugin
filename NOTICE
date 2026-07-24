@@ -10,3 +10,39 @@ and workflow. Upstream project: https://github.com/ResearAI/DeepScientist
 
 DeepScientist naming and branding remain subject to the upstream trademark guidelines:
 https://github.com/ResearAI/DeepScientist/blob/main/TRADEMARK.md
+
+Scientific Factor Card process provenance:
+The authoritative source audited for this transfer is DeepScientist V2 v2.1.8:
+https://github.com/WENGSYX/DeepScientist_V2/releases/tag/v2.1.8
+Tag commit: 49ffdcda6ce159505f6119b1e26d79c8503a8286
+Audited wq-alpha-research SKILL.md blob: 6f58083e8f0a951a0773d94f5b0812484febc8c3
+
+That upstream repository declares AGPL-3.0-only at the repository level. DeepScientist Lite
+does not copy upstream code, schemas, or skill text. It independently implements only
+domain-neutral research-process ideas: keep unmeasured values unknown, bind promotion to real
+checks and evidence, distinguish requested/pending work from verified state, retain failed probes,
+and choose a bounded next test from an explicit mechanism hypothesis. No financial fields,
+formulas, datasets, credentials, domain thresholds, registry implementation, or submission
+automation from that distribution are included here.
+
+Third-party source snapshots used in the 0.6.0-beta.1 candidate:
+
+1. nature-skills
+   Source: https://github.com/Yuan1z0825/nature-skills
+   Commit: 91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b
+   License: Apache-2.0
+   Use: complete 17-skill workflow snapshot, adapted with DS Lite lifecycle,
+   dependency checks, workspace-only onboarding, and redacted evidence rules.
+
+2. codex-autoresearch
+   Source: https://github.com/congwa/codex-autoresearch
+   Commit: f2389bffbb4cd7789deb6796bc4ba35bf31f2a90
+   Package: 0.1.5-beta.0
+   License declaration: MIT in package.json; the author has granted permission
+   to freely select, modify, and integrate the project.
+   Use: fixed vendor snapshot and bounded compatibility adapter. The adapter
+   does not execute the external runner until its redacted child-output
+   contract is verified.
+
+These snapshots retain file-level provenance. They do not silently change global
+Codex configuration, credentials, marketplace state, or release status.

@@ -1,0 +1,49 @@
+{
+  "name": "codex-autoresearch",
+  "version": "0.1.5-beta.0",
+  "description": "Unified Codex long-task runner with CLI.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/congwa/codex-autoresearch.git"
+  },
+  "homepage": "https://github.com/congwa/codex-autoresearch#readme",
+  "bugs": {
+    "url": "https://github.com/congwa/codex-autoresearch/issues"
+  },
+  "bin": {
+    "codex-autoresearch": "./dist/src/cli.js"
+  },
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "codex-keep-running.sh"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "codex",
+    "cli",
+    "automation",
+    "research"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "commander": "^14.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

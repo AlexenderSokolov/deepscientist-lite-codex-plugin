@@ -29,7 +29,13 @@ ds_lite_python() {
     return 1
   fi
 
-  if ! "$$candidate" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1; then
+  local version_output=""
+  if ! version_output="$$("$$candidate" --version 2>&1)"; then
+    ds_lite_error "Python could not report its version; PYTHON_BIN resolved to: $$candidate"
+    return 1
+  fi
+  if [[ ! "$$version_output" =~ ^Python[[:space:]]+([0-9]+)\.([0-9]+) ]] \
+    || (( BASH_REMATCH[1] < 3 || (BASH_REMATCH[1] == 3 && BASH_REMATCH[2] < 10) )); then
     ds_lite_error "Python 3.10+ is required; PYTHON_BIN resolved to: $$candidate"
     return 1
   fi

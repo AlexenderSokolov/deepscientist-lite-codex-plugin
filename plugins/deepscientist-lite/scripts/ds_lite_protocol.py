@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from ds_lite_evidence import EvidenceError, normalize_protocol_path
 
 WORK_UNIT_SCHEMA = "ds-lite.work-unit.v1"
 REVIEW_RESULT_SCHEMA = "ds-lite.review-result.v1"
+FACTOR_CARD_SCHEMA = "ds-lite.factor-card.v1"
+DELEGATION_SCHEMA = "ds-lite.delegation.v1"
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 EXECUTION_MODES = {"none", "inline", "external", "human"}
@@ -19,6 +24,32 @@ SUBJECT_KINDS = {"conversation", "worker", "terminal", "job", "request", "artifa
 REVIEW_VERDICTS = {"pass", "fail", "needs-human"}
 CLAIM_ASSESSMENTS = {"none", "inconclusive", "refuted", "supportable"}
 CHANNEL_STATUSES = {"pass", "fail", "needs-human", "not-applicable"}
+FACTOR_CARD_STATUSES = {"draft", "assessed", "reviewed"}
+FACTOR_CARD_DECISIONS = {"explore", "verify-first", "park", "reject", "needs-human"}
+FACTOR_CONFIDENCE = {"unknown", "low", "medium", "high"}
+FACTOR_NAMES = {
+    "novelty",
+    "feasibility",
+    "evidence_strength",
+    "cost",
+    "risk",
+    "alignment",
+}
+DELEGATION_STRATEGIES = {"parallel", "sequential"}
+DELEGATION_STATUSES = {"planned", "authorized", "running", "collecting", "completed", "partial", "blocked", "cancelled"}
+DELEGATION_TASK_STATUSES = {"planned", "authorized", "running", "completed", "partial", "blocked", "cancelled"}
+APPROVAL_STATUSES = {"required", "approved", "denied"}
+APPROVAL_AUTHORITIES = {"none", "user", "openscience"}
+DELEGATION_FORBIDDEN_KEYS = {
+    "daemon",
+    "queue",
+    "scheduler",
+    "background_worker",
+    "retry",
+    "auto_retry",
+    "automatic_retry",
+    "retry_policy",
+}
 FORBIDDEN_KEYS = {
     "thought",
     "chain_of_thought",
@@ -74,6 +105,35 @@ REVIEW_RESULT_REQUIRED = {
     "completed_at",
     "extensions",
 }
+FACTOR_CARD_REQUIRED = {
+    "schema_version",
+    "factor_card_id",
+    "work_unit_id",
+    "profile_id",
+    "subject_ref",
+    "status",
+    "factors",
+    "decision",
+    "minimal_test",
+    "created_at",
+    "updated_at",
+    "extensions",
+}
+DELEGATION_REQUIRED = {
+    "schema_version",
+    "delegation_id",
+    "parent_work_unit_id",
+    "strategy",
+    "status",
+    "approval",
+    "integration_owner",
+    "max_children",
+    "nested_delegation",
+    "tasks",
+    "created_at",
+    "updated_at",
+    "extensions",
+}
 
 
 class ProtocolError(Exception):
@@ -104,6 +164,24 @@ def find_forbidden_key(value: Any, prefix: str = "") -> str | None:
     elif isinstance(value, list):
         for index, item in enumerate(value):
             found = find_forbidden_key(item, f"{prefix}[{index}]")
+            if found:
+                return found
+    return None
+
+
+def find_named_key(value: Any, names: set[str], prefix: str = "") -> str | None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            location = f"{prefix}.{key}" if prefix else str(key)
+            normalized = _normalized_key(key)
+            if normalized in names or any(normalized.endswith(f"_{name}") for name in names):
+                return location
+            found = find_named_key(item, names, location)
+            if found:
+                return found
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            found = find_named_key(item, names, f"{prefix}[{index}]")
             if found:
                 return found
     return None
@@ -246,6 +324,218 @@ def validate_work_unit(payload: Any) -> dict[str, Any]:
     return json.loads(json.dumps(payload))
 
 
+def _validate_resource_limits(value: Any, label: str) -> None:
+    if not isinstance(value, list):
+        raise ProtocolError(f"{label} must be a list")
+    identities: set[tuple[str, str]] = set()
+    for index, item in enumerate(value):
+        if not isinstance(item, dict) or set(item) != {"dimension", "unit", "value"}:
+            raise ProtocolError(f"{label}[{index}] must contain exactly dimension, unit, and value")
+        dimension = validate_id(item["dimension"], f"{label}[{index}].dimension")
+        unit = validate_id(item["unit"], f"{label}[{index}].unit")
+        amount = item["value"]
+        if not isinstance(amount, (int, float)) or isinstance(amount, bool) or amount < 0:
+            raise ProtocolError(f"{label}[{index}].value must be a non-negative number")
+        identity = (dimension, unit)
+        if identity in identities:
+            raise ProtocolError(f"{label} contains duplicate dimension/unit pairs")
+        identities.add(identity)
+
+
+def validate_factor_card(payload: Any) -> dict[str, Any]:
+    payload = _require_object(payload, FACTOR_CARD_SCHEMA, FACTOR_CARD_REQUIRED)
+    factor_card_id = validate_id(payload["factor_card_id"], "factor_card_id")
+    work_unit_id = validate_id(payload["work_unit_id"], "work_unit_id")
+    validate_id(payload["profile_id"], "profile_id")
+    if factor_card_id == work_unit_id:
+        raise ProtocolError("factor_card_id and work_unit_id must differ")
+    validate_ref(payload["subject_ref"], "subject_ref")
+    if payload["status"] not in FACTOR_CARD_STATUSES:
+        raise ProtocolError("status must be draft, assessed, or reviewed")
+    if payload["decision"] not in FACTOR_CARD_DECISIONS:
+        raise ProtocolError("decision must be explore, verify-first, park, reject, or needs-human")
+
+    factors = payload["factors"]
+    if not isinstance(factors, list):
+        raise ProtocolError("factors must be a list")
+    seen: set[str] = set()
+    factor_fields = {"name", "score", "confidence", "evidence_refs", "summary", "uncertainty", "extensions"}
+    for index, factor in enumerate(factors):
+        if not isinstance(factor, dict) or set(factor) != factor_fields:
+            raise ProtocolError(f"factors[{index}] must contain exactly {', '.join(sorted(factor_fields))}")
+        name = factor["name"]
+        if name not in FACTOR_NAMES:
+            raise ProtocolError(f"factors[{index}].name is invalid")
+        if name in seen:
+            raise ProtocolError("each required factor must appear exactly once")
+        seen.add(name)
+        score = factor["score"]
+        if score is not None and (not isinstance(score, int) or isinstance(score, bool) or not 0 <= score <= 4):
+            raise ProtocolError(f"factors[{index}].score must be null or an integer from 0 to 4")
+        confidence = factor["confidence"]
+        if confidence not in FACTOR_CONFIDENCE:
+            raise ProtocolError(f"factors[{index}].confidence is invalid")
+        refs = _validate_unique_refs(factor["evidence_refs"], f"factors[{index}].evidence_refs")
+        if score is None and confidence != "unknown":
+            raise ProtocolError("an unknown factor score requires unknown confidence")
+        if score is not None and confidence == "unknown":
+            raise ProtocolError("a scored factor requires non-unknown confidence")
+        if score is not None and not refs:
+            raise ProtocolError("a scored factor requires evidence_refs")
+        if not isinstance(factor["summary"], str) or not factor["summary"].strip():
+            raise ProtocolError(f"factors[{index}].summary must be a non-empty string")
+        if not isinstance(factor["uncertainty"], list) or not all(
+            isinstance(item, str) and item.strip() for item in factor["uncertainty"]
+        ):
+            raise ProtocolError(f"factors[{index}].uncertainty must be a list of non-empty strings")
+        if not isinstance(factor["extensions"], dict):
+            raise ProtocolError(f"factors[{index}].extensions must be an object")
+    if seen != FACTOR_NAMES:
+        raise ProtocolError("each required factor must appear exactly once")
+
+    minimal_test = payload["minimal_test"]
+    minimal_fields = {
+        "question",
+        "method",
+        "expected_evidence",
+        "resource_limits",
+        "stop_condition",
+        "extensions",
+    }
+    if not isinstance(minimal_test, dict) or set(minimal_test) != minimal_fields:
+        raise ProtocolError("minimal_test has unsupported or missing fields")
+    for field in ("question", "method", "stop_condition"):
+        if not isinstance(minimal_test[field], str) or not minimal_test[field].strip():
+            raise ProtocolError(f"minimal_test.{field} must be a non-empty string")
+    expected = minimal_test["expected_evidence"]
+    if not isinstance(expected, list) or not expected or not all(isinstance(item, str) and item.strip() for item in expected):
+        raise ProtocolError("minimal_test.expected_evidence must be a non-empty list of strings")
+    _validate_resource_limits(minimal_test["resource_limits"], "minimal_test.resource_limits")
+    if not isinstance(minimal_test["extensions"], dict):
+        raise ProtocolError("minimal_test.extensions must be an object")
+    validate_timestamp(payload["created_at"], "created_at")
+    validate_timestamp(payload["updated_at"], "updated_at")
+    return json.loads(json.dumps(payload))
+
+
+def _project_write_refs(value: Any, label: str) -> list[str]:
+    refs = _validate_unique_refs(value, label, allow_empty=False)
+    if any(ref.startswith("external://") for ref in refs):
+        raise ProtocolError(f"{label} must contain project-relative paths")
+    return refs
+
+
+def _paths_overlap(left: str, right: str) -> bool:
+    return left == right or left.startswith(right + "/") or right.startswith(left + "/")
+
+
+def validate_delegation(payload: Any) -> dict[str, Any]:
+    payload = _require_object(payload, DELEGATION_SCHEMA, DELEGATION_REQUIRED)
+    forbidden_runtime_key = find_named_key(payload, DELEGATION_FORBIDDEN_KEYS)
+    if forbidden_runtime_key:
+        raise ProtocolError(f"delegation contains a forbidden runtime service or retry field: {forbidden_runtime_key}")
+    delegation_id = validate_id(payload["delegation_id"], "delegation_id")
+    parent_work_unit_id = validate_id(payload["parent_work_unit_id"], "parent_work_unit_id")
+    integration_owner = validate_id(payload["integration_owner"], "integration_owner")
+    if delegation_id == parent_work_unit_id:
+        raise ProtocolError("delegation_id and parent_work_unit_id must differ")
+    if payload["strategy"] not in DELEGATION_STRATEGIES:
+        raise ProtocolError("strategy must be parallel or sequential")
+    if payload["status"] not in DELEGATION_STATUSES:
+        raise ProtocolError("delegation status is invalid")
+    max_children = payload["max_children"]
+    if not isinstance(max_children, int) or isinstance(max_children, bool) or not 1 <= max_children <= 3:
+        raise ProtocolError("max_children must be an integer from 1 to 3")
+    if payload["nested_delegation"] is not False:
+        raise ProtocolError("nested_delegation must be false")
+
+    approval = payload["approval"]
+    approval_fields = {"status", "authority", "approval_ref", "extensions"}
+    if not isinstance(approval, dict) or set(approval) != approval_fields:
+        raise ProtocolError("approval must contain exactly status, authority, approval_ref, and extensions")
+    if approval["status"] not in APPROVAL_STATUSES:
+        raise ProtocolError("approval.status is invalid")
+    if approval["authority"] not in APPROVAL_AUTHORITIES:
+        raise ProtocolError("approval.authority is invalid")
+    approval_ref = validate_ref(approval["approval_ref"], "approval.approval_ref", allow_empty=True)
+    if not isinstance(approval["extensions"], dict):
+        raise ProtocolError("approval.extensions must be an object")
+    if approval["status"] == "required" and (approval["authority"] != "none" or approval_ref):
+        raise ProtocolError("required approval must use authority none and an empty approval_ref")
+    if approval["status"] in {"approved", "denied"} and (approval["authority"] == "none" or not approval_ref):
+        raise ProtocolError("approved or denied authorization requires an authority and approval_ref")
+    if payload["status"] in {"authorized", "running", "collecting", "completed", "partial"} and approval["status"] != "approved":
+        raise ProtocolError("delegation status requires approved authorization")
+
+    tasks = payload["tasks"]
+    if not isinstance(tasks, list) or not tasks or len(tasks) > max_children:
+        raise ProtocolError("tasks must contain between 1 and max_children items")
+    task_fields = {
+        "task_id",
+        "objective",
+        "input_refs",
+        "allowed_paths",
+        "expected_output_refs",
+        "validation_commands",
+        "resource_limits",
+        "stop_conditions",
+        "status",
+        "result_ref",
+        "extensions",
+    }
+    task_ids: set[str] = set()
+    task_statuses: list[str] = []
+    owned_paths: list[tuple[str, str]] = []
+    terminal_statuses = {"completed", "partial", "blocked", "cancelled"}
+    for index, task in enumerate(tasks):
+        if not isinstance(task, dict) or set(task) != task_fields:
+            raise ProtocolError(f"tasks[{index}] has unsupported or missing fields")
+        task_id = validate_id(task["task_id"], f"tasks[{index}].task_id")
+        if task_id in task_ids:
+            raise ProtocolError(f"duplicate task_id: {task_id}")
+        if task_id in {delegation_id, parent_work_unit_id}:
+            raise ProtocolError("task_id must differ from delegation_id and parent_work_unit_id")
+        task_ids.add(task_id)
+        if not isinstance(task["objective"], str) or not task["objective"].strip():
+            raise ProtocolError(f"tasks[{index}].objective must be a non-empty string")
+        _validate_unique_refs(task["input_refs"], f"tasks[{index}].input_refs")
+        allowed_paths = _project_write_refs(task["allowed_paths"], f"tasks[{index}].allowed_paths")
+        output_refs = _project_write_refs(task["expected_output_refs"], f"tasks[{index}].expected_output_refs")
+        for path in set(allowed_paths + output_refs):
+            for other_task, other_path in owned_paths:
+                if _paths_overlap(path, other_path):
+                    raise ProtocolError(f"overlapping allowed_paths or outputs: {task_id}:{path} and {other_task}:{other_path}")
+            owned_paths.append((task_id, path))
+        commands = task["validation_commands"]
+        if not isinstance(commands, list) or not commands or not all(isinstance(item, str) and item.strip() for item in commands):
+            raise ProtocolError(f"tasks[{index}].validation_commands must be a non-empty list of strings")
+        _validate_resource_limits(task["resource_limits"], f"tasks[{index}].resource_limits")
+        stop_conditions = task["stop_conditions"]
+        if not isinstance(stop_conditions, list) or not stop_conditions or not all(
+            isinstance(item, str) and item.strip() for item in stop_conditions
+        ):
+            raise ProtocolError(f"tasks[{index}].stop_conditions must be a non-empty list of strings")
+        if task["status"] not in DELEGATION_TASK_STATUSES:
+            raise ProtocolError(f"tasks[{index}].status is invalid")
+        task_statuses.append(task["status"])
+        result_ref = validate_ref(task["result_ref"], f"tasks[{index}].result_ref", allow_empty=True)
+        if task["status"] in terminal_statuses and not result_ref:
+            raise ProtocolError("terminal task requires result_ref")
+        if result_ref and result_ref not in output_refs:
+            raise ProtocolError("result_ref must match an expected_output_ref")
+        if not isinstance(task["extensions"], dict):
+            raise ProtocolError(f"tasks[{index}].extensions must be an object")
+    if integration_owner in task_ids:
+        raise ProtocolError("integration_owner must not be a delegated task_id")
+    if payload["status"] in terminal_statuses and any(status not in terminal_statuses for status in task_statuses):
+        raise ProtocolError("terminal delegation requires terminal tasks")
+    if payload["status"] == "completed" and any(status != "completed" for status in task_statuses):
+        raise ProtocolError("completed delegation requires all tasks completed")
+    validate_timestamp(payload["created_at"], "created_at")
+    validate_timestamp(payload["updated_at"], "updated_at")
+    return json.loads(json.dumps(payload))
+
+
 def validate_review_result(payload: Any) -> dict[str, Any]:
     payload = _require_object(payload, REVIEW_RESULT_SCHEMA, REVIEW_RESULT_REQUIRED)
     for field in ("review_id", "work_unit_id", "profile_id", "review_node_id", "reviewed_node_id"):
@@ -295,3 +585,28 @@ def canonical_json_bytes(value: Any) -> bytes:
 def evidence_refs_digest(records: list[dict[str, str]]) -> str:
     ordered = sorted(records, key=lambda item: item["path"])
     return hashlib.sha256(canonical_json_bytes(ordered)).hexdigest()
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Validate DeepScientist Lite sidecar protocols.")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    factor_parser = subparsers.add_parser("validate-factor-card", help="Validate ds-lite.factor-card.v1 JSON.")
+    factor_parser.add_argument("--path", required=True)
+    delegation_parser = subparsers.add_parser("validate-delegation", help="Validate ds-lite.delegation.v1 JSON.")
+    delegation_parser.add_argument("--path", required=True)
+    args = parser.parse_args(argv)
+    try:
+        payload = json.loads(Path(args.path).read_text(encoding="utf-8"))
+        if args.command == "validate-factor-card":
+            validated = validate_factor_card(payload)
+        else:
+            validated = validate_delegation(payload)
+    except (OSError, UnicodeError, json.JSONDecodeError, ProtocolError) as exc:
+        print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False))
+        return 1
+    print(json.dumps({"ok": True, "schema_version": validated["schema_version"]}, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

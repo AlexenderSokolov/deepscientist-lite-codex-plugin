@@ -1,0 +1,6 @@
+name: nature-ref-verifier
+description: Use the complete vendored nature-ref-verifier workflow with DS Lite evidence and dependency boundaries.
+policy:
+  allow_implicit_invocation: true
+  execution: bounded-and-redacted
+  external_effects: explicit-authorization

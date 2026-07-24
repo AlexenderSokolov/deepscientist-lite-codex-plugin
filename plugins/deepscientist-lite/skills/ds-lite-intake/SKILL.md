@@ -1,11 +1,15 @@
 ---
 name: ds-lite-intake
-description: Use when Codex should start, attach, or audit a lightweight DeepScientist-style research project without deploying DeepScientist. Creates or reconciles PROJECT.md, RESEARCH_MAP.md, STATUS.md, research/state/graph.json, research/memory, research/artifacts, run_*.sh entries, goals, constraints, acceptance criteria, and the first intake node.
+description: Use when starting, taking over, recovering, or auditing a research or engineering project that needs a durable goal, constraints, acceptance criteria, current-state handoff, project files, and first bounded action.
 ---
 
 # DS Lite Intake
 
 Start with files, not chat memory. Build a small project contract that future Codex sessions can read quickly.
+
+Before acting, read [the Responsible Exploration Covenant](../../references/responsible-exploration-covenant.md) and use the shared start / progress / end protocol. Send the mandatory Start report before initialization or mutation, use Progress reports during long work, and finish with the mandatory End report; missing evidence becomes `blocked` or `not-verified`, never polished success prose.
+
+When setup, provider, path, encoding, CLI, or format behavior is unclear, also read [the Environment Compatibility Playbook](../../references/environment-compatibility-playbook.md). Classify the boundary failure before changing project state; never present an environment diagnosis as a research conclusion.
 
 ## Workflow
 

@@ -2,3 +2,5 @@ interface:
   display_name: "DS Lite Review"
   short_description: "Check integrity, contract compliance, sources, and method alignment before analysis."
   default_prompt: "$ds-lite-review check whether this experiment has enough valid evidence to support an analysis"
+policy:
+  allow_implicit_invocation: true

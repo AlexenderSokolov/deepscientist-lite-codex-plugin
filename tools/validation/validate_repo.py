@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 EXPECTED_SKILLS = [
+    "ds-lite",
     "ds-lite-intake",
     "ds-lite-scout",
     "ds-lite-idea",
@@ -17,6 +18,24 @@ EXPECTED_SKILLS = [
     "ds-lite-review",
     "ds-lite-analysis-write",
     "ds-lite-iterate",
+    "ds-lite-coordinate",
+    "nature-academic-search",
+    "nature-citation",
+    "nature-data",
+    "nature-downloader",
+    "nature-experiment-log",
+    "nature-figure",
+    "nature-literature-pipeline",
+    "nature-paper-to-patent",
+    "nature-paper2ppt",
+    "nature-polishing",
+    "nature-proposal-writer",
+    "nature-reader",
+    "nature-ref-verifier",
+    "nature-response",
+    "nature-reviewer",
+    "nature-statistics",
+    "nature-writing",
 ]
 
 
@@ -61,11 +80,13 @@ def validate_manifest(plugin_root: Path) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("name") != "deepscientist-lite":
         fail("plugin name must be deepscientist-lite")
-    if manifest.get("version") != "0.4.0-beta.2":
-        fail("plugin version must be 0.4.0-beta.2")
+    if manifest.get("version") != "0.6.0-beta.1":
+        fail("plugin version must be 0.6.0-beta.1")
     if manifest.get("skills") != "./skills/":
         fail("plugin skills path must be ./skills/")
-    for forbidden in ("mcpServers", "apps", "hooks"):
+    if manifest.get("hooks") != "./hooks/hooks.json":
+        fail("plugin hooks path must be ./hooks/hooks.json")
+    for forbidden in ("mcpServers", "apps"):
         if forbidden in manifest:
             fail(f"plugin manifest must not declare {forbidden}")
     if "TODO" in manifest_path.read_text(encoding="utf-8"):
@@ -74,6 +95,13 @@ def validate_manifest(plugin_root: Path) -> None:
 
 def validate_skills(plugin_root: Path) -> None:
     skills_root = plugin_root / "skills"
+    discovered_skills = sorted(
+        path.name
+        for path in skills_root.iterdir()
+        if path.is_dir() and (path / "SKILL.md").is_file()
+    )
+    if discovered_skills != sorted(EXPECTED_SKILLS):
+        fail(f"skill inventory must contain exactly the 26 expected skills: {discovered_skills}")
     for skill_name in EXPECTED_SKILLS:
         skill_file = skills_root / skill_name / "SKILL.md"
         if not skill_file.exists():
@@ -88,6 +116,16 @@ def validate_skills(plugin_root: Path) -> None:
             fail(f"{skill_file} name mismatch")
         if len(data["description"]) < 80:
             fail(f"{skill_file} description is too short to trigger reliably")
+        metadata_path = skills_root / skill_name / "agents" / "openai.yaml"
+        metadata = metadata_path.read_text(encoding="utf-8") if metadata_path.exists() else ""
+        if "policy:" not in metadata or "allow_implicit_invocation: true" not in metadata:
+            fail(f"{skill_name} must allow implicit invocation in agents/openai.yaml")
+        if "responsible-exploration-covenant.md" not in text or "start / progress / end" not in text:
+            fail(f"{skill_name} must use the shared exploration and feedback protocol")
+        if skill_name.startswith("nature-"):
+            provenance = skills_root / skill_name / "provenance.json"
+            if not provenance.exists():
+                fail(f"{skill_name} is missing upstream provenance")
 
 
 def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
@@ -599,10 +637,12 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "docs" / "user-guide.zh.md",
         repo_root / "docs" / "openscience-worker-handoff.zh.md",
         repo_root / "docs" / "implementation.zh.md",
+        repo_root / "docs" / "maintainers" / "action-reflection-philosophy.zh.md",
         repo_root / "teaching" / "README.zh.md",
         repo_root / "teaching" / "demo-script.zh.md",
         repo_root / "teaching" / "lesson-plan.zh.md",
         repo_root / "teaching" / "instructor-guide.zh.md",
+        repo_root / "teaching" / "matched-control-pilot.zh.md",
         repo_root / "teaching" / "cases" / "paradigm-comparison-case.md",
         repo_root / "teaching" / "quickstart-20.zh.md",
         repo_root / "teaching" / "evidence-lab-45.zh.md",
@@ -610,6 +650,8 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "teaching" / "route-lab-30.zh.md",
         repo_root / "teaching" / "path-lab-30.zh.md",
         repo_root / "teaching" / "revision-lab-30.zh.md",
+        repo_root / "teaching" / "action-reflection-student.zh.md",
+        repo_root / "teaching" / "action-reflection-instructor.zh.md",
         repo_root / "teaching" / "student-worksheet.zh.md",
         repo_root / "teaching" / "instructor-rubric.zh.md",
         repo_root / "teaching" / "answer-key.zh.md",
@@ -625,7 +667,19 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / ".gitattributes",
         repo_root / "PROJECT.md",
         plugin_root / "scripts" / "ds_lite_evidence.py",
+        plugin_root / "scripts" / "ds_lite_hook.py",
+        plugin_root / "scripts" / "ds_lite_iteration.py",
+        plugin_root / "scripts" / "ds_lite_loop.py",
         plugin_root / "scripts" / "ds_lite_protocol.py",
+        plugin_root / "hooks" / "hooks.json",
+        plugin_root / "references" / "responsible-exploration-covenant.md",
+        plugin_root / "references" / "environment-compatibility-playbook.md",
+        plugin_root / "references" / "handoff-protocol.md",
+        plugin_root / "references" / "cli-boundary-compatibility.md",
+        plugin_root / "references" / "selective-superpowers-adaptation.md",
+        plugin_root / "references" / "trusted-execution-surface.md",
+        plugin_root / "references" / "bounded-loop-protocol.md",
+        plugin_root / "references" / "skill-trigger-matrix.json",
         plugin_root / "assets" / "templates" / "research" / "work-unit.json",
         plugin_root / "assets" / "templates" / "research" / "artifacts" / "review-result.json",
         plugin_root / "assets" / "templates" / "research" / "evidence" / "contract.json",
@@ -641,10 +695,45 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "tools" / "validation" / "audit_codex_acceptance.py",
         repo_root / "tools" / "validation" / "run_codex_acceptance.sh",
         repo_root / "tools" / "validation" / "run_codex_acceptance.ps1",
+        repo_root / "teaching" / "run_loop_acceptance.ps1",
+        repo_root / "teaching" / "run_loop_acceptance.sh",
+        repo_root / "teaching" / "run_nature_setup.ps1",
+        repo_root / "teaching" / "run_nature_setup.sh",
+        repo_root / "teaching" / "nature_runtime_acceptance.py",
+        repo_root / "teaching" / "run_nature_runtime_acceptance.ps1",
+        repo_root / "teaching" / "run_nature_runtime_acceptance.sh",
+        repo_root / "teaching" / "run_upstream_audit.ps1",
+        repo_root / "teaching" / "run_upstream_audit.sh",
+        plugin_root / "scripts" / "ds_lite_nature_setup.py",
+        plugin_root / "scripts" / "codex_autoresearch_adapter.py",
+        plugin_root / "references" / "nature-skill-registry.json",
+        plugin_root / "references" / "upstream-project-registry.json",
+        plugin_root / "references" / "nature-mcp-onboarding.md",
+        plugin_root / "references" / "nature-dependency-boundary.md",
+        plugin_root / "references" / "nature-upstream-deployment.md",
+        repo_root / "tools" / "validation" / "generate_nature_adapters.py",
+        repo_root / "tools" / "validation" / "rewrite_upstream_docs.py",
+        repo_root / "tools" / "validation" / "upstream_manager.py",
+        repo_root / "docs" / "maintainers" / "nature-skills-integration-audit.zh.md",
+        repo_root / "docs" / "maintainers" / "real-wire-host-acceptance-20260724.zh.md",
+        repo_root / "docs" / "maintainers" / "upstream-projects.zh.md",
+        repo_root / "docs" / "maintainers" / "codex-autoresearch-integration-audit.zh.md",
+        repo_root / "docs" / "maintainers" / "email-to-codex-autoresearch-author.zh.md",
     ]
     for item in required_paths:
         if not item.exists():
             fail(f"missing documentation file: {item}")
+
+    powershell_lab_wrapper = (repo_root / "teaching" / "run_lab.ps1").read_text(encoding="utf-8")
+    if '"matched-pilot"' not in powershell_lab_wrapper:
+        fail("teaching/run_lab.ps1 does not expose matched-pilot")
+    if '"action-reflection"' not in powershell_lab_wrapper:
+        fail("teaching/run_lab.ps1 does not expose action-reflection")
+    teaching_readme = (repo_root / "teaching" / "README.zh.md").read_text(encoding="utf-8")
+    if "matched-control-pilot.zh.md" not in teaching_readme:
+        fail("teaching README does not link the matched-control pilot")
+    if "action-reflection-student.zh.md" not in teaching_readme or "--lab action-reflection" not in teaching_readme:
+        fail("teaching README does not expose the action-reflection lab")
 
     readme = (repo_root / "README.md").read_text(encoding="utf-8")
     for required_link in ("README.zh.md", "docs/user-guide.zh.md", "docs/README.md", "teaching/README.zh.md", "plugins/deepscientist-lite/"):
@@ -659,12 +748,122 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         "state-graph-protocol.md",
         "evidence-pack-protocol.md",
         "external-long-task-protocol.md",
+        "delegation-protocol.md",
         "experiment-comparison-template.md",
         "math-exploration-template.md",
+        "responsible-exploration-covenant.md",
+        "environment-compatibility-playbook.md",
+        "handoff-protocol.md",
+        "cli-boundary-compatibility.md",
+        "selective-superpowers-adaptation.md",
+        "trusted-execution-surface.md",
+        "bounded-loop-protocol.md",
+        "scientific-factor-card-protocol.md",
         "teaching-guide.zh.md",
+        "nature-mcp-onboarding.md",
+        "nature-dependency-boundary.md",
     }
-    if runtime_refs != expected_refs:
-        fail(f"runtime references mismatch: {sorted(runtime_refs)}")
+    if not expected_refs.issubset(runtime_refs):
+        fail(f"runtime references missing: {sorted(expected_refs - runtime_refs)}")
+
+    loop_requirements = {
+        plugin_root / "scripts" / "ds_lite_loop.py": (
+            "ds-lite.loop-contract.v1",
+            "ds-lite.loop-receipt.v1",
+            "duplicate-risk",
+            "automatic_retry_observed",
+            "raw_output_persisted",
+            "default=3",
+        ),
+        plugin_root / "references" / "bounded-loop-protocol.md": (
+            "bounded round count",
+            "continuation is not a retry",
+            "completion signal",
+            "frozen goal",
+            "codex-autoresearch",
+        ),
+        repo_root / "docs" / "maintainers" / "codex-autoresearch-integration-audit.zh.md": (
+            "f2389bffbb4cd7789deb6796bc4ba35bf31f2a90",
+            "0.1.5-beta.0",
+            "adopted / adapted",
+            "是否复制源码",
+            "vendor",
+        ),
+        repo_root / "docs" / "maintainers" / "email-to-codex-autoresearch-author.zh.md": (
+            "MIT",
+            "LICENSE",
+            "自由修改",
+        ),
+    }
+    for path, required_texts in loop_requirements.items():
+        text = path.read_text(encoding="utf-8")
+        for required_text in required_texts:
+            if required_text.lower() not in text.lower():
+                fail(f"{path} missing bounded Loop anchor: {required_text}")
+    if "automatic_retry_observed" not in (plugin_root / "scripts" / "ds_lite_loop.py").read_text(encoding="utf-8"):
+        fail("Loop receipts must prove no automatic retry")
+
+    hook_config = json.loads((plugin_root / "hooks" / "hooks.json").read_text(encoding="utf-8"))
+    if set(hook_config.get("hooks", {})) != {
+        "UserPromptSubmit",
+        "PreToolUse",
+        "PostToolUse",
+        "Stop",
+    }:
+        fail("plugin-local Hook config must declare exactly four bounded hook events")
+
+    reflection_doc_requirements = {
+        repo_root / "PROJECT.md": (
+            "九个 `ds-lite-*` skills",
+            "ds-lite.iteration.v1",
+            "latest_iteration",
+            "hypothesis_pool",
+            "Hook fresh-host",
+        ),
+        repo_root / "docs" / "user-guide.zh.md": (
+            "行动、验证、反思、汇报",
+            "exactly-once transaction",
+            "Hook helper",
+        ),
+        repo_root / "docs" / "implementation.zh.md": (
+            "最小 reflective iteration",
+            "不是 exactly-once transaction",
+            "hypothesis_pool",
+        ),
+        repo_root / "docs" / "maintainers" / "action-reflection-philosophy.zh.md": (
+            "行动哲学",
+            "存在主义",
+            "负责任探索",
+            "fresh-host",
+            "not-verified",
+        ),
+        repo_root / "docs" / "maintainers" / "known-issues.md": (
+            "Plugin-local Hook is not host enforcement proof",
+            "Minimal iteration is not exactly-once execution",
+        ),
+        repo_root / "teaching" / "action-reflection-student.zh.md": (
+            "逐步命令",
+            "预期产物",
+            "常见错误",
+            "答案边界",
+        ),
+        repo_root / "teaching" / "action-reflection-instructor.zh.md": (
+            "rubric",
+            "Hook",
+            "OpenScience",
+        ),
+        plugin_root / "references" / "responsible-exploration-covenant.md": (
+            "Situation before hypothesis",
+            "Preserve negative results",
+            "Reflect and report after action",
+            "at least every 60 seconds",
+        ),
+    }
+    for path, required_texts in reflection_doc_requirements.items():
+        text = path.read_text(encoding="utf-8")
+        for required_text in required_texts:
+            if required_text not in text:
+                fail(f"{path} missing action/reflection documentation anchor: {required_text}")
 
     p0_doc_requirements = {
         repo_root / "PROJECT.md": ("ds-lite.work-unit.v1", "ds-lite.review-result.v1", "reserved / not-validated"),
@@ -710,6 +909,103 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         for required_text in required_texts:
             if required_text not in skill_text:
                 fail(f"{skill_name} missing P0 behavior: {required_text}")
+
+    factor_template = plugin_root / "assets" / "templates" / "research" / "artifacts" / "factor-card.json"
+    if not factor_template.is_file():
+        fail("missing ds-lite.factor-card.v1 template")
+    factor_protocol = plugin_root / "references" / "scientific-factor-card-protocol.md"
+    factor_protocol_text = factor_protocol.read_text(encoding="utf-8") if factor_protocol.exists() else ""
+    for required_text in (
+        "ds-lite.factor-card.v1",
+        "novelty",
+        "feasibility",
+        "evidence_strength",
+        "cost",
+        "risk",
+        "alignment",
+        "does not become evidence",
+        "no weighted total",
+        "DeepScientist V2 v2.1.8",
+        "6f58083e8f0a951a0773d94f5b0812484febc8c3",
+        "single-axis ablation",
+    ):
+        if required_text not in factor_protocol_text:
+            fail(f"Factor Card protocol missing behavior anchor: {required_text}")
+    factor_skill_requirements = {
+        "ds-lite-idea": (
+            "scientific-factor-card-protocol.md",
+            "factor-card-<slug>.json",
+            "validate-factor-card",
+            "no weighted total",
+        ),
+        "ds-lite-review": (
+            "ds-lite.factor-card.v1",
+            "Factor Card is not evidence",
+            "novelty",
+            "real checks",
+            "failed checks",
+        ),
+    }
+    for skill_name, required_texts in factor_skill_requirements.items():
+        skill_text = (plugin_root / "skills" / skill_name / "SKILL.md").read_text(encoding="utf-8")
+        for required_text in required_texts:
+            if required_text not in skill_text:
+                fail(f"{skill_name} missing Factor Card behavior: {required_text}")
+    factor_doc_requirements = {
+        repo_root / "PROJECT.md": ("ds-lite.factor-card.v1", "no weighted total", "pressure-case fixture"),
+        repo_root / "CHANGELOG.md": ("Scientific Factor Card", "validate-factor-card"),
+        repo_root / "docs" / "user-guide.zh.md": ("ds-lite.factor-card.v1", "不做加权总分", "novelty"),
+        repo_root / "docs" / "implementation.zh.md": ("ds-lite.factor-card.v1", "decision artifact", "Finance Factor"),
+        repo_root / "NOTICE": (
+            "Scientific Factor Card process provenance",
+            "AGPL-3.0-only",
+            "49ffdcda6ce159505f6119b1e26d79c8503a8286",
+            "does not copy upstream code, schemas, or skill text",
+        ),
+        repo_root / "docs" / "maintainers" / "deepscientist-v2.1.8-factor-transfer-audit.zh.md": (
+            "Finance residue",
+            "factor_registry",
+            "continuous mode",
+            "AGPL-3.0-only",
+        ),
+    }
+    for path, required_texts in factor_doc_requirements.items():
+        text = path.read_text(encoding="utf-8")
+        for required_text in required_texts:
+            if required_text not in text:
+                fail(f"{path} missing Factor Card documentation anchor: {required_text}")
+    for script in (repo_root / "tools" / "validation" / "run_validate.ps1", repo_root / "tools" / "validation" / "run_validate.sh"):
+        if "test_protocols.py" not in script.read_text(encoding="utf-8"):
+            fail(f"{script} does not include protocol schema tests")
+
+    delegation_protocol = plugin_root / "references" / "delegation-protocol.md"
+    delegation_text = delegation_protocol.read_text(encoding="utf-8") if delegation_protocol.exists() else ""
+    for required_text in (
+        "ds-lite.delegation.v1",
+        "maximum of three",
+        "nested_delegation=false",
+        "explicit approval",
+        "path ownership",
+        "integration owner",
+        "no daemon",
+        "no queue",
+        "no automatic retry",
+    ):
+        if required_text not in delegation_text:
+            fail(f"delegation protocol missing behavior anchor: {required_text}")
+    coordinate_skill = plugin_root / "skills" / "ds-lite-coordinate" / "SKILL.md"
+    coordinate_text = coordinate_skill.read_text(encoding="utf-8") if coordinate_skill.exists() else ""
+    for required_text in (
+        "ds-lite.delegation.v1",
+        "validate-delegation",
+        "explicit user or OpenScience approval",
+        "maximum of three",
+        "nested_delegation=false",
+        "integration owner",
+        "Stop after",
+    ):
+        if required_text not in coordinate_text:
+            fail(f"ds-lite-coordinate missing bounded coordination behavior: {required_text}")
 
     long_task_protocol = plugin_root / "references" / "external-long-task-protocol.md"
     long_task_text = long_task_protocol.read_text(encoding="utf-8") if long_task_protocol.exists() else ""
@@ -936,6 +1232,40 @@ def validate_teaching_runner(repo_root: Path) -> None:
     graph = json.loads((output / "project" / "research" / "state" / "graph.json").read_text(encoding="utf-8"))
     if graph.get("active_node_id") != "idea-file-handoff":
         fail("quickstart teaching smoke did not reach the expected idea node")
+
+    pilot_output = parent / "matched pilot workspace"
+    run(
+        [
+            sys.executable,
+            str(lab_runner),
+            "--lab",
+            "matched-pilot",
+            "--mode",
+            "student",
+            "--output",
+            str(pilot_output),
+        ],
+        repo_root,
+    )
+    manifest = json.loads((pilot_output / "pilot-manifest.json").read_text(encoding="utf-8"))
+    runs = manifest.get("runs", [])
+    if manifest.get("status") != "prepared-not-run" or len(runs) != 12:
+        fail("matched teaching pilot must prepare exactly 12 pending runs")
+    if len({item.get("run_id") for item in runs}) != 12 or any(item.get("status") != "pending" for item in runs):
+        fail("matched teaching pilot run ids or pending states are invalid")
+    for case_id in manifest.get("cases", []):
+        digests = {item.get("input_digest") for item in runs if item.get("case") == case_id}
+        if len(digests) != 1:
+            fail(f"matched teaching pilot inputs differ across arms for {case_id}")
+    if len((pilot_output / "results" / "scores.csv").read_text(encoding="utf-8").splitlines()) != 1:
+        fail("matched teaching pilot must not prefill score rows")
+    saved_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in pilot_output.rglob("*")
+        if path.is_file()
+    )
+    if str(pilot_output.resolve()) in saved_text:
+        fail("matched teaching pilot persisted its workstation root")
     if sys.platform != "win32":
         compatibility_output = parent / "compatibility evidence workspace"
         run(

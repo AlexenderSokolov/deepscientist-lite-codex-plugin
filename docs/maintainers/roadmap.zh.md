@@ -8,15 +8,20 @@
 
 ## 下一条短期线
 
-- 领域中立 Factor Card：只做可解释分项、证据引用、不确定性和最小验证，不做自动加权真值或金融 DSL。
-- 有界任务协调：只记录最多三个明确授权的子任务、路径所有权、预算、回传和集成责任，不提供 daemon、队列或后台 scheduler。
-- 真实教学 pilot：使用 matched plain、scratchpad 和 DS Lite 三组，验证恢复、证据、负结果、碎片治理和任务协调；结果只作为 pilot 证据。
+- 领域中立 Factor Card：源码已实现 schema、validator、模板及 idea/review 规则；fresh-agent 行为仍待授权验收，不做自动加权真值或金融 DSL。
+- 有界任务协调：源码已实现 `ds-lite.delegation.v1`、`$ds-lite-coordinate`、最多三个明确授权子任务、路径所有权、预算、回传和集成责任；真实子智能体 forward test 尚未授权，不提供 daemon、队列或后台 scheduler。
+- 行动与反思：源码已实现第九个 `$ds-lite` 总入口、共享行动公约、最小 `ds-lite.iteration.v1`、Mission `latest_iteration` / `hypothesis_pool`、轻量 Hook helper 和脱敏进度投影。2026-07-18 E1 preflight 已验证零/九技能隔离 surface，但唯一 canary 建立 thread 后以 `rate-limit` 类别、0 token/tool、无 terminal turn/反馈和 `timeout` 结束，不能确认隐式触发。trigger forward test 与 Hook fresh-host 仍是后续授权门。
+- 真实教学 pilot：静态基础设施、冻结源码、双 home、18 次串行计划、脱敏 execution receipt、fail-closed resume、公开产物评分和跨平台入口已实现。首个授权运行在第一个 plain 工程调用后 `process-failed`，0/18 completed；其余 arm 和 WSL 数值任务未执行。当前没有效果结论，该 pilot 不得 resume。
+
+只有 12-arm 真实产物完成脱敏、统一评分并通过复核后，才讨论 `0.5.0-beta.1` 候选。单次 pilot 只提供描述性证据，不验证保留 profile，也不构成统计显著性结论。
+
+下一次运行必须使用新 pilot id 和新输出根，固定显式 CLI，先经过不调用模型的 preflight，再只运行一次 canary。只有 canary 同时具备 completed event、最终反馈、非零 usage、工具观察、隐式 skill 证据和零工作区修改时，才可申请 trigger campaign；它仍不授权 18-call pilot。2026-07-17 与 2026-07-18 两个 pilot 均保持冻结，session/receipt 不进入新运行输入；其处置需要单独用户决定。
 
 ## 延期 P1-P3
 
 | 门 | 延期接口 | 当前可用替代 | 发布声明 |
 | --- | --- | --- | --- |
-| P1 | action envelope、iteration receipt、idempotency/stale-revision transaction | `$ds-lite-iterate` skill 的单轮停止规则 | 未实现 |
+| P1 | action envelope、canonical idempotency、same-key replay、exactly-once/partial-write transaction | 最小 `ds-lite.iteration.v1` 的 revision、单动作、反思、汇报和终态 | 部分实现，不是 exactly-once |
 | P2 | typed external-long profile、failure/retry/resource helper | `external-task-*` / `external-tmux-plan-*` Markdown handoff | provisional |
 | P3 | cache/new-thread、真实 tmux/provider、macOS、完整跨模式矩阵 | source/package validation 与待验收清单 | not verified |
 
@@ -24,4 +29,4 @@
 
 ## 长期不做
 
-Lite 不增加 daemon、后台 scheduler、队列、MCP、Web/TUI、connector、模型路由、数据库或无限自动循环。外部长任务由稳定外部 owner 管理；Lite 只保存有界任务、证据、review、交接和停止理由。
+Lite 不增加 daemon、后台 scheduler、队列、MCP、Web/TUI、connector、模型路由、数据库或无限自动循环。轻量 Hook 只能附着状态、阻断确定违规和检查一次迭代，不拥有任务生命周期。外部长任务由稳定外部 owner 管理；Lite 只保存有界任务、证据、review、交接和停止理由。

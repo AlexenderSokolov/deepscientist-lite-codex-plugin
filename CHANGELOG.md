@@ -1,5 +1,95 @@
 # Changelog
 
+## Unreleased: 0.6.0-beta.1 candidate
+
+- Added the complete 17-skill `nature-skills` snapshot at commit
+  `91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b`, bringing the candidate to 26
+  discoverable skills while keeping `nature-shared` internal.
+- Added workspace-only Nature onboarding for MCP, external APIs, browser,
+  downloader, LaTeX, Node, and Python dependencies. It reports missing
+  configuration without reading or persisting secret values.
+- Added the authorized `codex-autoresearch` fixed snapshot and a bounded,
+  redacted adapter. The adapter does not execute the upstream runner until a
+  compatible child-output contract is verified.
+- Added `upstream_manager.py`, the upstream registry, provenance audits, and a
+  weekly read-only GitHub Actions check. It produces update plans but never
+  overwrites vendor sources or publishes changes.
+- Fixed cross-system validation so binary assets and immutable vendor snapshots
+  are not misclassified as text, and JSON diagnostics remain printable under
+  legacy Windows code pages.
+- Offline nature, adapter, loop, cross-system, and repository checks remain
+  source-level evidence. Real provider, Hook, Desktop, delegation, matched
+  effect, formal cache, and release gates remain locked.
+- Verified the current candidate with the unified Windows entry: `304/304`
+  unittest cases passed, the repository validator and `py_compile` passed, and
+  cross-system compatibility scanned 1465 files with zero failures. Bash,
+  PowerShell 7, and shellcheck were recorded as `not-observed` where absent.
+
+## Cross-system reliability
+
+- Added a fresh DS Lite Hook-host fixture and argv-only PowerShell/Bash launchers. The real `trusted-hook-05` run records partial loader evidence and remains fail-closed because the required block and Stop continuation were not observed.
+- Recorded the current real gate state in `docs/maintainers/real-hook-acceptance-20260723.zh.md`; fake and offline results do not unlock delegation, matched effect, formal cache, Desktop, or release.
+
+- Added the unified `ds-lite.cross-system-validation.v1` validator and clean
+  trusted-hook wrapper entrypoints.
+- Removed embedded `python -c` version probes from validation shell and runtime templates; version checks now use `--version` with shell-side numeric parsing.
+- Added explicit Responses probe variants for the Codex Lite header and message-array input, with one-attempt and redaction regression coverage.
+- Added an offline-only `codex-lite-minimal` request profile that records the Codex Lite header, `ResponseItem[]`, reasoning, include, text, and tool-control fields without enabling a real provider call.
+
+## Unreleased
+
+- Add `ds-lite.handoff.v1` for redacted long-conversation, resume, and child-task handoffs. Receivers must verify the digest, authorization boundary, authoritative configuration, relative evidence refs, failure layer, and one next action before acting.
+- Add `ds-lite.cli-compatibility.v1` for PowerShell/cmd/Git Bash/WSL boundary diagnostics covering quoting, escaping, encoding, PATH, WSL translation, `.cmd` child processes, and stdout/stderr pipes without persisting raw commands or output.
+- Add a one-shot fresh-host probe that terminalizes zero-event, timeout, pipe, and nonzero-exit processes into a redacted receipt and refuses retry or overwrite.
+- Record fresh host-02 as a frozen zero-event CLI probe with closed pipes and no timeout; do not infer a provider message or Hook loading from the redacted `unknown` class.
+- Add fixed in-memory CLI boundary reduction for auth, path, quoting, encoding, wrapper, protocol, timeout, and unknown failures; record fresh host-03 as CLI-start passed only.
+- Record fresh host-04 as pinned Codex 0.144.5 model-free CLI-start passed; no later host or release gate is unlocked.
+- Record fresh host-05 marketplace installation and frozen zero-event Hook host task; do not infer Hook loading from manifest or cache presence.
+- Correct the pinned 0.144.5 exec wrapper flags and record host-06 partial Hook loader evidence (`UserPromptSubmit` only) followed by timeout; complete Hook acceptance remains frozen.
+- Record host-07 root-level TOML and model-free checks; real provider Hook execution remained policy-blocked and did not unlock any release gate.
+- Add trusted-host continuation scripts with pinned SHA verification and redacted Hook event summaries for execution in an explicitly trusted tenant surface.
+- Add a parameter-light Windows launcher that prepares a fresh trusted Hook host without touching formal Codex state.
+- Add a selective Superpowers adaptation reference for skill checks, short plans, TDD, bounded actions, verification, and explicit handoffs. It intentionally excludes daemon, MCP, hidden state, unbounded loops, and automatic retry.
+
+- Add Responses wire diagnostics with exact status/category, redacted error shape, terminal/usage observations, request-id hashes, and a static Codex wire-shape comparison without retaining raw responses.
+- Preserve `requires_openai_auth`, force `env_key=OPENAI_API_KEY` for the authenticated isolated route, and keep request/stream retries at zero. Record `wire-diagnostic-03` as provider-compatible and `gated-04` as a successful CLI canary after `gated-03` froze at an authenticated 4xx.
+- Record the isolated real marketplace installation for `communication-beta2-20260720-host-01`; its candidate cache and Hook manifest were observed, but a fresh CLI task emitted no JSONL events and froze. Do not treat this as Hook loading, Desktop host, delegation, matched-effect, or release evidence.
+
+- Add a ninth `$ds-lite` gateway that recognizes new or existing research/engineering workspaces, explains why the plugin is intervening, and routes to exactly one action skill.
+- Add a shared seven-rule responsible-exploration covenant and `start / progress / end` feedback protocol across all nine skills.
+- Add the minimal `ds-lite.iteration.v1` init/finalize/verify lifecycle with one bounded action, revision checks, terminal reflection, user report, and fail-closed ambiguous status; this is not an exactly-once transaction.
+- Project `latest_iteration` and a derived hypothesis pool into the Mission Board without replacing Graph v2 or allowing Factor Cards to promote evidence.
+- Add source-tested plugin-local Hook helpers for redacted Mission attachment, deterministic pre-tool blocks, post-tool checks, and one guarded Stop continuation; fresh-host Hook loading remains not verified and the manifest does not declare hooks.
+- Add redacted pilot progress heartbeats and fake success, silence, timeout, failure, and ambiguous canaries without retaining prompts, raw event streams, stderr, or tool arguments.
+- Add `ds-lite.transport-diagnostic.v1` with allow-listed HTTP/provider classification, connection/header observations, subprocess exit causes, child/pipe states, and fixed redacted summaries while retaining the legacy stderr category/count/SHA-256 fields.
+- Correct real Responses `4xx` reduction so provider-side protocol failures are no longer reported as child-process failures when a response header is observed but no terminal event or usage is produced.
+- Force isolated pilot provider routes to `request_max_retries=0`; add a fresh-only loopback fake-provider/fake-Codex acceptance suite for success, auth, rate-limit, network, malformed response, child early exit, and ambiguous transport.
+- Add offline Hook, delegation, and matched prepare/freeze acceptance claims that remain explicitly fake/protocol-only and can never unlock real host, provider, cache, comparison, or release gates.
+- Add explicit `preflight` and one-shot implicit `canary` gates, require fresh pilot ids and authorization refs, pin Codex CLI `0.144.5`, verify zero-skill control versus nine-skill isolated homes, and refuse the frozen 2026-07-17 pilot id.
+- Rename the pilot `install` evidence to `isolated-skill-home`; it does not verify plugin cache installation. Acceptance records now keep only relative refs, source digests, dirty-snapshot state, and redacted host probe summaries.
+- Classify inherited `OPENAI_API_KEY` presence without persisting its value, and terminate Windows `.cmd` child process trees before finalizing timeout receipts.
+- Record the 2026-07-18 E1 preflight as passed but its single implicit canary as a frozen timeout: thread established, redacted `rate-limit` diagnostic, zero tokens/tools, no terminal turn or feedback, and no workspace change. Do not claim implicit triggering or proceed to E2.
+- Record the 2026-07-20 slim isolated-home plugin-effect canary: zero-skill control and nine-skill current-source DS Lite homes both completed read-only ephemeral calls with terminal events, final output, usage, and no workspace writes; DS Lite added clearer applicability/state/boundary reporting at higher token/time cost, while formal cache, fresh host, Hook loading, full campaign, matched A/B, delegation, and release gates remain unverified.
+- Add the teaching-layer explainability scorer and regression coverage for applicability accuracy, false activation, rationale evidence, verification traceability, user-decision clarity, unsupported completion, artifact recovery, delegation approval, path ownership, and result refs. Real four-task matched comparison and host subagent dispatch remain separate acceptance gates.
+- Record the corrected 2026-07-20 isolated preflight as passed and its one implicit canary as frozen at 180 seconds with redacted `rate-limit`, zero usage/tools, no terminal turn/final feedback, and unchanged workspace; do not retry or start the matched campaign/delegation probe from this receipt.
+- Add the action-and-reflection student/instructor lab, shared worksheet fields, OpenScience supervisor example, and maintainer philosophy/architecture guidance.
+- Pin DeepScientist V2 `v2.1.8` provenance and record an AGPL-isolated, case-to-core transfer audit without copying upstream code, schema, or skill text.
+- Add a strict `ds-lite.matched-pilot-execution.v1` record, frozen-source preparation, isolated control/DS Lite homes, fixed 18-call ordering, online JSON event reduction, and fail-closed resume behavior.
+- Add cross-platform `run_pilot.ps1` / `run_pilot.sh` entry points and an artifact-only scorer that marks automatic results as awaiting blind review or incomplete.
+- Record the first authorized real pilot as blocked at `0/18` after the initial Codex process failed with zero tokens and no result; do not claim an arm comparison or `0.5.0-beta.1` readiness.
+- Preserve only a sanitized stderr category, line count, and SHA-256 in future failed receipts; raw stderr, event JSONL, hidden reasoning, secrets, and workstation roots remain excluded.
+- Add the domain-neutral Scientific Factor Card protocol and `ds-lite.factor-card.v1` validator/template.
+- Teach `$ds-lite-idea` to compare six evidence-linked factors and run `validate-factor-card` without creating a weighted total or promoting the card as evidence.
+- Extend `$ds-lite-review` to reject unsupported novelty scores, reversed cost/risk semantics, and Factor Card claims that bypass typed evidence.
+- Add the explicitly approved `$ds-lite-coordinate` skill for one bounded delegation of at most three independent tasks.
+- Add `ds-lite.delegation.v1`, its strict standard-library validator, template, runtime protocol, ownership/approval/result rules, and negative fixtures.
+- Keep coordination file-led and parent-integrated: no daemon, queue, scheduler, nested delegation, background worker ownership, or automatic retry.
+- Mark fresh-agent coordination behavior as pending a separately authorized forward test; static schema and repository validation do not prove host-side delegation behavior.
+- Add a deterministic matched-control teaching builder for four engineering/research cases across plain, single-scratchpad, and DS Lite arms.
+- Add staged continuity prompts, runnable standard-library math/numerical fixtures, equal-input digests, pending result refs, a unified rubric, and separate student/instructor guidance.
+- Keep real 12-arm Codex execution and scoring behind explicit authorization; preparation smoke does not claim effectiveness, statistical significance, or reserved-profile support.
+- Keep node update timestamps monotonic across transient WSL/virtualized wall-clock regressions without weakening Graph validation.
+
 ## 0.4.0-beta.2
 
 - Add `mission` and `render-status` state CLI commands that project Graph v2 into a user-visible Mission Board.
@@ -50,3 +140,10 @@
 
 - Package the five-skill teaching beta and repository validation flow.
 - Add Unicode-safe intake inputs, teaching material, and release-maintainer documentation.
+- Add a redacted, fail-closed acceptance gate helper and attach its terminal decision to pilot receipts under `extensions.acceptance_gate`; a blocked real canary cannot unlock Hook, delegation, or matched-comparison gates.
+- Record `communication-beta2-20260720-gated-02`: source/environment/preflight and isolated cachebuster package passed; the single real implicit canary froze before final feedback with a redacted `transport` category, so host Hook loading, real delegation, and matched comparison remain unverified. Earlier named `rate-limit` pilots retain their original classification.
+# 2026-07-23
+
+- Added argv-only trusted-host preparation and Hook runner CLIs.
+- Added text encoding, line-ending, NUL, replacement-character, JSON/TOML and
+  shell-boundary checks; real provider and release gates remain fail-closed.

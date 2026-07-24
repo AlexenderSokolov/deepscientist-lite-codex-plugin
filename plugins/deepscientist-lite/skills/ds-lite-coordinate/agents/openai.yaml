@@ -1,0 +1,6 @@
+interface:
+  display_name: "DS Lite Coordinate"
+  short_description: "Coordinate up to three approved DS Lite tasks."
+  default_prompt: "Use $ds-lite-coordinate to plan a bounded delegation, wait for approval, then collect and integrate the declared results."
+policy:
+  allow_implicit_invocation: true

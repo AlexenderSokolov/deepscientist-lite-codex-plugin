@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -14,6 +15,7 @@ from typing import Any
 
 SCHEMA_VERSION = "ds-lite.codex-acceptance-audit.v1"
 EXPECTED_SKILLS = {
+    "ds-lite",
     "ds-lite-intake",
     "ds-lite-scout",
     "ds-lite-idea",
@@ -21,6 +23,7 @@ EXPECTED_SKILLS = {
     "ds-lite-review",
     "ds-lite-analysis-write",
     "ds-lite-iterate",
+    "ds-lite-coordinate",
 }
 
 
@@ -36,6 +39,7 @@ def write_json_fresh(path: Path, value: Any) -> None:
 
 
 def probe(command: list[str], timeout: float = 15.0) -> dict[str, Any]:
+    command_label = [Path(command[0]).name, *command[1:]]
     try:
         completed = subprocess.run(
             command,
@@ -46,17 +50,18 @@ def probe(command: list[str], timeout: float = 15.0) -> dict[str, Any]:
             timeout=timeout,
         )
     except FileNotFoundError:
-        return {"command": command, "status": "unavailable", "returncode": None, "output": "executable not found"}
+        return {"command": command_label, "status": "unavailable", "returncode": None, "output_bytes": 0, "output_sha256": hashlib.sha256(b"").hexdigest()}
     except subprocess.TimeoutExpired:
-        return {"command": command, "status": "timeout", "returncode": None, "output": f"timed out after {timeout:g}s"}
+        return {"command": command_label, "status": "timeout", "returncode": None, "output_bytes": 0, "output_sha256": hashlib.sha256(b"").hexdigest()}
     except OSError as exc:
-        return {"command": command, "status": "unavailable", "returncode": None, "output": str(exc)}
+        return {"command": command_label, "status": "unavailable", "returncode": None, "output_bytes": 0, "output_sha256": hashlib.sha256(b"").hexdigest()}
     output = ((completed.stdout or "") + (completed.stderr or "")).strip()
     return {
-        "command": command,
+        "command": command_label,
         "status": "supported" if completed.returncode == 0 else "unsupported",
         "returncode": completed.returncode,
-        "output": output[-4000:],
+        "output_bytes": len(output.encode("utf-8")),
+        "output_sha256": hashlib.sha256(output.encode("utf-8")).hexdigest(),
     }
 
 
@@ -127,22 +132,28 @@ def audit(root: Path, codex_bin: str | None) -> tuple[dict[str, Any], bool, bool
         if not host_supported:
             warnings.append("Codex host does not expose the expected marketplace preflight commands; installation remains unverified")
     else:
-        warnings.append("Codex host was not probed; installation and seven-skill discovery remain manual gates")
+        warnings.append("Codex host was not probed; installation and 26-skill discovery remain manual gates")
 
     result = {
         "schema_version": SCHEMA_VERSION,
         "audited_at": datetime.now(timezone.utc).isoformat(),
-        "acceptance_root": str(root),
+        "acceptance_root_ref": ".",
         "package_valid": not errors,
         "host_supported": host_supported,
         "installation_verified": False,
         "skill_discovery_verified": False,
+        "extensions": {
+            "acceptance_gate": {
+                "status": "not-started",
+                "next_action": "run the separately authorized preflight and one-shot canary gates",
+            }
+        },
         "errors": errors,
         "warnings": warnings,
         "host_probes": host_probes,
         "observations_required": [
             "plugin version and source shown in a new Codex session",
-            "all seven skills are discoverable",
+            "all 26 skills are discoverable",
             "manual workflow and failure-case file evidence",
         ],
     }

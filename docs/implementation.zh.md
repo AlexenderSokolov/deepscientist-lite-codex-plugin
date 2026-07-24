@@ -4,7 +4,7 @@
 
 第一次使用插件请先读[中文 README](../README.zh.md)；想理解文件和机制但不需要维护细节，请读[用户指南](user-guide.zh.md)。本文保留 schema、CLI、迁移和发布证据等维护者内容。
 
-本文保留 `0.1.4` / Graph v1 的审视记录，并以 `0.4.0-beta.2`、`ds-lite.graph.v2` 和 `ds-lite.evidence.v1` 作为当前实现基线；最近一次事实核对日期为 **2026-07-16**。当文档与实现不一致时，应依次以 manifest、skills、状态/证据脚本和验证结果为准，再同步修正文档。
+本文保留 `0.1.4` / Graph v1 的审视记录，并以 `0.4.0-beta.2`、`ds-lite.graph.v2` 和 `ds-lite.evidence.v1` 作为已发布实现基线；未发布 v0.5 源码另含 Factor Card 与 bounded delegation，最近一次事实核对日期为 **2026-07-17**。当文档与实现不一致时，应依次以 manifest、skills、状态/证据脚本和验证结果为准，再同步修正文档。
 
 ## 阅读约定
 
@@ -96,8 +96,9 @@ tmux 路径拆成两个互相引用但不争夺权威性的 artifact：`external
 
 ```mermaid
 flowchart TB
-    M["Marketplace 与 manifest"] --> S["七个 Codex skills"]
-    S --> K["ds_lite_state.py 状态内核"]
+    M["Marketplace 与 manifest"] --> S["九个 Codex skills"]
+    S --> K["state / protocol / iteration helpers"]
+    H["可选轻量 Hook helper"] -. 宿主加载待验收 .-> S
     S --> F["PROJECT / STATUS / artifacts / memory"]
     K --> G["research/state/graph.json"]
     G --> R["RESEARCH_MAP.md"]
@@ -115,6 +116,9 @@ plugins/deepscientist-lite/
   skills/<skill-id>/SKILL.md            # 方法协议
   skills/<skill-id>/agents/openai.yaml  # Codex 展示和默认提示元数据
   scripts/ds_lite_state.py              # 邻接表状态脚本
+  scripts/ds_lite_iteration.py          # 单轮 reflective iteration helper
+  scripts/ds_lite_hook.py               # 脱敏 Hook helper
+  hooks/hooks.json                      # 插件局部 Hook 候选配置
   assets/templates/                     # 项目文件示例模板
   references/                           # skills 运行时参考资料
 docs/                                   # 设计和维护文档
@@ -129,6 +133,7 @@ tools/validation/                       # 仓库检查工具
 - [Marketplace 索引](../.agents/plugins/marketplace.json)
 - [插件 manifest](../plugins/deepscientist-lite/.codex-plugin/plugin.json)
 - [状态图脚本](../plugins/deepscientist-lite/scripts/ds_lite_state.py)
+- [行动、反思与责任架构](maintainers/action-reflection-philosophy.zh.md)
 - [状态图协议](../plugins/deepscientist-lite/references/state-graph-protocol.md)
 - [教学区](../teaching/README.zh.md)
 - [仓库验证器](../tools/validation/validate_repo.py)
@@ -175,23 +180,25 @@ sequenceDiagram
 2. 让教学重点落在科研协议，而不是部署复杂度。
 3. 让插件可以通过标准 Codex marketplace 布局安装和验证。
 
-仓库级 `.agents/plugins/marketplace.json` 使用相对来源 `./plugins/deepscientist-lite`。其中 `INSTALLED_BY_DEFAULT` 表示用户添加该 marketplace 后的安装策略，不表示插件会随所有 Codex 安装自动出现。
+仓库级 `.agents/plugins/marketplace.json` 使用相对来源 `./plugins/deepscientist-lite`。其中 `AVAILABLE` 只让插件在用户添加该 marketplace 后可供选择；用户仍需在 `/plugins` 中显式安装，添加来源本身不等于已经安装。
 
 Manifest 和 marketplace 属于对外接口。修改插件名、skills 路径、版本或 source path 时，必须同时检查安装、缓存升级、新线程技能发现和文档中的安装命令。
 
-## 6. 七个 Skills 的职责与协作
+## 6. 九个 Skills 的职责与协作
 
-七个 skills 组成一个最小科研闭环，但不是必须线性执行的流水线。每个 `SKILL.md` 的 frontmatter 只包含 `name` 和 `description`，触发说明尽量覆盖真实用户表达；具体工作流、约束和交接要求写在正文中。
+九个 skills 由一个统一入口、七个科研动作和一个可选的有界协调入口组成，但不是必须线性执行的流水线。每个 `SKILL.md` 的 frontmatter 只包含 `name` 和 `description`，触发说明尽量覆盖真实用户表达；具体工作流、约束和交接要求写在正文中。
 
 | Skill | 主要输入 | 主要动作 | 持久输出 | 常见状态变化 |
 | --- | --- | --- | --- | --- |
+| `ds-lite` | 用户任务、当前目录、Mission Board | 识别新项目/已有工作区，解释介入理由，只路由到一个动作 skill | 无独立科研产物 | 不自行循环或跨越阶段 |
 | `ds-lite-intake` | 研究问题，或已有代码、笔记和结果 | 新项目初始化；旧项目审计；建立目标、约束和验收标准 | `PROJECT.md`、`STATUS.md`、graph、初始 Research Map | 创建 `intake-root`；保持已有结论不被静默覆盖 |
 | `ds-lite-scout` | 项目合同、当前节点、已有资料 | 澄清问题，检查文献、数据、baseline、benchmark、metric 和风险 | `scout-*.md` artifact | 通常以 `next` 进入 scout；证据不足时可标记 blocked |
 | `ds-lite-idea` | scout 证据、项目约束 | 比较 2 至 3 个可验证候选，选出最小有用实验 | `idea-*.md` artifact | 候选使用 `branch`；选中路线成为 active |
 | `ds-lite-experiment` | active idea、代码、运行脚本 | 先写契约，再运行并封装日志、指标、环境说明和输出哈希 | `experiment-*.md`、Evidence Pack、结果文件、`run_*.sh` | 成功和失败均保留，完成后交给 review |
 | `ds-lite-review` | experiment artifact、contract、manifest 和结果 | 运行确定性 verify，审查完整性、规范、引用和方法对齐 | `review-*.md`、`ds-lite.review-result.v1` JSON | typed pass review 才能成为 analysis 的父节点；fail/needs-human 时 blocked |
 | `ds-lite-analysis-write` | 通过的 review、实验 artifacts、结果文件和图状态 | 建立 claim table，分析置信度、限制和缺失检查，形成阶段总结或写作产物 | `analysis-*.md`、`math-*.md` 或 `paper-*.md` | 只从 passing review 创建 analysis/write/finalize 节点 |
-| `ds-lite-iterate` | Mission Board、当前 graph、用户或主管预算 | 选择一个 bounded action，写 frontier decision，更新 graph 和 STATUS 后停止 | `frontier-decision-*.md`、`STATUS.md` | 一次只推进一轮；常见动作是 branch、debug、review、analysis、stop 或 ask-human |
+| `ds-lite-iterate` | Mission Board、当前 graph、用户或主管预算 | 先登记 running receipt，再执行一个 bounded action、验证、反思、汇报并停止 | `ds-lite.iteration.v1`、动作产物、`STATUS.md` | 终态为 completed/partial/blocked/failed/ambiguous；不自动重试不明请求 |
+| `ds-lite-coordinate` | 一个 work unit 中两到三个独立任务、明确授权和父级验收能力 | 验证 delegation plan，等待批准，调用宿主子任务并核验独立回传 | `delegation-*.json`、approval/result artifacts | 不新增科研阶段；父 worker 整合后决定下一次单动作 |
 
 ### Skill 之间如何交接
 
@@ -203,6 +210,7 @@ skill 的交接不是通过内存对象完成，而是通过以下公开信息�
 - 节点关联的 artifact 提供本阶段事实。
 - Evidence Pack manifest 提供可机器复核的日志、指标和输出哈希。
 - Review Markdown 公开解释审查结论，typed review result 机器绑定 work unit、profile、Evidence Pack 和 verdict。
+- `research/iterations/*.json` 保存最近单轮动作、验证、反思、停止理由和用户报告；Mission Board 只投影合法且匹配当前 work unit 的 sidecar。
 - `PROJECT.md` 保存不应随一次实验频繁改变的项目合同。
 - `run_*.sh` 和 evidence path 提供可复现入口。
 
@@ -212,11 +220,11 @@ skill 的交接不是通过内存对象完成，而是通过以下公开信息�
 
 ### 行为约束的强度
 
-skills 仍是指令协议，不是事务系统；但 Evidence Pack CLI 可以确定性检查契约、路径、必需文件、指标和哈希，Graph strict validation 会发现缺少 pack 或 review 的新路线。当前没有钩子阻止模型完全跳过 skill，也没有后台服务保证 `STATUS.md`、artifact 和 graph 跨文件原子同步。这仍是轻量设计的核心权衡。
+skills 仍是指令协议，不是完整事务系统；但 Evidence Pack CLI 可以确定性检查契约、路径、必需文件、指标和哈希，Graph strict validation 会发现缺少 pack 或 review 的新路线，iteration helper 可以检查单轮 receipt。插件局部 Hook helper 能在测试中识别确定违规和未闭合迭代，但 fresh-host 是否加载它仍是 `not-verified`。没有后台服务保证 `STATUS.md`、artifact 和 graph 跨文件原子同步，这仍是轻量设计的核心权衡。
 
 ## 7. 状态图内核与数据模型
 
-`ds_lite_state.py` 是只依赖 Python 标准库的图状态脚本。`ds_lite_evidence.py` 负责 contract、finalize、SHA-256 和 verify；`ds_lite_protocol.py` 负责 `ds-lite.work-unit.v1` 与 `ds-lite.review-result.v1` 的严格结构、路径、敏感字段和 ID 校验。三者都不负责理解论文、运行模型或自动判定真实科学结论。
+`ds_lite_state.py` 是只依赖 Python 标准库的图状态脚本。`ds_lite_evidence.py` 负责 contract、finalize、SHA-256 和 verify；`ds_lite_protocol.py` 负责 `ds-lite.work-unit.v1`、`ds-lite.review-result.v1`、`ds-lite.factor-card.v1` 与 `ds-lite.delegation.v1` 的严格结构、路径、敏感字段和 ID 校验。三者都不负责理解论文、运行模型或自动判定真实科学结论。
 
 机器可读权威状态是 `research/state/graph.json`；`RESEARCH_MAP.md` 是由脚本生成的人类可读投影，不应反向作为机器状态来源。
 
@@ -299,6 +307,32 @@ P0 保持 `ds-lite.graph.v2` 不变，在 `research/work-unit.json` 增加独立
 
 Mission 的 `evidence_detail` 给出 work unit/profile、validated/negative evidence、typed review 数量、最新 refs 和 blocking reasons。`waiting_for_user` 只由 active-route blocked、active-route blocker edge、typed `needs-human` 或 blocked work unit触发；off-route blocked 与警告继续可见，但不无条件阻塞当前路线。文学证据、数学探索、软件评测和数值仿真 profile 目前均为 `reserved / not-validated`，不包含领域默认规则。
 
+### Scientific Factor Card
+
+`ds-lite.factor-card.v1` 是 idea 阶段的独立 decision artifact，不改变 Graph v2、Evidence Pack v1、work unit 或 review-result schema。它固定记录 `novelty`、`feasibility`、`evidence_strength`、`cost`、`risk` 和 `alignment` 六项，每项包含 `null|0..4` score、confidence、evidence refs、公开摘要、不确定性和 `extensions`。cost/risk 分数越高表示负担越大，因此禁止计算默认加权总分。
+
+卡片的核心约束是“评价必须回到证据，但评价本身不是证据”。非空 score 需要项目相对或 `external://` ref；没有来源对照时 novelty 必须未知。`validate-factor-card` 只检查结构、路径、enum、敏感字段、ID/因子冲突和证据引用存在形式，不判断科学主张为真，也不参与 Mission evidence promotion。
+
+该方法只独立实现了 DeepScientist V2 v2.1.8（tag commit `49ffdcda6ce159505f6119b1e26d79c8503a8286`）研究流程中可跨领域成立的高层不变量：未测量值保持未知；candidate promotion 绑定真实 checks、evidence refs 和 decision reason；pending/submit 不冒充 verified；失败检查继续定义搜索边界；机制假设先于最小 probe，并优先单轴 ablation。审计固定的 `wq-alpha-research/SKILL.md` blob 为 `6f58083e8f0a951a0773d94f5b0812484febc8c3`。上游仓库声明 `AGPL-3.0-only`，Lite 不复制其代码、schema 或 skill 正文。Finance Factor 是 pressure fixture，不是默认 profile；金融 stage/status、表达式、市场、股票池、WQ/Qlib 指标、阈值、registry、continuous mode 和 external submission 均未进入插件。逐项证据见[迁移审计](maintainers/deepscientist-v2.1.8-factor-transfer-audit.zh.md)。
+
+### Bounded Delegation
+
+`ds-lite.delegation.v1` 是一次有界协调的机器 sidecar，不是 Graph 新阶段或长期运行时。它固定记录 parent work unit、`parallel|sequential`、显式 approval、唯一 integration owner、`max_children<=3`、`nested_delegation=false` 和一至三个 task contracts。每项 task 声明最小输入 refs、互斥写入/结果路径、验证命令、开放资源限制、停止条件、状态与 result ref。
+
+`validate-delegation` 拒绝缺字段、错误 enum、ID 冲突、路径逃逸或重叠、敏感/隐藏推理字段、未知顶层字段、未批准的 active 状态、缺 result ref 的 terminal task，以及与子任务状态矛盾的 terminal delegation；即使放在 namespaced `extensions`，daemon、queue、scheduler、background worker 和 retry policy 也会被拒绝。它只证明计划和回传结构一致；不能证明宿主实际创建了独立 worker，也不能把 child 的完成文字升级成证据。父 worker 是唯一 integration owner，必须检查 artifacts、scoped diffs、每项验证和项目全量验证。
+
+`ds-lite-coordinate` 在 approval 为 required 时只生成计划并停止。获得用户或 OpenScience 明确批准后，才可调用宿主已有的子任务能力；插件本身不提供 daemon、queue、scheduler、后台 worker 所有权、nested delegation 或自动重试。transport 状态不明或 duplicate risk 必须记录为 partial/blocked 并交回主管。真实 fresh-agent 行为属于外部验收门，静态 validator 不能替代。
+
+### 最小 reflective iteration 与假设池
+
+`ds_lite_iteration.py` 提供 `ds-lite.iteration.v1` 的 `init`、`finalize` 和 `verify`。`init` 在动作前核对 Graph v2、work unit 与 expected revision，独占创建 running receipt，并把相对 ref 关联到 work unit。动作结束后，调用方写入唯一 action 的输出 refs、Graph changes、验证结果、stop reason、reflection 和 user report，再由 `finalize` 写成 `completed|partial|blocked|failed|ambiguous` 之一。最后重新 `verify`、运行 `render-status` 并停止。
+
+`reflection` 只保存可观察结果、带证据引用的假设变化、预期偏差、负结果、授权与责任边界、学到的限制、下一候选和最小判别实验。它不保存隐藏推理或完整对话。`completed` 只说明本轮动作闭合，不表示假设成立，更不能绕过 typed evidence/review 把 claim 提升为 supportable。
+
+Mission Board 兼容增加 `latest_iteration` 和 `hypothesis_pool`。假设池从 Graph idea/branch、Factor Card 和最新合法 iteration 合并，是可重建投影而不是第二张权威图。状态固定为 `untested|supported|weakened|refuted|inconclusive|parked`；未测量值保持 `untested`，Factor Card 不升级 evidence，supported/weakened/refuted 必须带 evidence refs。
+
+该实现是最小 reflective iteration，不是 exactly-once transaction。P1 仍需 action envelope、canonical idempotency key、重复调用返回同一 receipt、输入冲突检测和跨文件 partial-write repair。
+
 ## 8. 文件协议与长期记忆
 
 一个 DS Lite 项目通常包含：
@@ -312,6 +346,7 @@ Mission 的 `evidence_detail` 给出 work unit/profile、validated/negative evid
 | `research/work-unit.json` | 当前有界任务变化时 | `ds-lite.work-unit.v1`、mode、profile、claim requirement、refs 和开放限制 | 领域硬编码、凭据、绝对工作站根目录 |
 | `research/memory/*.md` | 发现长期事实时 | 有来源的稳定事实、约束、环境结论或方法决策 | 未经验证的临时猜测 |
 | `research/artifacts/*.md` | 每个研究阶段 | idea、baseline、experiment、analysis、decision 和写作记录 | 只有口号、没有证据的结论 |
+| `research/artifacts/factor-card-*.json` | idea 比较或证据变化时 | 六项分解评价、refs、不确定性、decision 与 minimal test | 自动总分、隐藏推理、claim evidence |
 | `research/artifacts/review-*.json` | 每次 review 完成时 | typed verdict、claim assessment、Evidence Pack refs/digest 和匹配身份 | Markdown 解释、隐藏推理或任意未知顶层字段 |
 | `research/evidence/<run-id>/` | 每次 claim-bearing run | contract、manifest、日志、指标、白名单环境说明和哈希 | 凭据、完整环境变量、未经授权复制的外部数据 |
 | `run_*.sh` | 运行方法变化时 | 可重复执行的研究、实验或分析命令 | 只在某次终端中有效的隐式步骤 |
@@ -408,9 +443,17 @@ Codex 先读取已有 README、笔记、代码、脚本和结果，区分可信�
 
 runner 支持 quickstart、evidence、branches、route、paths 和 revision 六类实验。student 模式只准备数据、Graph 状态和故障现场；reference 模式才生成明确标记的教师答案。脚本不会调用 Codex skill，也不会把预写 review 伪装成自动审查结果。
 
+matched pilot 的授权执行由 `pilot_runtime.py` 负责：冻结 working-tree snapshot、建立 control/DS Lite 双 `CODEX_HOME`、先做不调用模型的 preflight，再做一次隐式只读 canary，最后才允许进入固定 18 次串行计划。`install` 只把冻结源码的九个 skills 放进隔离 `CODEX_HOME`，不触碰也不验证正式插件 cache。运行器在线白名单归约 Codex JSON 事件、写 `ds-lite.matched-pilot-execution.v1` receipt，并让 resume 对 running/failed/timeout/ambiguous/duplicate-risk fail closed。`pilot_score.py` 只运行公开 artifact 检查，输出 `incomplete` 或 `auto-scored-awaiting-blind-review`；它不读取完整对话或替代隐藏标签后的人工评分。
+
+`preflight` 固定核对 Codex CLI `0.144.5`、认证是否处于可用类别、feature 枚举、control home 的零技能、DS Lite home 的九技能 prompt 注入、WSL 计算面和冻结源码摘要。它只持久化分类、计数、digest 和相对 ref，不保存认证原文、完整 prompt input、环境变量或绝对根目录。`canary` 使用不含 skill 名称的普通科研/工程恢复提示，要求 `turn.completed`、非空最终反馈、非零 usage、至少一个工具事件、可观察的 DS Lite skill 证据和工作区零修改；receipt 一旦存在即拒绝重跑。
+
+`teaching/acceptance_gate.py` 为这些外部验收增加统一的终态门。它要求授权引用、预期/实际观察、相对 evidence refs、usage 和下一动作；只有 `passed` 且 failure category 为 `none` 才允许进入下一门。pilot 将该终态放在 `extensions.acceptance_gate`，不改变 `ds-lite.matched-pilot-execution.v1` 的既有字段。
+
+认证分类区分 `host-login`、`environment-api-key` 和 `unavailable`。环境路径只检查 `OPENAI_API_KEY` 是否非空，不读取到 receipt，也不替代 canary 对真实调用的验证。Windows 上 `.cmd` CLI 超时时必须在包装进程仍存活时终止整个子进程树，否则 orphaned Node/Codex 会继续持有管道并阻止 receipt finalize；Unix-like 继续使用 terminate/kill。终止命令的 stdout/stderr 不进入验收记录。
+
 每门课同时提供逐步引导和一段式 Codex 挑战。前者减少模型波动，适合第一次学习；后者用于检查 Codex 是否能在真实项目中遵守同一协议。案例中的算法结论和固定分数都不是插件能力声明。
 
-运行时 `references/` 只保留 skills 会直接使用的协议材料：状态图协议、Evidence Pack、外部长任务管护、比较实验模板、数学探索模板和教学说明。发布检查、已知问题和产品状态放在 `docs/maintainers/`，避免给每个运行中的 skill 增加无关上下文。
+运行时 `references/` 只保留 skills 会直接使用的协议材料：状态图协议、Evidence Pack、Scientific Factor Card、bounded delegation、外部长任务管护、比较实验模板、数学探索模板和教学说明。发布检查、已知问题和产品状态放在 `docs/maintainers/`，避免给每个运行中的 skill 增加无关上下文。
 
 这个分层维持了清楚的主次关系：
 
@@ -430,7 +473,7 @@ python tools/validation/validate_repo.py
 当前统一验证流程覆盖：
 
 - manifest 名称、版本、skills 路径和禁止字段。
-- 七个 skill 是否存在，frontmatter 是否只有 `name` 和 `description`。
+- 九个 skill 是否存在，frontmatter 是否只有 `name` 和 `description`，且 `agents/openai.yaml` 允许隐式触发。
 - TODO 残留和 description 的最低长度。
 - README 导航、文档目录和运行时 references 边界。
 - 临时项目中的 planning→typed evidence→typed review→analysis smoke，以及 Graph v2、Evidence Pack、work unit/review schema 负例、revision、迁移、路径、哈希、并发、锁超时、路线语义和地图同步单元测试。
@@ -438,15 +481,19 @@ python tools/validation/validate_repo.py
 
 `run_validate.sh` 和 `run_validate.ps1` 是单一验证入口，依次执行 unittest、仓库 smoke 和 Python 语法检查；它们按任务类别留在 `tools/validation/`。
 
-截至 2026-07-16，当前 `0.4.0-beta.2` 分支的本地验证目标包括：
+截至 2026-07-17，已发布 `0.4.0-beta.2` 与未发布 v0.5 源码的验证证据必须分层记录：
 
 - 仓库验证器执行通过，并覆盖 `mission` / `render-status` 的 Mission Board smoke。
 - Codex 官方 `plugin-creator/scripts/validate_plugin.py` 在具备 PyYAML 的 Python 环境中执行通过。
-- 七个 `$ds-lite-*` skills 已进入插件结构；安装后仍需新线程复验 `0.4.0-beta.2` 的实际发现和触发。
+- `0.4.0-beta.2` 发布包包含七个 skills；未发布 v0.5 源码包含 `$ds-lite-coordinate` 和第九个统一入口 `$ds-lite`。它们的结构、quick validator、trigger matrix 和仓库发现门可验证，但实际新线程发现、隐式触发与子任务行为仍待授权验收。
 - manifest 已统一到 `0.4.0-beta.2`；source/package tag 不代表 cache 安装态已同步。
 - Graph v2 单元测试覆盖并发无丢写、锁超时、revision 冲突、迁移和外部别名。
 - Evidence Pack 单元测试覆盖 UTF-8、空格路径、哈希、篡改、失败进程、重复 finalize、外部显式哈希和敏感字段拒绝。
 - OpenScience handoff 文档说明主管如何读取 `mission --format json`、触发一轮 `$ds-lite-iterate`、收集 Evidence Pack/review/analysis。
+- Delegation 单元测试覆盖批准门、最多三个任务、nested delegation 拒绝、互斥路径、result ref、敏感字段和 forward compatibility；这些测试不冒充 fresh-agent forward test。
+- Iteration 单元测试覆盖 running/五种终态、revision、action/reflection/user report、路径、敏感字段、未知字段和原子写；Hook 单元测试覆盖脱敏附着、确定违规阻断、合法 CLI 放行和 Stop 单次续跑，但不冒充 fresh-host Hook 加载证据。
+- Pilot/acceptance 单元测试覆盖 CLI 版本漂移、九技能发现、冻结 pilot 拒绝、授权缺失、preflight 脱敏、单次 canary、零 usage、超时、静默失败、ambiguous 和绝对路径泄露；fake host 证据不冒充真实 CLI 或插件 cache 验收。
+- 2026-07-18 的 E1 preflight 在固定 CLI、环境 API-key 类别、零/九技能 prompt surface、features、WSL 和源码摘要上通过。唯一一次真实 canary 建立 thread，但没有 turn terminal event、tool、token 或反馈；stderr 只归约为 `rate-limit` 类别、行数和 digest，工作区未修改。旧 `.cmd` 收束逻辑令 receipt 延迟到 378.098 秒才以 `timeout` finalize；本轮已冻结，不构成隐式触发证据。process-tree 修复已有独立红绿回归测试，没有重试或手工改写该 receipt。
 
 这些证据不能替代：
 
@@ -463,6 +510,7 @@ python tools/validation/validate_repo.py
 
 - Marketplace 和 plugin manifest 布局完整。
 - 七个 skills 的结构和元数据可验证；安装态发现仍需手工验收。
+- 未发布 v0.5 的 coordinate skill、第九个 `$ds-lite`、delegation/iteration validator、派生假设池和 Hook helper 已在源码成立；宿主执行、隐式触发、Hook 加载和安装态发现尚未成立。
 - 新项目可以初始化项目文件和状态图。
 - 可以通过完整写接口维护节点、边、三类路径和状态，并检测陈旧 revision。
 - Graph 可以校验结构与关键语义，以 progression 路径渲染 Mermaid/Markdown。
@@ -472,7 +520,7 @@ python tools/validation/validate_repo.py
 - 新实验可以先声明契约、封装证据并经过 review，再进入 analysis/write。
 - Mission Board 可以从现有 graph/evidence 派生 `STATUS.md`，显示 active route、下一步、候选队列、阻塞、rollback target、指标方向和证据强度。
 - Mission Board 只接受适用 typed validator 提升 evidence，并通过独立 `claim_readiness`、`evidence_detail` 与 route-scoped waiting 暴露依据。
-- 教学区有跨平台六类实验、20/30/45/90分钟课程、student/reference 模式、工作表、rubric 和答案。
+- 教学区有跨平台七类协议实验、20/30/45/90分钟课程、student/reference 模式、工作表、rubric 和答案。
 - 插件没有引入 daemon、MCP 或第三方 Python 运行依赖。
 
 ### 部分成立
@@ -490,7 +538,7 @@ python tools/validation/validate_repo.py
 - 不能把当前教学案例的实验结果视为插件的通用性能证明。
 - 尚未获得足够的独立安装、跨平台和真实教学反馈，不能宣称 stable。
 - 文学证据、数学探索、软件评测和数值仿真只注册了 `reserved / not-validated` 扩展位，尚无领域 validator 或真实通过 fixture。
-- P1 action envelope/iteration receipt 与 P2 external-long typed profile 尚未实现；当前 `ds-lite-iterate` 仍是 skill 约束的一次一轮协议。
+- P1 action envelope、canonical idempotency、exactly-once/partial-write transaction 与 P2 external-long typed profile 尚未实现；当前最小 `ds-lite.iteration.v1` 只保证一轮 receipt 的严格结构、revision 入口、反思和用户报告。
 
 ## 14. v0.1.4 技术债关闭情况与剩余风险
 
@@ -502,7 +550,7 @@ python tools/validation/validate_repo.py
 
 ### 已解决：状态更新接口不完整
 
-Graph v2 提供 `update-node`、`set-status` 和通用 `link-path --type`；七个 skills 明确禁止直接编辑 graph，并规定 revision 冲突恢复方式。
+Graph v2 提供 `update-node`、`set-status` 和通用 `link-path --type`；涉及 graph 的 skills 明确禁止直接编辑 graph，并规定 revision 冲突恢复方式。`ds-lite-coordinate` 先维护独立 delegation sidecar，只有父 worker 接受结果后才由相应状态 skill 更新 graph。
 
 ### 兼容保留：CLI 冗余参数
 
@@ -525,7 +573,7 @@ Graph v2 提供 `update-node`、`set-status` 和通用 `link-path --type`；七�
 
 ### 已解决主体：写入缺少事务与并发保护
 
-写命令使用永久 lock file、Windows `msvcrt` / Unix `fcntl` 锁、锁内重读、expected revision、语义校验、`fsync` 和同盘原子替换。地图与 graph 无法成为单个文件系统事务，因此通过 revision 检测并允许 `render-map` 修复。
+写命令使用永久 lock file、Windows `msvcrt` / Unix `fcntl` 锁、锁内重读、expected revision、语义校验、`fsync` 和同盘原子替换。节点 mutation 会把候选 `updated_at` 钳制到已有 `created_at/updated_at` 下界，避免 WSL 或虚拟化宿主 wall clock 短暂回退破坏时间不变量；schema 仍拒绝真正的逆序时间。地图与 graph 无法成为单个文件系统事务，因此通过 revision 检测并允许 `render-map` 修复。
 
 ### 已解决主体：路径协议边界不一致
 
@@ -539,9 +587,9 @@ v1 保持只读兼容；首次写入或显式 `migrate` 升级到 v2，并永久
 
 smoke 和 unittest 使用自然中文标题、问题和带空格路径，并检查完整字符串往返。
 
-### Skill 协议缺少强制执行层
+### 部分解决：Skill 协议缺少强制执行层
 
-Codex 可以按 skills 正确写入 artifact 和 graph，但当前没有 hook、事务或后台审计器阻止漏写、顺序错误或状态不同步。增加强制层会提升一致性，也会增加插件复杂度；是否引入必须服从教学轻量定位。
+最小 reflective iteration 可以在动作前登记 running receipt，并在终态检查 reflection 和 user report；插件局部 Hook helper 可以在测试中识别 Graph 直改、危险命令、tmux 自动扩容和未闭合 Stop。它们仍不能保证宿主实际加载 Hook，也不能让 artifact、Graph、work unit 与 STATUS 成为跨文件事务。宿主未加载时退化为 skill + CLI validator，不增加后台审计器。
 
 ### Git、worktree 与 automation 不是内置能力
 
@@ -557,8 +605,8 @@ Codex 可以按 skills 正确写入 artifact 和 graph，但当前没有 hook、
 
 ### P1：延期的 action 与 iteration transaction
 
-- `ds-lite.action-envelope.v1`、canonical idempotency key、expected revision 和 `ds-lite.iteration.v1` receipt 尚未实现。
-- 当前 `$ds-lite-iterate` 仍由 skill 约束“一轮一个动作”，不能宣称具备事务 receipt 或跨文件 partial-write 修复。
+- 最小 `ds-lite.iteration.v1` 已实现 running/终态 receipt、expected revision、唯一 action、reflection、user report 与 Mission Board 投影。
+- `ds-lite.action-envelope.v1`、canonical idempotency key、同 key 重放、输入冲突检测和跨文件 partial-write repair 仍未实现，因此不能宣称 exactly-once transaction。
 
 ### P2：延期的 typed external-long profile
 
@@ -569,20 +617,24 @@ Codex 可以按 skills 正确写入 artifact 和 graph，但当前没有 hook、
 
 - cache 安装、新线程技能发现、真实 tmux 断线、provider resume、macOS 和完整跨模式矩阵仍待验收。
 - 文献、数学、软件和仿真 profile 保持 `reserved / not-validated`，教学 fixture 不能把它们升级成领域支持声明。
+- R3 教学基础设施已独立落地：`MatchedPilotBuilder` 复用现有 runner，生成四案例 x plain/scratchpad/DS Lite 三 arm、工程分轮提示、输入 SHA-256 摘要、空白结果面和学生/教师材料。
+- repo validator 会真实生成 12 个 workspace，检查唯一 run id、跨 arm 输入一致、结果仍为 pending、无预填评分和无工作站根目录。它不调用 Codex，因此不能替代真实对照、成本和盲评证据。
+- matched pilot 只允许 student workspaces；教师材料在 pilot 根独立生成，`--mode reference` fail closed，避免把参考边界误放进 arm。
+- 首个真实运行固定 CLI `0.144.5` 与 `gpt-5.6-sol/low`，但第一个 plain 工程进程在无 token、无最终消息时退出 1，运行器停在 0/18。该证据只验证失败停止路径；不允许 resume，不支持 arm、成本或领域效果结论。冻结后的源码新增 stderr 类别/行数/SHA-256 脱敏诊断，不回写旧 receipt。
 
 ## 16. 稳定版验收门槛
 
 在宣布 stable 之前，至少应满足：
 
-1. 全新用户可以从 marketplace 安装，并在重启后的新线程发现七个 skills。
+1. 全新用户可以从 marketplace 安装，并在重启后的新线程发现目标版本声明的全部 skills；`0.4.0-beta.2` 为七个，v0.5 当前候选源码为九个。
 2. 新项目和旧项目各完成一次 intake 到 analysis 的最小闭环，并至少触发一次 `$ds-lite-iterate` 单轮 checkpoint；原有文件不被静默覆盖。
 3. Windows PowerShell、Git Bash 和一种 Unix-like 环境通过核心状态脚本测试。
 4. 真实中文、空格路径和项目外路径行为有明确测试与文档。
 5. Graph 写入具备基本原子性，校验可以发现 active 状态冲突、不可达节点、陈旧 map 和 active-route 外警告。
-6. Mission Board 能让用户打开 `STATUS.md` 读懂当前目标、阶段、最近动作、下一步、候选队列、rollback target、证据强度和是否等待用户。
+6. Mission Board 能让用户打开 `STATUS.md` 读懂当前目标、阶段、最近动作、latest iteration、假设池、下一步、候选队列、rollback target、证据强度和是否等待用户。
 7. README、设计文档、teaching 和 runtime references 各守边界，没有把维护状态塞回用户入口。
-7. 至少有一位非维护者完成安装和教学流程，并留下可复现反馈。
-8. CHANGELOG、release notes、已知问题和升级恢复步骤齐备。
+8. 至少有一位非维护者完成安装和教学流程，并留下可复现反馈。
+9. CHANGELOG、release notes、已知问题和升级恢复步骤齐备。
 
 即使进入 stable，以下事项仍默认不做：完整 DeepScientist daemon、Web/TUI、connector、本地模型打包、隐藏推理存储，以及未经用户控制的长期自动运行。
 

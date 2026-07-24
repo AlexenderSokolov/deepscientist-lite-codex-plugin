@@ -1,0 +1,54 @@
+{
+  "schema_version": "ds-lite.upstream-project-registry.v1",
+  "check_interval_days": 7,
+  "projects": [
+    {
+      "id": "nature-skills",
+      "repository": "https://github.com/Yuan1z0825/nature-skills",
+      "pinned_commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+      "version": "skill-tree-at-commit",
+      "license": "Apache-2.0",
+      "authorization": "upstream-license",
+      "disposition": "adopted/adapted",
+      "vendor_path": "plugins/deepscientist-lite/vendor/nature-skills/91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+      "runtime_mapping": "17 discoverable nature-* skills plus internal nature-shared",
+      "external_effects": "MCP/API/browser/download/LaTeX/Node/Python are opt-in"
+    },
+    {
+      "id": "codex-autoresearch",
+      "repository": "https://github.com/congwa/codex-autoresearch",
+      "pinned_commit": "f2389bffbb4cd7789deb6796bc4ba35bf31f2a90",
+      "version": "0.1.5-beta.0",
+      "license": "MIT (package declaration)",
+      "authorization": "author-confirmed-free-use",
+      "disposition": "adopted/adapted",
+      "vendor_path": "plugins/deepscientist-lite/vendor/codex-autoresearch/f2389bffbb4cd7789deb6796bc4ba35bf31f2a90",
+      "runtime_mapping": "bounded DS Lite loop adapter",
+      "external_effects": "external process requires explicit authorization"
+    },
+    {
+      "id": "deepscientist-v2",
+      "repository": "https://github.com/WENGSYX/DeepScientist_V2",
+      "pinned_commit": "49ffdcda6ce159505f6119b1e26d79c8503a8286",
+      "version": "v2.1.8",
+      "license": "AGPL-3.0-only",
+      "authorization": "reference-only",
+      "disposition": "reference-only",
+      "vendor_path": "",
+      "runtime_mapping": "domain-neutral evidence and process invariants",
+      "external_effects": "none"
+    },
+    {
+      "id": "deepscientist",
+      "repository": "https://github.com/ResearAI/DeepScientist",
+      "pinned_commit": "",
+      "version": "workflow provenance",
+      "license": "see upstream repository",
+      "authorization": "reference-only",
+      "disposition": "reference-only",
+      "vendor_path": "",
+      "runtime_mapping": "recoverable research workflow concepts",
+      "external_effects": "none"
+    }
+  ]
+}

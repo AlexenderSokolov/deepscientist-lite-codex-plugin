@@ -1,0 +1,36 @@
+name: Validate skill index
+
+on:
+  pull_request:
+    paths:
+      - 'skills/**'
+      - 'README.md'
+      - 'README_EN.md'
+      - 'scripts/validate-skill-index.py'
+  push:
+    branches:
+      - main
+    paths:
+      - 'skills/**'
+      - 'README.md'
+      - 'README_EN.md'
+      - 'scripts/validate-skill-index.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-skill-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run skill index validator
+        run: python scripts/validate-skill-index.py

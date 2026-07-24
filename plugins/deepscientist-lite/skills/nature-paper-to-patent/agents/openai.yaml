@@ -1,0 +1,6 @@
+name: nature-paper-to-patent
+description: Use the complete vendored nature-paper-to-patent workflow with DS Lite evidence and dependency boundaries.
+policy:
+  allow_implicit_invocation: true
+  execution: bounded-and-redacted
+  external_effects: explicit-authorization

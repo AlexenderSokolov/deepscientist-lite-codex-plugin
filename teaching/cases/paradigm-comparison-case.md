@@ -1,4 +1,4 @@
-﻿# Teaching Case: Tree Search vs Optimization Frontier
+# Teaching Case: Tree Search vs Optimization Frontier
 
 This case is a teaching example for DeepScientist Lite. It shows how the plugin records a research route with ideas, experiments, negative evidence, and follow-up questions. It is not a benchmark claim for the plugin itself.
 

@@ -1,0 +1,44 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-paper2ppt",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-paper2ppt",
+    "source_skill_sha256": "945136f112001f3584360956a3dc8c98575bc426b7252e2fd0ccc4abc30e77a8"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-paper2ppt",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "api": [
+      "static/fragments/paper_type/clinical.md"
+    ],
+    "node": [
+      "scripts/audit_pptx_quality.py"
+    ],
+    "python": [
+      "SKILL.md",
+      "references/design-and-layout.md",
+      "references/self-review.md",
+      "scripts/audit_pptx_quality.py",
+      "static/core/toolchain.md",
+      "static/core/workflow.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

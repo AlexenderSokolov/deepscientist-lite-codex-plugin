@@ -1,0 +1,37 @@
+name: Validate skill metadata
+
+on:
+  pull_request:
+    paths:
+      - 'skills/**'
+      - 'README.md'
+      - 'README_EN.md'
+      - 'scripts/validate-skill-metadata.py'
+  push:
+    paths:
+      - 'skills/**'
+      - 'README.md'
+      - 'README_EN.md'
+      - 'scripts/validate-skill-metadata.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-skill-metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyYAML
+        run: python -m pip install pyyaml
+
+      - name: Run metadata validator
+        run: python scripts/validate-skill-metadata.py

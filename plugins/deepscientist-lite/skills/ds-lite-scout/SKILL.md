@@ -1,11 +1,13 @@
 ---
 name: ds-lite-scout
-description: Use when Codex should clarify a DS Lite research question, scout literature, datasets, benchmarks, baselines, metrics, risks, and feasibility, then record a scout artifact and Research Map node without running the full DeepScientist platform.
+description: Use when a research or engineering question is unclear, literature or datasets need scouting, evidence and baselines must be checked, or metrics, feasibility, and risks need grounding before choosing a route.
 ---
 
 # DS Lite Scout
 
 Scout narrows a vague research direction into a verifiable route. It should leave a compact artifact and a graph node that later idea and experiment work can trust.
+
+Before acting, read [the Responsible Exploration Covenant](../../references/responsible-exploration-covenant.md) and use the shared start / progress / end protocol. Send the mandatory Start report before investigation, use Progress reports during long work, and finish with the mandatory End report; missing evidence becomes `blocked` or `not-verified`, never polished success prose.
 
 ## Workflow
 

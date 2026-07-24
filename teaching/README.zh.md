@@ -14,6 +14,8 @@
 | [路线语义](route-lab-30.zh.md) | 30分钟 | 想理解 Graph 的人 | `supports` 和 `rollback` 为什么不改变 Active Route？ |
 | [路径可移植](path-lab-30.zh.md) | 30分钟 | 跨 Windows/WSL 协作的人 | 项目外数据怎样关联而不泄露绝对根目录？ |
 | [Revision 冲突](revision-lab-30.zh.md) | 30分钟 | 多会话协作或系统课程 | 陈旧写入为什么被拒绝，怎样安全重试？ |
+| [行动与反思](action-reflection-student.zh.md) | 45分钟 | 需要跨轮恢复和假设管理的人 | 怎样用一个有界动作更新假设、保留负结果并完成责任汇报？ |
+| [Matched Control Pilot](matched-control-pilot.zh.md) | 多轮 pilot | 课程设计者、插件维护者 | 文件化任务协议是否改善恢复、证据和负结果管理？ |
 
 第一次使用建议按“20分钟快速体验 → 45分钟证据审查 → 90分钟分支决策”完成。后三门是协议专题，可以按需要选择。
 
@@ -55,7 +57,29 @@ powershell -ExecutionPolicy Bypass -File teaching/run_lab.ps1 `
   -Output .validation-tmp\my-threshold-lab
 ```
 
-`--lab` 可选 `quickstart`、`evidence`、`branches`、`route`、`paths`、`revision`。只有 evidence 使用 `--case clean|tampered|threshold-miss`。
+行动与反思课程：
+
+```bash
+python teaching/lab_runner.py \
+  --lab action-reflection \
+  --mode student \
+  --output .validation-tmp/action-reflection-lab
+```
+
+`--lab` 可选 `quickstart`、`evidence`、`branches`、`route`、`paths`、`revision`、`action-reflection`、`matched-pilot`。只有 evidence 使用 `--case clean|tampered|threshold-miss`；matched pilot 只接受 student 模式，教师材料会另行生成。
+
+准备四案例、三 arm 的对照包：
+
+```bash
+python teaching/lab_runner.py \
+  --lab matched-pilot \
+  --mode student \
+  --output .validation-tmp/matched-pilot-01
+```
+
+该命令只生成 12 个隔离工作区、分轮提示、空白评分面和学生/教师指南，不会调用 Codex 或预填比较结果。真实运行前必须固定模型、预算、工具和材料，并取得明确授权。
+
+真实运行使用 `teaching/run_pilot.ps1` 或 `teaching/run_pilot.sh`，按 `prepare → isolated install → preflight → one-shot canary → run → score` 分级执行。`prepare` 必须显式给出 fresh pilot ID、Windows/WSL 根和授权引用；`preflight` 必须显式给出固定 Codex CLI，且不调用模型。这里的 install 只创建 control 零技能与 DS Lite 九技能两个隔离 `CODEX_HOME`，不等于插件 cache 安装。canary receipt 只允许生成一次；失败、超时、ambiguous、零 usage 或证据不足都必须冻结并停止。完整 trigger 与 18-call pilot 需要各自后续授权。2026-07-17 的首个授权运行在第一个调用后以 `0/18` blocked，参见[真实失败案例](pilot-failure-case-20260717.zh.md)。它验证了停止边界，没有产生 arm 效果结论。
 
 ## 输出里有什么
 
@@ -79,8 +103,11 @@ student 模式不会预写 review 或 analysis。reference 模式才生成带“
 - [现场演示脚本](demo-script.zh.md)
 - [教师指南](instructor-guide.zh.md)
 - [学生工作表](student-worksheet.zh.md)
+- [行动与反思学生讲义](action-reflection-student.zh.md)
+- [行动与反思教师讲义](action-reflection-instructor.zh.md)
 - [评分表](instructor-rubric.zh.md)
 - [参考答案](answer-key.zh.md)
+- [真实 pilot 失败案例](pilot-failure-case-20260717.zh.md)
+- [真实隐式 canary 失败案例](canary-failure-case-20260718.zh.md)
 
 教学 fixture 只能说明协议如何工作，不能证明某个科研方法有效，也不能作为插件稳定版发布的唯一证据。
-

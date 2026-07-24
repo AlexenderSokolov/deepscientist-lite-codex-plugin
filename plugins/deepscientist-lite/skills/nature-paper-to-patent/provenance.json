@@ -1,0 +1,96 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-paper-to-patent",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-paper-to-patent",
+    "source_skill_sha256": "1a57ae613bb545debba02ce4d9d36a53974e717cdafb1a5feb2cbd341bcf36b0"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-paper-to-patent",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "api": [
+      "scripts/disclosure/cnipa_epub_crawler.py"
+    ],
+    "browser": [
+      "references/disclosure/prior_art_search.md",
+      "references/disclosure/tooling.md",
+      "scripts/disclosure/cnipa_epub_crawler.py",
+      "scripts/disclosure/cnipa_epub_search.py",
+      "scripts/disclosure/package-lock.json"
+    ],
+    "download": [
+      "scripts/disclosure/cnipa_epub_crawler.py",
+      "scripts/disclosure/cnipa_epub_search.py",
+      "scripts/disclosure/package-lock.json"
+    ],
+    "latex": [
+      "SKILL.md",
+      "references/disclosure/correction_handler.md",
+      "references/disclosure/disclosure_builder.md",
+      "references/disclosure/disclosure_self_check.md",
+      "references/disclosure/template_reference.md",
+      "references/disclosure/tooling.md",
+      "references/draft-schema.md",
+      "scripts/build_patent_package.py",
+      "scripts/disclosure/math_render.py",
+      "scripts/disclosure/md_to_docx.py",
+      "scripts/disclosure/mermaid_render.py",
+      "scripts/math_to_omml.py",
+      "scripts/render_patent_docx.py",
+      "scripts/validate_patent_draft.py",
+      "tests/test_validation.py"
+    ],
+    "node": [
+      "SKILL.md",
+      "references/disclosure/disclosure_builder.md",
+      "references/disclosure/tooling.md",
+      "references/draft-schema.md",
+      "references/patent-figure-guide.md",
+      "scripts/disclosure/mermaid_render.py",
+      "scripts/disclosure/package-lock.json",
+      "scripts/math_to_omml.py",
+      "scripts/render_flowchart_svg.py",
+      "scripts/validate_patent_draft.py",
+      "static/core/output-contract.md"
+    ],
+    "python": [
+      "README.md",
+      "README_EN.md",
+      "SKILL.md",
+      "references/corpus-derived-patterns.md",
+      "references/corpus-pair-audit.md",
+      "references/disclosure/disclosure_builder.md",
+      "references/disclosure/prior_art_search.md",
+      "references/disclosure/project_scan.md",
+      "references/disclosure/tooling.md",
+      "scripts/disclosure/cnipa_epub_parse.py",
+      "scripts/disclosure/cnipa_epub_search.py",
+      "scripts/disclosure/docx_to_md.py",
+      "scripts/disclosure/math_render.py",
+      "scripts/disclosure/md_to_docx.py",
+      "scripts/disclosure/mermaid_render.py",
+      "scripts/disclosure/package-lock.json",
+      "scripts/disclosure/pptx_to_md.py",
+      "scripts/math_to_omml.py",
+      "scripts/render_flowchart_svg.py"
+    ]
+  },
+  "nature_shared_internal": true
+}

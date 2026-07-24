@@ -1,0 +1,27 @@
+name: upstream-audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify vendored sources
+        run: python tools/validation/upstream_manager.py verify --repo-root .
+      - name: Check upstream pins
+        run: python tools/validation/upstream_manager.py check --repo-root . --output upstream-audit.json
+      - name: Upload redacted audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: upstream-audit
+          path: upstream-audit.json

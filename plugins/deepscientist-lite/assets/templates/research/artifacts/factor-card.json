@@ -1,0 +1,28 @@
+{
+  "schema_version": "ds-lite.factor-card.v1",
+  "factor_card_id": "$factor_card_id",
+  "work_unit_id": "$work_unit_id",
+  "profile_id": "$profile_id",
+  "subject_ref": "$subject_ref",
+  "status": "draft",
+  "factors": [
+    {"name": "novelty", "score": null, "confidence": "unknown", "evidence_refs": [], "summary": "Novelty has not been source-checked.", "uncertainty": ["Primary sources are still required."], "extensions": {}},
+    {"name": "feasibility", "score": null, "confidence": "unknown", "evidence_refs": [], "summary": "Feasibility has not been tested.", "uncertainty": ["The minimum implementation check is pending."], "extensions": {}},
+    {"name": "evidence_strength", "score": null, "confidence": "unknown", "evidence_refs": [], "summary": "Claim-bearing evidence has not been validated.", "uncertainty": ["Factor Card content is not evidence."], "extensions": {}},
+    {"name": "cost", "score": null, "confidence": "unknown", "evidence_refs": [], "summary": "Cost has not been estimated.", "uncertainty": ["Open resource usage must be measured."], "extensions": {}},
+    {"name": "risk", "score": null, "confidence": "unknown", "evidence_refs": [], "summary": "Risk has not been assessed.", "uncertainty": ["Failure and misuse paths remain open."], "extensions": {}},
+    {"name": "alignment", "score": null, "confidence": "unknown", "evidence_refs": [], "summary": "Alignment with the work unit has not been assessed.", "uncertainty": ["The active route must be checked."], "extensions": {}}
+  ],
+  "decision": "needs-human",
+  "minimal_test": {
+    "question": "What is the smallest check that could change this assessment?",
+    "method": "Run one bounded comparison and preserve positive and negative results.",
+    "expected_evidence": ["A reproducible result linked to the active work unit."],
+    "resource_limits": [],
+    "stop_condition": "Stop after one check or any approval, evidence, or resource blocker.",
+    "extensions": {}
+  },
+  "created_at": "$created_at",
+  "updated_at": "$updated_at",
+  "extensions": {}
+}

@@ -10,13 +10,14 @@
 - Run the official plugin validator from the installed `plugin-creator` skill.
 - Install or upgrade from the GitHub marketplace source.
 - Restart Codex Desktop and open a fresh thread.
-- Verify the seven `$ds-lite-*` skills are visible and triggerable, including `$ds-lite-review` and `$ds-lite-iterate`.
+- Verify the release-specific skill count is visible and triggerable. Historical `0.4.0-beta.2` has seven skills; the unreleased v0.5 source line had nine DS Lite skills; the current `0.6.0-beta.1` candidate exposes 26 skills (nine DS Lite core plus 17 nature skills). Do not treat source count as cache or fresh-thread evidence.
 - Verify `mission --format json`, `mission --format markdown`, and `render-status` expose a readable Mission Board after a branch, rollback, and blocked review.
 - Verify a blank project creates `ds-lite.work-unit.v1` with planning/none, and ordinary artifacts or logs cannot promote evidence strength.
 - Verify a claim-bearing work unit stays needs-evidence until its profile validator passes, including missing/damaged Evidence Pack fixtures.
 - Verify only a done review with a matching `ds-lite.review-result.v1` sidecar becomes reviewed; exercise verdict/claim-assessment independence and malformed/path/sensitive/id/unknown-field fixtures.
 - Verify off-route blocked debt remains visible without forcing `waiting_for_user`, and all reserved / not-validated profiles fail closed.
 - Run one `$ds-lite-iterate` checkpoint and confirm it stops after a single frontier decision rather than looping.
+- Validate a planned `ds-lite.delegation.v1` with two disjoint tasks, confirm `$ds-lite-coordinate` stops before execution without explicit approval, then use a separately authorized fresh-agent run to check at most three children, `nested_delegation=false`, result refs, parent-only integration, and no automatic retry.
 - For the manual tmux capacity handshake, have the user execute the generated fixed-socket bootstrap block from an independent stable shell, then complete a real detach/disconnect/reconnect probe and confirm the server fingerprint is unchanged.
 - Use an isolated disposable plan whose fixed socket is deliberately absent, and confirm Codex stops without calling `tmux new-session`, selecting another socket, or expanding capacity.
 - Launch one pane-scoped Codex CLI child worker and verify its process identity, provider thread/task handle, query command, and resume result independently from tmux attach and experiment checkpoint recovery.

@@ -1,0 +1,36 @@
+name: Validate README mirrors
+
+on:
+  pull_request:
+    paths:
+      - 'skills/**/README.md'
+      - 'skills/**/README_EN.md'
+      - 'scripts/validate-readme-mirror.py'
+      - '.github/workflows/validate-readme-mirror.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'skills/**/README.md'
+      - 'skills/**/README_EN.md'
+      - 'scripts/validate-readme-mirror.py'
+      - '.github/workflows/validate-readme-mirror.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-readme-mirrors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run README mirror validator
+        run: python scripts/validate-readme-mirror.py

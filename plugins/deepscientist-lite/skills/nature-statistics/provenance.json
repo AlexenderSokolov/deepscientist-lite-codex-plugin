@@ -1,0 +1,35 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-statistics",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-statistics",
+    "source_skill_sha256": "339997c5a7afd3d9e34d328d9798d95f79ab5c512e10efe6e88e3222ef0ec4aa"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-statistics",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "api": [
+      "SKILL.md",
+      "references/common-failure-modes.md",
+      "references/statistical-reporting.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

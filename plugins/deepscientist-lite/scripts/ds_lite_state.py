@@ -18,6 +18,7 @@ from string import Template
 from typing import Any, Callable, Iterator
 
 import ds_lite_evidence
+import ds_lite_iteration
 import ds_lite_protocol
 
 SCHEMA_V1 = "ds-lite.graph.v1"
@@ -374,6 +375,22 @@ def parse_utc(value: Any) -> datetime | None:
     if parsed.tzinfo is None:
         return None
     return parsed.astimezone(timezone.utc)
+
+
+def monotonic_node_timestamp(node: dict[str, Any], candidate: str | None = None) -> str:
+    timestamp = candidate or utc_now()
+    parsed_candidate = parse_utc(timestamp)
+    if parsed_candidate is None:
+        return timestamp
+    floor: tuple[datetime, str] | None = None
+    for field in ("created_at", "updated_at"):
+        value = node.get(field)
+        parsed = parse_utc(value)
+        if parsed is not None and (floor is None or parsed > floor[0]):
+            floor = (parsed, value)
+    if floor is not None and parsed_candidate < floor[0]:
+        return floor[1]
+    return timestamp
 
 
 def find_route(graph: dict[str, Any], start: str, target: str, mode: str = "progression") -> list[str]:
@@ -1285,6 +1302,202 @@ def metric_surfaces_for_route(root: Path, graph: dict[str, Any], route: list[str
     return surfaces
 
 
+def latest_iteration_for_work_unit(
+    root: Path,
+    work_unit: dict[str, Any],
+) -> tuple[dict[str, Any], list[str]]:
+    ref = str(work_unit.get("active_iteration_ref") or "")
+    candidates: list[tuple[str, Path]] = []
+    if ref:
+        if ref.startswith("external://"):
+            return {}, ["active iteration ref must be project-relative"]
+        candidates.append((ref, root / ref))
+    else:
+        directory = root / "research" / "iterations"
+        if directory.is_dir():
+            candidates.extend(
+                (path.relative_to(root).as_posix(), path)
+                for path in sorted(directory.glob("*.json"), reverse=True)
+            )
+
+    warnings: list[str] = []
+    valid: list[tuple[str, dict[str, Any]]] = []
+    for candidate_ref, path in candidates:
+        try:
+            resolved = path.resolve()
+            resolved.relative_to(root.resolve())
+            payload = ds_lite_iteration.validate_iteration(
+                json.loads(resolved.read_text(encoding="utf-8"))
+            )
+        except (
+            OSError,
+            UnicodeError,
+            ValueError,
+            json.JSONDecodeError,
+            ds_lite_iteration.IterationError,
+        ) as exc:
+            warnings.append(f"iteration sidecar is invalid: {candidate_ref}: {exc}")
+            continue
+        if any(
+            payload.get(field) != work_unit.get(field)
+            for field in ("work_unit_id", "profile_id", "execution_mode")
+        ):
+            warnings.append(f"iteration sidecar does not match the active work unit: {candidate_ref}")
+            continue
+        valid.append((candidate_ref, payload))
+        if ref:
+            break
+    if not valid:
+        return {}, warnings
+    selected_ref, selected = max(
+        valid,
+        key=lambda item: (str(item[1].get("started_at", "")), item[0]),
+    )
+    return (
+        {
+            "ref": selected_ref,
+            "iteration_id": selected["iteration_id"],
+            "status": selected["status"],
+            "selected_skill": selected["selected_skill"],
+            "before_revision": selected["before_revision"],
+            "after_revision": selected["after_revision"],
+            "stop_reason": selected["stop_reason"],
+            "action": selected["action"],
+            "reflection": selected["reflection"],
+            "user_report": selected["user_report"],
+            "started_at": selected["started_at"],
+            "completed_at": selected["completed_at"],
+        },
+        warnings,
+    )
+
+
+def _hypothesis_status_for_node(node: dict[str, Any]) -> str:
+    status = node.get("status")
+    if status in {"superseded", "abandoned"}:
+        return "parked"
+    if status == "blocked":
+        return "inconclusive"
+    return "untested"
+
+
+def _new_hypothesis_record(
+    hypothesis_id: str,
+    *,
+    title: str = "",
+    status: str = "untested",
+) -> dict[str, Any]:
+    return {
+        "hypothesis_id": hypothesis_id,
+        "title": title or hypothesis_id,
+        "status": status,
+        "source_refs": [],
+        "evidence_refs": [],
+        "summary": "",
+        "minimal_test": "",
+        "negative_result_count": 0,
+        "extensions": {},
+    }
+
+
+def derive_hypothesis_pool(
+    root: Path,
+    graph: dict[str, Any],
+    latest_iteration: dict[str, Any],
+) -> list[dict[str, Any]]:
+    pool: dict[str, dict[str, Any]] = {}
+    subject_to_id: dict[str, str] = {}
+    factor_refs: list[tuple[str, str]] = []
+    for node_id, node in graph.get("nodes", {}).items():
+        if node.get("kind") not in {"idea", "decision"}:
+            continue
+        record = _new_hypothesis_record(
+            node_id,
+            title=str(node.get("title", "")),
+            status=_hypothesis_status_for_node(node),
+        )
+        record["summary"] = str(node.get("summary", ""))
+        for ref in node.get("artifact_paths", []):
+            append_unique(record["source_refs"], ref)
+            subject_to_id[ref] = node_id
+            if isinstance(ref, str) and ref.endswith(".json"):
+                factor_refs.append((node_id, ref))
+        for ref in node.get("evidence_paths", []):
+            append_unique(record["evidence_refs"], ref)
+        pool[node_id] = record
+
+    for fallback_id, ref in factor_refs:
+        resolved, problem = resolve_graph_path(root, ref)
+        if problem or resolved is None:
+            continue
+        try:
+            card = ds_lite_protocol.validate_factor_card(
+                json.loads(resolved.read_text(encoding="utf-8"))
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError, ds_lite_protocol.ProtocolError):
+            continue
+        hypothesis_id = subject_to_id.get(card["subject_ref"], fallback_id)
+        record = pool.setdefault(
+            hypothesis_id,
+            _new_hypothesis_record(hypothesis_id, title=card["subject_ref"]),
+        )
+        append_unique(record["source_refs"], ref)
+        if card["decision"] in {"park", "reject"} and record["status"] == "untested":
+            record["status"] = "parked"
+        record["minimal_test"] = card["minimal_test"]["method"]
+        if not record["summary"]:
+            record["summary"] = f"Factor Card decision: {card['decision']}; measurements remain explicit."
+
+    reflection = latest_iteration.get("reflection") if isinstance(latest_iteration, dict) else None
+    if isinstance(reflection, dict):
+        iteration_ref = str(latest_iteration.get("ref", ""))
+        negatives = reflection.get("negative_results", [])
+        negative_ref_sets = [
+            set(item.get("evidence_refs", []))
+            for item in negatives
+            if isinstance(item, dict)
+        ]
+        for update in reflection.get("hypothesis_updates", []):
+            if not isinstance(update, dict):
+                continue
+            hypothesis_id = str(update.get("hypothesis_id", ""))
+            if not hypothesis_id:
+                continue
+            record = pool.setdefault(hypothesis_id, _new_hypothesis_record(hypothesis_id))
+            record["status"] = update.get("status", record["status"])
+            record["summary"] = str(update.get("summary", record["summary"]))
+            if iteration_ref:
+                append_unique(record["source_refs"], iteration_ref)
+            update_refs = set(update.get("evidence_refs", []))
+            for evidence_ref in sorted(update_refs):
+                append_unique(record["evidence_refs"], evidence_ref)
+            record["negative_result_count"] = sum(
+                1 for negative_refs in negative_ref_sets if update_refs & negative_refs
+            )
+        for candidate in reflection.get("next_candidates", []):
+            if not isinstance(candidate, dict):
+                continue
+            hypothesis_id = str(candidate.get("hypothesis_id", ""))
+            if not hypothesis_id:
+                continue
+            record = pool.setdefault(
+                hypothesis_id,
+                _new_hypothesis_record(
+                    hypothesis_id,
+                    title=str(candidate.get("title", "")),
+                    status=str(candidate.get("status", "untested")),
+                ),
+            )
+            if not record["title"] or record["title"] == hypothesis_id:
+                record["title"] = str(candidate.get("title") or hypothesis_id)
+            if record["status"] == "untested":
+                record["status"] = str(candidate.get("status", "untested"))
+            record["minimal_test"] = str(candidate.get("minimal_test", record["minimal_test"]))
+            if iteration_ref:
+                append_unique(record["source_refs"], iteration_ref)
+    return [pool[key] for key in sorted(pool)]
+
+
 def build_mission(root: Path, graph: dict[str, Any]) -> dict[str, Any]:
     nodes = graph.get("nodes", {})
     adjacency = graph.get("adjacency", {})
@@ -1310,6 +1523,10 @@ def build_mission(root: Path, graph: dict[str, Any]) -> dict[str, Any]:
     evidence_state = derive_evidence_state(root, graph, route)
     errors.extend(evidence_state["errors"])
     route_warnings.extend(evidence_state["warnings"])
+    latest_iteration, iteration_warnings = latest_iteration_for_work_unit(
+        root, evidence_state["work_unit"]
+    )
+    route_warnings.extend(iteration_warnings)
 
     candidate_queue: list[dict[str, Any]] = []
     rollback_targets: list[dict[str, str]] = []
@@ -1374,6 +1591,8 @@ def build_mission(root: Path, graph: dict[str, Any]) -> dict[str, Any]:
         "active_route": route,
         "active_route_nodes": route_node_summaries(graph, route),
         "latest_result": latest_result,
+        "latest_iteration": latest_iteration,
+        "hypothesis_pool": derive_hypothesis_pool(root, graph, latest_iteration),
         "next_action": next_action_for(
             active,
             evidence_state["evidence_strength"],
@@ -1415,6 +1634,7 @@ def render_mission_markdown(mission: dict[str, Any]) -> str:
     project = mission.get("project", {})
     active = mission.get("active", {})
     latest = mission.get("latest_result") or {}
+    latest_iteration = mission.get("latest_iteration") or {}
     work_unit = mission.get("work_unit") or {}
     evidence_detail = mission.get("evidence_detail") or {}
     waiting_detail = mission.get("waiting_detail") or {}
@@ -1457,6 +1677,35 @@ def render_mission_markdown(mission: dict[str, Any]) -> str:
         )
     else:
         lines.append("- No experiment, review, or analysis result on the active route yet.")
+
+    lines.extend(["", "## Latest Iteration", ""])
+    if latest_iteration:
+        lines.extend(
+            [
+                f"- `{latest_iteration.get('iteration_id')}` [{latest_iteration.get('status')}]",
+                f"- Skill: `{latest_iteration.get('selected_skill')}`",
+                f"- Revision: {latest_iteration.get('before_revision')} -> {latest_iteration.get('after_revision')}",
+                f"- Stop reason: {latest_iteration.get('stop_reason')}",
+                f"- Report: {(latest_iteration.get('user_report') or {}).get('summary') or 'pending'}",
+            ]
+        )
+    else:
+        lines.append("- No iteration sidecar is attached to this work unit.")
+
+    lines.extend(["", "## Hypothesis Pool", ""])
+    hypothesis_pool = mission.get("hypothesis_pool", [])
+    if hypothesis_pool:
+        for item in hypothesis_pool:
+            lines.append(
+                f"- `{item.get('hypothesis_id')}` [{item.get('status')}]: "
+                f"{item.get('summary') or item.get('title')}"
+            )
+            if item.get("minimal_test"):
+                lines.append(f"  - Minimal test: {item.get('minimal_test')}")
+            if item.get("negative_result_count"):
+                lines.append(f"  - Negative results retained: {item.get('negative_result_count')}")
+    else:
+        lines.append("- No idea or decision hypotheses recorded yet.")
 
     lines.extend(["", "## Metric Surface", ""])
     metric_surfaces = mission.get("metric_surfaces", [])
@@ -1745,7 +1994,7 @@ def cmd_update_node(args: argparse.Namespace) -> int:
             node["summary"] = summary
         if args.kind:
             node["kind"] = args.kind
-        node["updated_at"] = utc_now()
+        node["updated_at"] = monotonic_node_timestamp(node)
         return {"node_id": args.node}
 
     graph, payload, backup = mutation_transaction(root, args, mutate)
@@ -1781,7 +2030,7 @@ def cmd_link_path(args: argparse.Namespace) -> int:
         node = require_node(graph, args.node)
         path = normalize_graph_path(root, args.path)
         append_unique(node.setdefault(field, []), path)
-        node["updated_at"] = utc_now()
+        node["updated_at"] = monotonic_node_timestamp(node)
         return {"node_id": args.node, "path_type": args.type, "path": path}
 
     graph, payload, backup = mutation_transaction(root, args, mutate)
@@ -1801,9 +2050,9 @@ def set_active_in_graph(graph: dict[str, Any], target_id: str, now: str | None =
     for node in graph.get("nodes", {}).values():
         if node.get("status") == "active" and node.get("id") != target_id:
             node["status"] = "done"
-            node["updated_at"] = timestamp
+            node["updated_at"] = monotonic_node_timestamp(node, timestamp)
     target["status"] = "active"
-    target["updated_at"] = timestamp
+    target["updated_at"] = monotonic_node_timestamp(target, timestamp)
     graph["active_node_id"] = target_id
 
 
@@ -1828,7 +2077,7 @@ def cmd_set_status(args: argparse.Namespace) -> int:
             set_active_in_graph(graph, args.node)
         else:
             node["status"] = args.status
-            node["updated_at"] = utc_now()
+            node["updated_at"] = monotonic_node_timestamp(node)
             if graph.get("active_node_id") == args.node:
                 graph["active_node_id"] = ""
         return {"node_id": args.node, "status": args.status}

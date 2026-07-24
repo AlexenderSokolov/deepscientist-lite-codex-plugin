@@ -1,0 +1,6 @@
+name: nature-experiment-log
+description: Use the complete vendored nature-experiment-log workflow with DS Lite evidence and dependency boundaries.
+policy:
+  allow_implicit_invocation: true
+  execution: bounded-and-redacted
+  external_effects: explicit-authorization

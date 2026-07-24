@@ -1,11 +1,13 @@
 ---
 name: ds-lite-experiment
-description: Use when Codex should implement, run, repair, compare, or document a lightweight DS Lite experiment, including baselines, metrics, budgets, seeds, expected signals, failure interpretation, run_*.sh commands, artifacts, and Research Map updates.
+description: Use when implementing, running, repairing, comparing, or documenting a bounded research or engineering experiment with explicit predictions, baselines, metrics, budgets, stop conditions, reproducible commands, and evidence.
 ---
 
 # DS Lite Experiment
 
 Experiments must be reproducible enough that another session can rerun or diagnose them from files.
+
+Before acting, read [the Responsible Exploration Covenant](../../references/responsible-exploration-covenant.md) and use the shared start / progress / end protocol. Send the mandatory Start report before execution, use Progress reports during long work, and finish with the mandatory End report; missing evidence becomes `blocked` or `not-verified`, never polished success prose.
 
 ## Workflow
 
