@@ -473,7 +473,14 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
         control_skills = windows_root / "homes" / "control" / "skills"
         ds_lite_skills = windows_root / "homes" / "ds-lite" / "skills"
         self.assertEqual(list(control_skills.iterdir()), [])
-        self.assertEqual(len([path for path in ds_lite_skills.iterdir() if path.is_dir()]), 26)
+        discovered = [
+            path
+            for path in ds_lite_skills.iterdir()
+            if path.is_dir() and (path / "SKILL.md").is_file()
+        ]
+        self.assertEqual(len(discovered), 26)
+        self.assertTrue((ds_lite_skills / "nature-shared" / "core" / "ethics.md").is_file())
+        self.assertFalse((ds_lite_skills / "nature-shared" / "SKILL.md").exists())
         home_manifest = (windows_root / "home-manifest.json").read_text(encoding="utf-8")
         self.assertNotIn(str(windows_root), home_manifest)
         self.assertIn('"installation_kind": "isolated-skill-home"', home_manifest)

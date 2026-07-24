@@ -95,7 +95,11 @@ def validate_manifest(plugin_root: Path) -> None:
 
 def validate_skills(plugin_root: Path) -> None:
     skills_root = plugin_root / "skills"
-    discovered_skills = sorted(path.name for path in skills_root.iterdir() if path.is_dir())
+    discovered_skills = sorted(
+        path.name
+        for path in skills_root.iterdir()
+        if path.is_dir() and (path / "SKILL.md").is_file()
+    )
     if discovered_skills != sorted(EXPECTED_SKILLS):
         fail(f"skill inventory must contain exactly the 26 expected skills: {discovered_skills}")
     for skill_name in EXPECTED_SKILLS:

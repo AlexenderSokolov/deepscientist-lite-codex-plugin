@@ -714,7 +714,11 @@ def prepare_pilot(
         "git_commit": _git_commit(repository),
         "tree_digest": _tree_digest(snapshot_plugin),
         "plugin_version": plugin_manifest["version"],
-        "skill_count": len([path for path in (snapshot_plugin / "skills").iterdir() if path.is_dir()]),
+        "skill_count": len([
+            path
+            for path in (snapshot_plugin / "skills").iterdir()
+            if path.is_dir() and (path / "SKILL.md").is_file()
+        ]),
         "extensions": {"working_tree_snapshot": True},
     }
     if source["skill_count"] != EXPECTED_SKILL_COUNT:
@@ -941,8 +945,9 @@ def install_homes(windows_root: Path | str, **_kwargs: Any) -> dict[str, Any]:
     skill_names = []
     for source_skill in sorted((snapshot_plugin / "skills").iterdir()):
         if source_skill.is_dir():
-            skill_names.append(source_skill.name)
             shutil.copytree(source_skill, ds_lite / "skills" / source_skill.name, ignore=_copy_ignore)
+            if (source_skill / "SKILL.md").is_file():
+                skill_names.append(source_skill.name)
     for support_name in ("assets", "references", "scripts"):
         shutil.copytree(snapshot_plugin / support_name, ds_lite / support_name, ignore=_copy_ignore)
     if len(skill_names) != EXPECTED_SKILL_COUNT:

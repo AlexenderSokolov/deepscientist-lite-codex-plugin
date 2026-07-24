@@ -7,6 +7,13 @@ from tools.validation.check_cross_system import _run_shell_check, run
 
 
 class CrossSystemValidationTests(unittest.TestCase):
+    def test_validation_entrypoints_accept_authorized_temp_root(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        shell = (root / "tools" / "validation" / "run_validate.sh").read_text(encoding="utf-8")
+        powershell = (root / "tools" / "validation" / "run_validate.ps1").read_text(encoding="utf-8")
+        self.assertIn("TEMP_ROOT", shell)
+        self.assertIn("TEMP_ROOT", powershell)
+
     def test_executable_shells_do_not_embed_python_source(self):
         root = Path(__file__).resolve().parents[1]
         paths = (

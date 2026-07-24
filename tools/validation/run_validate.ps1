@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
-$TempRoot = Join-Path $RepoRoot ".validation-tmp"
+$TempRoot = if ($env:TEMP_ROOT) { $env:TEMP_ROOT } else { Join-Path $RepoRoot ".validation-tmp" }
 $ReceiptId = (Get-Date -Format "yyyyMMddTHHmmssfffffff") + "-" + $PID
 $RunTemp = Join-Path $TempRoot ("validation-" + $ReceiptId)
 try {

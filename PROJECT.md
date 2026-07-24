@@ -191,4 +191,6 @@ processes. Python logic crosses the shell boundary through a formal CLI and
 `argv`; embedded multi-line `python -c` is prohibited. Python, JSON, TOML and
 Markdown are UTF-8. `tools/validation/check_text_compatibility.py` is the
 authoritative byte/parser check. A missing writable validation temp surface is
-reported as `not-observed`, not as product success.
+reported as `not-observed`, not as product success. Both unified validation
+entrypoints honor `TEMP_ROOT` so Windows and Unix can use an authorized short
+temporary path without changing the repository checkout.
