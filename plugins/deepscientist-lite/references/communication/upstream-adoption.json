@@ -1,0 +1,869 @@
+{
+  "schema_version": "ds-lite.upstream-adoption.v1",
+  "runtime_loaded": false,
+  "source_manifest": "plugins/deepscientist-lite/references/communication/upstream/_manifests/source-files.json",
+  "decision_values": [
+    "adapted",
+    "adopted",
+    "asset-only",
+    "license-only",
+    "metadata-only",
+    "rejected"
+  ],
+  "entries": [
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": ".claude-plugin/plugin.json",
+      "source_sha256": "b23fad0bf38edabf6a18154f46c530325a00298c9391d882d05ce8eaada7028b",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": ".github/workflows/release.yml",
+      "source_sha256": "069a935894cbb2ffb5cd969dcb86d7aa7e4cd1f518bc2ed7ade709214f1c2e2a",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": ".gitignore",
+      "source_sha256": "9a5362d02d391f203e8fa3828b6535fc1f128863ae4aada5a400f1baa128e4f8",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "CHANGELOG.md",
+      "source_sha256": "afedacc97cdd398385c69c53b988ef22827d206d3dff4537750c66d16aba0909",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "CLAUDE.md",
+      "source_sha256": "c8d65b95534869c6017b050f474ae2277e99d30d91de25e4a843b394e350c8ee",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/core.md",
+        "plugins/deepscientist-lite/assets/templates/STYLE.md"
+      ],
+      "rule_ids": [
+        "STYLE-PRECEDENCE",
+        "QUOTE-PREFERENCE"
+      ],
+      "reason": "Adapts project-rule precedence and configurable quote preferences without importing Claude-specific instructions.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "LICENSE",
+      "source_sha256": "609132fb364baa7688c086c5baa267ebb88edf32ea431d2dbf3e745d39576d3f",
+      "decision": "license-only",
+      "local_refs": [
+        "plugins/deepscientist-lite/THIRD_PARTY_NOTICES.md",
+        "NOTICE"
+      ],
+      "rule_ids": [
+        "LICENSE-EXACT"
+      ],
+      "reason": "The exact upstream license is preserved and verified byte-for-byte.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "README.en.md",
+      "source_sha256": "ffc44ca33c6d87b25d514311584467f1adce8e246a5478a643885d000222d7ac",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "README.md",
+      "source_sha256": "7fdde2bc15316b842853c4b4b136d7355a6b3d485fc6d6e8a7c94d6f4f8d3ae9",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "SKILL.md",
+      "source_sha256": "d7ef1115ef9f05697bf08dc0218983e0c8fcb472e5c33eb4bb1d6faa200c0a32",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/humanizer-zh.md",
+        "plugins/deepscientist-lite/references/communication/self-audit.md"
+      ],
+      "rule_ids": [
+        "ZH-WORKFLOW",
+        "ZH-FINAL-CHECK",
+        "ZH-PRESERVE"
+      ],
+      "reason": "Adapts text-type selection, rewrite depth, article coherence, preservation, and final read-aloud checks without importing the upstream skill workflow wholesale.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "VERSION",
+      "source_sha256": "64d23f858ef51b0f996e4966d4e27c0371b437e2d2787890b1f7ad22d4ec5663",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "agents/openai.yaml",
+      "source_sha256": "1e24f08c08b6c299b847d33ef3a89db69fef2bc36a600be0185f8670ec291c13",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/corpus-quickpick.md",
+      "source_sha256": "b96642965981e96d89feb7561c3f9ec54d197c0a44194584c0deb0500bed9074",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/humanizer-zh.md",
+        "plugins/deepscientist-lite/references/communication/profiles.md"
+      ],
+      "rule_ids": [
+        "ZH-TEXT-TYPE",
+        "ZH-REFERENCE-WITHOUT-IMITATION"
+      ],
+      "reason": "Adapts genre selection and rhythm observations while removing named-author imitation and persona adoption.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/corpus.md",
+      "source_sha256": "bc413788f8afbd051dc200993e56f7fb285e2be0fdb63e1fea249f21097ddef8",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/humanizer-zh.md",
+        "plugins/deepscientist-lite/references/communication/profiles.md"
+      ],
+      "rule_ids": [
+        "ZH-TEXT-TYPE",
+        "ZH-REFERENCE-WITHOUT-IMITATION"
+      ],
+      "reason": "Adapts genre selection and rhythm observations while removing named-author imitation and persona adoption.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/patterns.md",
+      "source_sha256": "d65f714ea6f160cfb030c374ad33bf77f15a86c70ee82a4d18236a8ac0ff6491",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/humanizer-zh.md"
+      ],
+      "rule_ids": [
+        "ZH-PATTERN-01-13"
+      ],
+      "reason": "Adapts all thirteen diagnostic categories into research-facing Chinese guidance with evidence and protected-content boundaries.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/fengtang.md",
+      "source_sha256": "b7c2f0cfb564a10d37ef0e400892287afa33c8ba85d6743610d1a1e18b86dbd3",
+      "decision": "rejected",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/profiles.md",
+        "plugins/deepscientist-lite/references/communication/core.md"
+      ],
+      "rule_ids": [
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "The file is fully audited but excluded from runtime because named-author persona imitation conflicts with the plugin boundary; only generic structural observations may be restated in original rules.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/hefan.md",
+      "source_sha256": "f9d0532de5ef5b4f4cbc7176724120af804a4209f74409cc4a7a33d22f0ae9a4",
+      "decision": "rejected",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/profiles.md",
+        "plugins/deepscientist-lite/references/communication/core.md"
+      ],
+      "rule_ids": [
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "The file is fully audited but excluded from runtime because named-author persona imitation conflicts with the plugin boundary; only generic structural observations may be restated in original rules.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/helaoshi.md",
+      "source_sha256": "fbb169d2f0fedb1ae25300840123a3b17c1527c0add2d80df2a6ef4f6ba67cfb",
+      "decision": "rejected",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/profiles.md",
+        "plugins/deepscientist-lite/references/communication/core.md"
+      ],
+      "rule_ids": [
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "The file is fully audited but excluded from runtime because named-author persona imitation conflicts with the plugin boundary; only generic structural observations may be restated in original rules.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/index.md",
+      "source_sha256": "149a5314b76bf1edef4094d0dc5c20f302b6ee516fa91613e61ab0a473bedc07",
+      "decision": "rejected",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/profiles.md",
+        "plugins/deepscientist-lite/references/communication/core.md"
+      ],
+      "rule_ids": [
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "The file is fully audited but excluded from runtime because named-author persona imitation conflicts with the plugin boundary; only generic structural observations may be restated in original rules.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/lishanglong.md",
+      "source_sha256": "4a5b64649c63be4f074e695f79699127e57e2d4f217b61fc1295e0b3d74456f0",
+      "decision": "rejected",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/profiles.md",
+        "plugins/deepscientist-lite/references/communication/core.md"
+      ],
+      "rule_ids": [
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "The file is fully audited but excluded from runtime because named-author persona imitation conflicts with the plugin boundary; only generic structural observations may be restated in original rules.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/liuzichao.md",
+      "source_sha256": "375f8f104c2e8c2af5182f10b5feeb128368dd6f5caf821b4fc6bf4ce8a16b34",
+      "decision": "rejected",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/profiles.md",
+        "plugins/deepscientist-lite/references/communication/core.md"
+      ],
+      "rule_ids": [
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "The file is fully audited but excluded from runtime because named-author persona imitation conflicts with the plugin boundary; only generic structural observations may be restated in original rules.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/lixiaolai.md",
+      "source_sha256": "ff516c95f6eec46094c2595442a597ad5aa3bc79950fca7875791ee1f4429b07",
+      "decision": "rejected",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/profiles.md",
+        "plugins/deepscientist-lite/references/communication/core.md"
+      ],
+      "rule_ids": [
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "The file is fully audited but excluded from runtime because named-author persona imitation conflicts with the plugin boundary; only generic structural observations may be restated in original rules.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/luozhenyu.md",
+      "source_sha256": "69795cf2abf05c5dca581d9eb1f6f01818d4b10d78170578ae23cc73987394cf",
+      "decision": "rejected",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/profiles.md",
+        "plugins/deepscientist-lite/references/communication/core.md"
+      ],
+      "rule_ids": [
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "The file is fully audited but excluded from runtime because named-author persona imitation conflicts with the plugin boundary; only generic structural observations may be restated in original rules.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/wujun.md",
+      "source_sha256": "8a5951493e10d5838e5a799c001017d1b502579b3212f047e48a3034719ad9d9",
+      "decision": "rejected",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/profiles.md",
+        "plugins/deepscientist-lite/references/communication/core.md"
+      ],
+      "rule_ids": [
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "The file is fully audited but excluded from runtime because named-author persona imitation conflicts with the plugin boundary; only generic structural observations may be restated in original rules.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": ".claude-plugin/marketplace.json",
+      "source_sha256": "141736822a343ca0b605d7a9298fef4b692a69368215338df76efb876af442e4",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": ".claude-plugin/plugin.json",
+      "source_sha256": "4d0663f4f41e0519222d3837be1a127326cbe0ed1c17df07b508064d4237a2f8",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": "AGENTS.md",
+      "source_sha256": "703873b933df4b07b1df52e207ad2de3695e30ac6cb0db245986ab3f30f96ac3",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/self-audit.md",
+        "tools/validation/validate_repo.py"
+      ],
+      "rule_ids": [
+        "SOURCE-GENERATED-SYNC"
+      ],
+      "reason": "Adapts the source-of-truth and synchronized-document maintenance discipline into deterministic repository validation.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": "LICENSE",
+      "source_sha256": "4ac4810254ab36d45419141aeb8e69bf50652cfafe5b2dab947d06d44e5cbf96",
+      "decision": "license-only",
+      "local_refs": [
+        "plugins/deepscientist-lite/THIRD_PARTY_NOTICES.md",
+        "NOTICE"
+      ],
+      "rule_ids": [
+        "LICENSE-EXACT"
+      ],
+      "reason": "The exact upstream license is preserved and verified byte-for-byte.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": "README.md",
+      "source_sha256": "9c24e6b51459d3dc3e614596f749c0d1dc221b240a908f526322cf852ed80085",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/humanizer-en.md",
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "EN-PATTERN-INDEX",
+        "EN-VOICE-CALIBRATION"
+      ],
+      "reason": "Uses the documented pattern index and final audit rationale as a maintenance cross-check.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": "SKILL.md",
+      "source_sha256": "243aecdafecb5e11c2d45e2e088b7876e3f6eee34aa50c53f624d8468039afa8",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/humanizer-en.md",
+        "plugins/deepscientist-lite/references/communication/self-audit.md"
+      ],
+      "rule_ids": [
+        "EN-PATTERN-01-33",
+        "EN-DRAFT-AUDIT-FINAL",
+        "EN-FALSE-POSITIVE-GUARD"
+      ],
+      "reason": "Adapts the complete 33-pattern taxonomy, preservation safeguards, and draft-audit-final workflow for research communication.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": ".gitignore",
+      "source_sha256": "cf237c7aff44efbe6e502e645c3e06da03a69d7bdeb43392108ef3348143417e",
+      "decision": "metadata-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Repository metadata or maintenance material is preserved for provenance and audited, but it is not loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "LICENSE",
+      "source_sha256": "95201f07cd5d4454f205a53a65337cbe00298a4d21a4e68a1fc516958e7cdaf9",
+      "decision": "license-only",
+      "local_refs": [
+        "plugins/deepscientist-lite/THIRD_PARTY_NOTICES.md",
+        "NOTICE"
+      ],
+      "rule_ids": [
+        "LICENSE-EXACT"
+      ],
+      "reason": "The exact upstream license is preserved and verified byte-for-byte.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "README.md",
+      "source_sha256": "ed40692dbee51ed2f2c53a02c7c34772ce23f94cab2394877544e98c0b445b54",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/academic-writing.md",
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "ACADEMIC-ETHICS",
+        "ACADEMIC-PERSONALIZATION"
+      ],
+      "reason": "Adapts the ethics, disclosure, personalization, and non-evasion boundaries.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "SKILL.md",
+      "source_sha256": "1f4501cb7331cffe9018960f8db045c719eea0658ce04e4af5e273ee59785a9c",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/academic-writing.md",
+        "plugins/deepscientist-lite/references/communication/self-audit.md"
+      ],
+      "rule_ids": [
+        "ACADEMIC-LAYER-01-06",
+        "CLAIM-EVIDENCE",
+        "CLAIM-FEASIBILITY",
+        "ACADEMIC-REPORT"
+      ],
+      "reason": "Adapts all six academic layers, audit-rewrite-report, evidence-matched claims, scholarly preservation, venue voice, and proposal feasibility.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/banner.svg",
+      "source_sha256": "e3a332cac2dcb74c57137ed29231bc154534191827f1d8488201440e7e6803cb",
+      "decision": "asset-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "ASSET-INVENTORY"
+      ],
+      "reason": "Binary or visual assets are preserved and hashed for completeness but are not interpreted as writing rules or loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/rednote-zh.png",
+      "source_sha256": "cf1ada64d95deef03b484e5d27421fd47a5591ea255aceedf955d4af3d43eb53",
+      "decision": "asset-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "ASSET-INVENTORY"
+      ],
+      "reason": "Binary or visual assets are preserved and hashed for completeness but are not interpreted as writing rules or loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/rednote-zh.svg",
+      "source_sha256": "935e4c7d9c2606a652fc5710dd4b33a087a00e08d93aa6eba3a772bbe1a7a153",
+      "decision": "asset-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "ASSET-INVENTORY"
+      ],
+      "reason": "Binary or visual assets are preserved and hashed for completeness but are not interpreted as writing rules or loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/x-en.png",
+      "source_sha256": "016424a96666490e96802b9900fd6047f1297e313bcd526cdef03c6c15659615",
+      "decision": "asset-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "ASSET-INVENTORY"
+      ],
+      "reason": "Binary or visual assets are preserved and hashed for completeness but are not interpreted as writing rules or loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/x-en.svg",
+      "source_sha256": "7b699c6b14a6be52eb0722db513e52156f814b7d0b17f50a7fe01171abba5f01",
+      "decision": "asset-only",
+      "local_refs": [
+        "docs/maintainers/upstream-adoption-audit.zh.md"
+      ],
+      "rule_ids": [
+        "ASSET-INVENTORY"
+      ],
+      "reason": "Binary or visual assets are preserved and hashed for completeness but are not interpreted as writing rules or loaded at runtime.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "examples/before-after.md",
+      "source_sha256": "60e73dfa2bab743998af2ed389b9afffa38e2c63e7248fca48bae32a19458a5e",
+      "decision": "adapted",
+      "local_refs": [
+        "plugins/deepscientist-lite/references/communication/academic-writing.md",
+        "tools/validation/prepare_codex_acceptance.py"
+      ],
+      "rule_ids": [
+        "ACADEMIC-EXAMPLE-COVERAGE",
+        "PROPOSAL-MODE"
+      ],
+      "reason": "Uses the examples to derive original fixed regression prompts for paper and proposal registers; example text is not copied into runtime output.",
+      "test_refs": [
+        "tests/test_upstream_adoption.py"
+      ]
+    }
+  ],
+  "local_artifacts": [
+    {
+      "path": "plugins/deepscientist-lite/references/communication/core.md",
+      "origin": "mixed",
+      "rule_ids": [
+        "STYLE-PRECEDENCE",
+        "EIGHT-HONORS",
+        "CLAIM-SUPPORT"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    },
+    {
+      "path": "plugins/deepscientist-lite/references/communication/profiles.md",
+      "origin": "mixed",
+      "rule_ids": [
+        "PROFILE-FOUR",
+        "REJECT-NAMED-AUTHOR-IMITATION"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    },
+    {
+      "path": "plugins/deepscientist-lite/references/communication/self-audit.md",
+      "origin": "mixed",
+      "rule_ids": [
+        "START-ACTION-HANDOFF",
+        "SOURCE-GENERATED-SYNC"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    },
+    {
+      "path": "plugins/deepscientist-lite/references/communication/humanizer-zh.md",
+      "origin": "adapted",
+      "rule_ids": [
+        "ZH-WORKFLOW",
+        "ZH-PATTERN-01-13"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    },
+    {
+      "path": "plugins/deepscientist-lite/references/communication/humanizer-en.md",
+      "origin": "adapted",
+      "rule_ids": [
+        "EN-PATTERN-01-33",
+        "EN-DRAFT-AUDIT-FINAL"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    },
+    {
+      "path": "plugins/deepscientist-lite/references/communication/academic-writing.md",
+      "origin": "adapted",
+      "rule_ids": [
+        "ACADEMIC-LAYER-01-06",
+        "CLAIM-EVIDENCE",
+        "CLAIM-FEASIBILITY"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    },
+    {
+      "path": "plugins/deepscientist-lite/references/communication/upstream-adoption.json",
+      "origin": "generated",
+      "rule_ids": [
+        "UPSTREAM-INVENTORY",
+        "NINE-FIELD-MATRIX"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    },
+    {
+      "path": "plugins/deepscientist-lite/references/communication/upstream/_manifests/source-files.json",
+      "origin": "generated",
+      "rule_ids": [
+        "SOURCE-SNAPSHOT-HASH"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    },
+    {
+      "path": "plugins/deepscientist-lite/assets/templates/STYLE.md",
+      "origin": "project-native",
+      "rule_ids": [
+        "PROFILE-CONFIG"
+      ],
+      "reason": "Original DeepScientist Lite contract or deterministic enforcement code."
+    },
+    {
+      "path": "plugins/deepscientist-lite/scripts/ds_lite_communication_audit.py",
+      "origin": "project-native",
+      "rule_ids": [
+        "COMMUNICATION-AUDIT-V1"
+      ],
+      "reason": "Original DeepScientist Lite contract or deterministic enforcement code."
+    },
+    {
+      "path": "plugins/deepscientist-lite/scripts/ds_lite_hook.py",
+      "origin": "project-native",
+      "rule_ids": [
+        "HOOK-FOUR-EVENTS",
+        "CLAIM-GATE"
+      ],
+      "reason": "Original DeepScientist Lite contract or deterministic enforcement code."
+    },
+    {
+      "path": "plugins/deepscientist-lite/hooks/hooks.json",
+      "origin": "project-native",
+      "rule_ids": [
+        "HOOK-ADAPTER"
+      ],
+      "reason": "Original DeepScientist Lite contract or deterministic enforcement code."
+    },
+    {
+      "path": "plugins/deepscientist-lite/THIRD_PARTY_NOTICES.md",
+      "origin": "generated",
+      "rule_ids": [
+        "LICENSE-EXACT"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    },
+    {
+      "path": "tests/test_communication_layer.py",
+      "origin": "project-native",
+      "rule_ids": [
+        "COMMUNICATION-REFERENCE-TEST"
+      ],
+      "reason": "Original DeepScientist Lite contract or deterministic enforcement code."
+    },
+    {
+      "path": "tests/test_communication_audit.py",
+      "origin": "project-native",
+      "rule_ids": [
+        "COMMUNICATION-AUDIT-TEST"
+      ],
+      "reason": "Original DeepScientist Lite contract or deterministic enforcement code."
+    },
+    {
+      "path": "tests/test_communication_hook.py",
+      "origin": "project-native",
+      "rule_ids": [
+        "HOOK-BEHAVIOR-TEST"
+      ],
+      "reason": "Original DeepScientist Lite contract or deterministic enforcement code."
+    },
+    {
+      "path": "tests/test_upstream_adoption.py",
+      "origin": "project-native",
+      "rule_ids": [
+        "UPSTREAM-AUDIT-TEST"
+      ],
+      "reason": "Original DeepScientist Lite contract or deterministic enforcement code."
+    },
+    {
+      "path": "docs/maintainers/upstream-adoption-audit.zh.md",
+      "origin": "generated",
+      "rule_ids": [
+        "UPSTREAM-INVENTORY"
+      ],
+      "reason": "Generated or adapted from the explicitly mapped fixed upstream sources."
+    }
+  ]
+}

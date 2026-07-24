@@ -1,0 +1,356 @@
+{
+  "schema_version": "ds-lite.upstream-source-manifest.v1",
+  "entries": [
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": ".claude-plugin/plugin.json",
+      "git_blob_sha": "597e7d971b768a8b7b97d33821a89c11c30bad08",
+      "source_sha256": "b23fad0bf38edabf6a18154f46c530325a00298c9391d882d05ce8eaada7028b",
+      "size": 155,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/.claude-plugin/plugin.json"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": ".github/workflows/release.yml",
+      "git_blob_sha": "0acef37f7939a3ecc7c4ee6bcc05f9f16fdfe603",
+      "source_sha256": "069a935894cbb2ffb5cd969dcb86d7aa7e4cd1f518bc2ed7ade709214f1c2e2a",
+      "size": 1870,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/.github/workflows/release.yml"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": ".gitignore",
+      "git_blob_sha": "4e79a50da2723bcdc5c50c0a824672d842df3d48",
+      "source_sha256": "9a5362d02d391f203e8fa3828b6535fc1f128863ae4aada5a400f1baa128e4f8",
+      "size": 41,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/.gitignore"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "CHANGELOG.md",
+      "git_blob_sha": "d9cad64eec7de262e50b442acfecf2f6e46564ca",
+      "source_sha256": "afedacc97cdd398385c69c53b988ef22827d206d3dff4537750c66d16aba0909",
+      "size": 4124,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/CHANGELOG.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "CLAUDE.md",
+      "git_blob_sha": "e0668f4beb585a1f33bb5a37d6f0ecae608c2dff",
+      "source_sha256": "c8d65b95534869c6017b050f474ae2277e99d30d91de25e4a843b394e350c8ee",
+      "size": 301,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/CLAUDE.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "LICENSE",
+      "git_blob_sha": "735a4d75ff17983c5eb34986add7d0f923912e1c",
+      "source_sha256": "609132fb364baa7688c086c5baa267ebb88edf32ea431d2dbf3e745d39576d3f",
+      "size": 1064,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/LICENSE"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "README.en.md",
+      "git_blob_sha": "e25b3189835447c2453f05eb93f3eb5540cc822d",
+      "source_sha256": "ffc44ca33c6d87b25d514311584467f1adce8e246a5478a643885d000222d7ac",
+      "size": 6794,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/README.en.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "README.md",
+      "git_blob_sha": "5a47428cfb85917fae8fec031aa37eda4680c5e9",
+      "source_sha256": "7fdde2bc15316b842853c4b4b136d7355a6b3d485fc6d6e8a7c94d6f4f8d3ae9",
+      "size": 6910,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/README.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "SKILL.md",
+      "git_blob_sha": "6d63916672a4c64c0cc62e709c502a37970d28d8",
+      "source_sha256": "d7ef1115ef9f05697bf08dc0218983e0c8fcb472e5c33eb4bb1d6faa200c0a32",
+      "size": 10116,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/SKILL.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "VERSION",
+      "git_blob_sha": "f0bb29e76388856b273698ae6064b0380ce5e5d2",
+      "source_sha256": "64d23f858ef51b0f996e4966d4e27c0371b437e2d2787890b1f7ad22d4ec5663",
+      "size": 6,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/VERSION"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "agents/openai.yaml",
+      "git_blob_sha": "6b251d23d2dde54d24ff401abf47e65f1cb01ee8",
+      "source_sha256": "1e24f08c08b6c299b847d33ef3a89db69fef2bc36a600be0185f8670ec291c13",
+      "size": 268,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/agents/openai.yaml"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/corpus-quickpick.md",
+      "git_blob_sha": "88c1a6699b9b777e1f0b969b3800acac642a2d24",
+      "source_sha256": "b96642965981e96d89feb7561c3f9ec54d197c0a44194584c0deb0500bed9074",
+      "size": 2932,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/corpus-quickpick.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/corpus.md",
+      "git_blob_sha": "f105008e441cc44efb63335cf04f65e153240f24",
+      "source_sha256": "bc413788f8afbd051dc200993e56f7fb285e2be0fdb63e1fea249f21097ddef8",
+      "size": 8183,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/corpus.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/patterns.md",
+      "git_blob_sha": "bfb66fb8f49d011158458e7c3cb64b6c40a2bb36",
+      "source_sha256": "d65f714ea6f160cfb030c374ad33bf77f15a86c70ee82a4d18236a8ac0ff6491",
+      "size": 16896,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/patterns.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/fengtang.md",
+      "git_blob_sha": "f26f65b39120ec73d3044605741c0f967d788bf0",
+      "source_sha256": "b7c2f0cfb564a10d37ef0e400892287afa33c8ba85d6743610d1a1e18b86dbd3",
+      "size": 8557,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/voices/fengtang.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/hefan.md",
+      "git_blob_sha": "d647806f8b02a7b7018f8aff27c7d514e3aeae42",
+      "source_sha256": "f9d0532de5ef5b4f4cbc7176724120af804a4209f74409cc4a7a33d22f0ae9a4",
+      "size": 9552,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/voices/hefan.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/helaoshi.md",
+      "git_blob_sha": "b871cb2256d7d88685e875e09c8ed803ba4c475e",
+      "source_sha256": "fbb169d2f0fedb1ae25300840123a3b17c1527c0add2d80df2a6ef4f6ba67cfb",
+      "size": 6897,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/voices/helaoshi.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/index.md",
+      "git_blob_sha": "f48fda01cb96f4a75d56e00301c1a068e8a2a958",
+      "source_sha256": "149a5314b76bf1edef4094d0dc5c20f302b6ee516fa91613e61ab0a473bedc07",
+      "size": 3024,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/voices/index.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/lishanglong.md",
+      "git_blob_sha": "431fa2b41909bb9c9eb055dbd700faa18ae8d5ef",
+      "source_sha256": "4a5b64649c63be4f074e695f79699127e57e2d4f217b61fc1295e0b3d74456f0",
+      "size": 8779,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/voices/lishanglong.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/liuzichao.md",
+      "git_blob_sha": "fb99b099ebd2287e7d3c7b5db5154d610058ef5a",
+      "source_sha256": "375f8f104c2e8c2af5182f10b5feeb128368dd6f5caf821b4fc6bf4ce8a16b34",
+      "size": 10555,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/voices/liuzichao.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/lixiaolai.md",
+      "git_blob_sha": "2f0f8190c01b2012264575cf6cc8f95d23396711",
+      "source_sha256": "ff516c95f6eec46094c2595442a597ad5aa3bc79950fca7875791ee1f4429b07",
+      "size": 6575,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/voices/lixiaolai.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/luozhenyu.md",
+      "git_blob_sha": "10cdf51c20ff8fda170932567f5a8db8161a6219",
+      "source_sha256": "69795cf2abf05c5dca581d9eb1f6f01818d4b10d78170578ae23cc73987394cf",
+      "size": 7838,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/voices/luozhenyu.md"
+    },
+    {
+      "repository": "ai-zixun/humanizer-zh",
+      "commit": "f75f1ac9",
+      "source_path": "references/voices/wujun.md",
+      "git_blob_sha": "cf62ccd218287d16b39f97b2216eed0c900fefa8",
+      "source_sha256": "8a5951493e10d5838e5a799c001017d1b502579b3212f047e48a3034719ad9d9",
+      "size": 9241,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/ai-zixun-humanizer-zh/references/voices/wujun.md"
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": ".claude-plugin/marketplace.json",
+      "git_blob_sha": "5d6511768d56524384a6db33908a6c65e335f835",
+      "source_sha256": "141736822a343ca0b605d7a9298fef4b692a69368215338df76efb876af442e4",
+      "size": 622,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/blader-humanizer/.claude-plugin/marketplace.json"
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": ".claude-plugin/plugin.json",
+      "git_blob_sha": "66a88189beaceee3d8a581d9074b5b27a3b823cd",
+      "source_sha256": "4d0663f4f41e0519222d3837be1a127326cbe0ed1c17df07b508064d4237a2f8",
+      "size": 578,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/blader-humanizer/.claude-plugin/plugin.json"
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": "AGENTS.md",
+      "git_blob_sha": "60d7bdb097fb21463f3c44e45af7c17bc49e6abf",
+      "source_sha256": "703873b933df4b07b1df52e207ad2de3695e30ac6cb0db245986ab3f30f96ac3",
+      "size": 2354,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/blader-humanizer/AGENTS.md"
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": "LICENSE",
+      "git_blob_sha": "625297fb778f32eb39d3a5b97e3e3b611b7304d6",
+      "source_sha256": "4ac4810254ab36d45419141aeb8e69bf50652cfafe5b2dab947d06d44e5cbf96",
+      "size": 1066,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/blader-humanizer/LICENSE"
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": "README.md",
+      "git_blob_sha": "50f44d949c799220880c8d62563f1c25ab546276",
+      "source_sha256": "9c24e6b51459d3dc3e614596f749c0d1dc221b240a908f526322cf852ed80085",
+      "size": 12126,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/blader-humanizer/README.md"
+    },
+    {
+      "repository": "blader/humanizer",
+      "commit": "1b485648",
+      "source_path": "SKILL.md",
+      "git_blob_sha": "f6d973be6d1b283f9622b19397cbe4cbbc3d3cf9",
+      "source_sha256": "243aecdafecb5e11c2d45e2e088b7876e3f6eee34aa50c53f624d8468039afa8",
+      "size": 34017,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/blader-humanizer/SKILL.md"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": ".gitignore",
+      "git_blob_sha": "e43b0f988953ae3a84b00331d0ccf5f7d51cb3cf",
+      "source_sha256": "cf237c7aff44efbe6e502e645c3e06da03a69d7bdeb43392108ef3348143417e",
+      "size": 10,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/.gitignore"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "LICENSE",
+      "git_blob_sha": "a4bc177491beda92665d628d86299630ac0abefa",
+      "source_sha256": "95201f07cd5d4454f205a53a65337cbe00298a4d21a4e68a1fc516958e7cdaf9",
+      "size": 890,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/LICENSE"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "README.md",
+      "git_blob_sha": "1de4a538786dd3651acc3c21b6a3bfe2634b8514",
+      "source_sha256": "ed40692dbee51ed2f2c53a02c7c34772ce23f94cab2394877544e98c0b445b54",
+      "size": 6205,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/README.md"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "SKILL.md",
+      "git_blob_sha": "afb7d8da3cba41b47365730ceed40fa5a72d8097",
+      "source_sha256": "1f4501cb7331cffe9018960f8db045c719eea0658ce04e4af5e273ee59785a9c",
+      "size": 16779,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/SKILL.md"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/banner.svg",
+      "git_blob_sha": "f70581d539975f10541c6462312e795bed3261e6",
+      "source_sha256": "e3a332cac2dcb74c57137ed29231bc154534191827f1d8488201440e7e6803cb",
+      "size": 1374,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/assets/banner.svg"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/rednote-zh.png",
+      "git_blob_sha": "dcdfe969098753b633d0f51462ad87b4f5d542e1",
+      "source_sha256": "cf1ada64d95deef03b484e5d27421fd47a5591ea255aceedf955d4af3d43eb53",
+      "size": 106124,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/assets/rednote-zh.png"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/rednote-zh.svg",
+      "git_blob_sha": "23b3699f8d18a2dcdf1ed7c7e21c5537db26986b",
+      "source_sha256": "935e4c7d9c2606a652fc5710dd4b33a087a00e08d93aa6eba3a772bbe1a7a153",
+      "size": 1649,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/assets/rednote-zh.svg"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/x-en.png",
+      "git_blob_sha": "41fab051be7da545396a0dc276d67b2b10a36234",
+      "source_sha256": "016424a96666490e96802b9900fd6047f1297e313bcd526cdef03c6c15659615",
+      "size": 169099,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/assets/x-en.png"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "assets/x-en.svg",
+      "git_blob_sha": "14c9de997c006c5b491c7139c1bd1854056f7918",
+      "source_sha256": "7b699c6b14a6be52eb0722db513e52156f814b7d0b17f50a7fe01171abba5f01",
+      "size": 1587,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/assets/x-en.svg"
+    },
+    {
+      "repository": "AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23",
+      "source_path": "examples/before-after.md",
+      "git_blob_sha": "17643504877d54bbf9f87fa405e6fd87e893dcae",
+      "source_sha256": "60e73dfa2bab743998af2ed389b9afffa38e2c63e7248fca48bae32a19458a5e",
+      "size": 6949,
+      "local_snapshot": "plugins/deepscientist-lite/references/communication/upstream/AIScientists-Dev-academic-humanizer/examples/before-after.md"
+    }
+  ]
+}
