@@ -66,6 +66,17 @@ class CrossSystemValidationTests(unittest.TestCase):
         result = _run_shell_check(root, root / "teaching/run_loop_acceptance.sh", "bash")
         self.assertIn(result["status"], {"passed", "not-observed"})
 
+    def test_unrendered_shell_templates_are_not_syntax_checked(self):
+        root = Path(__file__).resolve().parents[1]
+        report = run(root)
+        item = next(
+            entry
+            for entry in report["syntax"]
+            if entry["path"] == "plugins/deepscientist-lite/assets/templates/run_analysis.sh"
+        )
+        self.assertEqual(item["status"], "not-observed")
+        self.assertEqual(item["failure_class"], "template-source")
+
 
 if __name__ == "__main__":
     unittest.main()

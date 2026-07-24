@@ -74,6 +74,11 @@ def _run_shell_check(root: Path, path: Path, shell: str) -> dict[str, Any]:
     return {"tool": shell, "status": "failed", "failure_class": "syntax"}
 
 
+def _is_template_source(path: Path) -> bool:
+    parts = path.parts
+    return any(parts[index:index + 2] == ("assets", "templates") for index in range(len(parts) - 1))
+
+
 def run(root: Path) -> dict[str, Any]:
     text_report = scan_tree(root)
     syntax: list[dict[str, Any]] = []
@@ -83,7 +88,11 @@ def run(root: Path) -> dict[str, Any]:
             item["path"] = _relative(path, root)
             syntax.append(item)
         elif path.suffix.lower() == ".sh":
-            item = _run_shell_check(root, path, "bash")
+            item = (
+                {"tool": "bash", "status": "not-observed", "failure_class": "template-source"}
+                if _is_template_source(path)
+                else _run_shell_check(root, path, "bash")
+            )
             item["path"] = _relative(path, root)
             syntax.append(item)
     fixtures = [r"C:\work dir\中文(1)\a&b.txt", "/mnt/c/work dir/中文(1)/a&b.txt", "/tmp/work dir/中文(1)/a&b.txt"]
