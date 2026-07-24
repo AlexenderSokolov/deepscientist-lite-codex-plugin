@@ -134,6 +134,19 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"status": "blocked", "failure_layer": "nature-runtime", "message": str(exc)}, ensure_ascii=True))
         return 1
     print(json.dumps({"status": report["status"], "skill_count": report["skill_count"], "real_gates_unlocked": False}, ensure_ascii=True))
+    if report["status"] != "passed":
+        blocked = [
+            {
+                "skill": item["skill"],
+                "route_status": item["route_status"],
+                "runtime_probe_status": item["runtime_probe_status"],
+                "failure_count": len(item["runtime_probe"].get("failures", [])),
+                "failure_refs": item["runtime_probe"].get("failures", [])[:8],
+            }
+            for item in report["skills"]
+            if item["route_status"] != "passed" or item["runtime_probe_status"] == "blocked"
+        ]
+        print(json.dumps({"blocked_skills": blocked, "snapshot_status": report["snapshot_status"]}, ensure_ascii=True))
     return 0 if report["status"] == "passed" else 1
 
 
