@@ -180,7 +180,7 @@ sequenceDiagram
 2. 让教学重点落在科研协议，而不是部署复杂度。
 3. 让插件可以通过标准 Codex marketplace 布局安装和验证。
 
-仓库级 `.agents/plugins/marketplace.json` 使用相对来源 `./plugins/deepscientist-lite`。其中 `INSTALLED_BY_DEFAULT` 表示用户添加该 marketplace 后的安装策略，不表示插件会随所有 Codex 安装自动出现。
+仓库级 `.agents/plugins/marketplace.json` 使用相对来源 `./plugins/deepscientist-lite`。其中 `AVAILABLE` 只让插件在用户添加该 marketplace 后可供选择；用户仍需在 `/plugins` 中显式安装，添加来源本身不等于已经安装。
 
 Manifest 和 marketplace 属于对外接口。修改插件名、skills 路径、版本或 source path 时，必须同时检查安装、缓存升级、新线程技能发现和文档中的安装命令。
 
