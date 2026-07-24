@@ -57,6 +57,11 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[3]
 
 
+def canonical_text_sha256(path: Path) -> str:
+    content = path.read_text(encoding="utf-8")
+    return hashlib.sha256(content.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")).hexdigest()
+
+
 def _text_files(root: Path):
     for path in root.rglob("*"):
         if path.is_file() and path.suffix.lower() in {".md", ".yaml", ".yml", ".json", ".toml", ".py", ".js", ".ts"}:
@@ -185,7 +190,7 @@ def verify_snapshot(registry: dict) -> dict:
         except (OSError, UnicodeError, json.JSONDecodeError):
             mismatches.append(f"{name}:invalid-provenance")
         else:
-            if provenance.get("upstream", {}).get("source_skill_sha256") != sha256(source_skill):
+            if provenance.get("upstream", {}).get("source_skill_sha256") != canonical_text_sha256(source_skill):
                 mismatches.append(f"{name}:provenance-hash-mismatch")
     shared_path = root / PurePosixPath(registry["shared_layer"]["path"])
     shared_discoverable = (runtime / registry["shared_layer"]["name"]).is_dir()

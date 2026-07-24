@@ -26,6 +26,11 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def canonical_text_sha256(path: Path) -> str:
+    content = path.read_text(encoding="utf-8")
+    return hashlib.sha256(content.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")).hexdigest()
+
+
 class NatureIntegrationTests(unittest.TestCase):
     def test_analysis_write_routes_polishing_without_bypassing_evidence(self) -> None:
         text = (PLUGIN / "skills" / "ds-lite-analysis-write" / "SKILL.md").read_text(encoding="utf-8")
@@ -60,7 +65,7 @@ class NatureIntegrationTests(unittest.TestCase):
                 self.assertIn("responsible-exploration-covenant.md", entry_text)
                 source_heading = next(line for line in source_text.splitlines() if line.startswith("# "))
                 self.assertIn(source_heading, entry_text)
-                self.assertEqual(provenance["upstream"]["source_skill_sha256"], sha256(source))
+                self.assertEqual(provenance["upstream"]["source_skill_sha256"], canonical_text_sha256(source))
                 self.assertTrue((runtime / name / "agents" / "openai.yaml").read_bytes().isascii())
 
     def test_authorized_vendor_sources_are_present(self) -> None:

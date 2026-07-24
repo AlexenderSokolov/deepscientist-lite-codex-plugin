@@ -43,6 +43,11 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def canonical_text_sha256(path: Path) -> str:
+    content = path.read_text(encoding="utf-8")
+    return hashlib.sha256(content.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")).hexdigest()
+
+
 def source_description(text: str, name: str) -> str:
     match = re.search(r"^description:\s*(.*?)(?=^version:|^author:|^---$)", text, re.MULTILINE | re.DOTALL)
     value = match.group(1) if match else ""
@@ -118,7 +123,7 @@ def generate(repo_root: Path) -> dict[str, object]:
                 "commit": COMMIT,
                 "license": "Apache-2.0",
                 "source_path": f"skills/{name}",
-                "source_skill_sha256": sha256(source_skill),
+                "source_skill_sha256": canonical_text_sha256(source_skill),
             },
             "runtime_path": f"plugins/deepscientist-lite/skills/{name}",
             "preserved_material": ["SKILL.md", "manifest.yaml", "static", "references", "scripts", "templates", "tests"],

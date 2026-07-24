@@ -16,6 +16,18 @@ import ds_lite_nature_setup  # noqa: E402
 
 
 class NatureSetupTests(unittest.TestCase):
+    def test_canonical_text_sha256_is_newline_stable(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            lf_path = root / "lf.md"
+            crlf_path = root / "crlf.md"
+            lf_path.write_bytes("# 标题\n正文\n".encode("utf-8"))
+            crlf_path.write_bytes("# 标题\r\n正文\r\n".encode("utf-8"))
+            self.assertEqual(
+                ds_lite_nature_setup.canonical_text_sha256(lf_path),
+                ds_lite_nature_setup.canonical_text_sha256(crlf_path),
+            )
+
     def test_capability_matrix_covers_upstream_dependencies_and_fallbacks(self) -> None:
         registry = ds_lite_nature_setup.load_registry(SCRIPTS / "ds_lite_nature_setup.py")
         matrix = ds_lite_nature_setup.capability_matrix(registry)
