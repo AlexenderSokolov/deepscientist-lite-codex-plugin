@@ -62,6 +62,12 @@ class TextCompatibilityTests(unittest.TestCase):
             json.dumps(report)
             self.assertEqual(report["schema_version"], "ds-lite.text-compatibility.v1")
 
+    def test_ignored_parent_name_does_not_hide_scan_root_contents(self):
+        with self.temp_root() as parent:
+            root = Path(parent) / ".validation-tmp" / "clean-checkout"
+            source = self.make_file(root, "owned.py", b"value = 1\n")
+            self.assertEqual(list(checker.iter_files(root)), [source])
+
     def test_binary_assets_are_not_misclassified_as_text(self):
         with self.temp_root() as root:
             result = checker.check_file(self.make_file(root, "figure.png", b"\x89PNG\r\n\x1a\n\x00\xff"))

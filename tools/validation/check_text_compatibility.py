@@ -146,7 +146,8 @@ def iter_files(root: str | Path, *, ignored_dirs: Iterable[str] = DEFAULT_IGNORE
         dirnames[:] = sorted(name for name in dirnames if name not in ignored)
         for name in sorted(filenames):
             path = Path(current) / name
-            if not any(part in ignored for part in path.parts):
+            relative_parts = path.relative_to(root_path).parts
+            if not any(part in ignored for part in relative_parts):
                 yield path
 
 
