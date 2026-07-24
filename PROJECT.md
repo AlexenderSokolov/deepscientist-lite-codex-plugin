@@ -184,7 +184,8 @@ The fresh Loop acceptance receipt `.validation-tmp/offline-loop-acceptance-20260
 - `tools/validation/upstream_manager.py` inventories every registered upstream, verifies local provenance, and produces read-only update plans. It never overwrites vendor sources or auto-publishes changes.
 - Nature skill `source_skill_sha256` values hash UTF-8 text after normalizing line endings to LF. Other vendored files retain byte-for-byte hashes, so provenance remains stable across Windows and Unix checkouts without weakening snapshot validation.
 - Offline integration, onboarding, adapter, loop, text-compatibility, cross-system, and repository validation are source-level evidence only. Real provider, Hook host, Desktop, child delegation, matched effect, formal cache, and release gates remain locked.
-- On 2026-07-24 the unified Windows validation entry completed `304/304` unittest cases, repository validation, PowerShell syntax checks, `py_compile`, and `git diff --check`. The fresh cross-system receipt observed 827 files with zero failures; Bash, PowerShell 7, and shellcheck were `not-observed` on this host.
+- Unified validation tests must use explicit provider fixtures rather than inheriting the developer's `CODEX_HOME`; Python 3.10 structured-text validation uses the CI-installed `tomli` compatibility parser when stdlib `tomllib` is unavailable.
+- On 2026-07-24 the unified Windows validation entry completed `306/306` unittest cases, repository validation, PowerShell syntax checks, `py_compile`, and `git diff --check`. The fresh cross-system receipt observed 827 files with zero failures; Bash, PowerShell 7, and shellcheck were `not-observed` on this host.
 
 Executable entrypoints (`.ps1`, `.sh`, `.cmd`) are ASCII and only orchestrate
 processes. Python logic crosses the shell boundary through a formal CLI and

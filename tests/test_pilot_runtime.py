@@ -610,6 +610,20 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
         fake_wsl.write_text("print('Linux')\n", encoding="utf-8")
         return fake_codex, fake_wsl
 
+    def _write_provider_home(self, root: Path) -> Path:
+        provider_home = root / "provider-home"
+        provider_home.mkdir()
+        (provider_home / "config.toml").write_text(
+            'model_provider = "custom"\n\n'
+            '[model_providers.custom]\n'
+            'name = "custom"\n'
+            'base_url = "https://provider.example/v1"\n'
+            'wire_api = "responses"\n'
+            'requires_openai_auth = true\n',
+            encoding="utf-8",
+        )
+        return provider_home
+
     def test_preflight_proves_isolated_prompt_skills_without_persisting_host_output(self) -> None:
         parent = Path(tempfile.mkdtemp(prefix="ds-lite-preflight-"))
         windows_root = parent / "windows"
@@ -621,7 +635,10 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
             pilot_id="matched-pilot-preflight",
             authorization_ref="user-approved-preflight",
         )
-        pilot_runtime.install_homes(windows_root)
+        pilot_runtime.install_homes(
+            windows_root,
+            source_codex_home=self._write_provider_home(parent),
+        )
         fake_codex, fake_wsl = self._write_fake_host(parent)
 
         result = pilot_runtime.preflight_pilot(
@@ -651,7 +668,10 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
             pilot_id="matched-pilot-preflight-env-auth",
             authorization_ref="user-approved-preflight-env-auth",
         )
-        pilot_runtime.install_homes(windows_root)
+        pilot_runtime.install_homes(
+            windows_root,
+            source_codex_home=self._write_provider_home(parent),
+        )
         fake_codex, fake_wsl = self._write_fake_host(parent)
         original_key = os.environ.get("OPENAI_API_KEY")
         original_status = os.environ.get("FAKE_LOGIN_STATUS")
@@ -690,7 +710,10 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
             pilot_id="matched-pilot-canary",
             authorization_ref="user-approved-canary",
         )
-        pilot_runtime.install_homes(windows_root)
+        pilot_runtime.install_homes(
+            windows_root,
+            source_codex_home=self._write_provider_home(parent),
+        )
         fake_codex, fake_wsl = self._write_fake_host(parent)
         pilot_runtime.preflight_pilot(
             windows_root,
@@ -721,7 +744,10 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
             pilot_id="matched-pilot-canary-zero",
             authorization_ref="user-approved-canary-zero",
         )
-        pilot_runtime.install_homes(windows_root)
+        pilot_runtime.install_homes(
+            windows_root,
+            source_codex_home=self._write_provider_home(parent),
+        )
         fake_codex, fake_wsl = self._write_fake_host(parent)
         pilot_runtime.preflight_pilot(
             windows_root,

@@ -19,7 +19,10 @@ from typing import Iterable
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover - Python < 3.11
-    tomllib = None
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:  # pragma: no cover - optional on local Python 3.10
+        tomllib = None
 
 
 EXECUTABLE_SUFFIXES = {".ps1", ".sh", ".cmd"}
