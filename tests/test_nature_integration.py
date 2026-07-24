@@ -46,9 +46,24 @@ class NatureIntegrationTests(unittest.TestCase):
         self.assertEqual(registry["runtime_skill_count"], 17)
         self.assertEqual({item["skill"] for item in registry["skills"]}, SKILLS)
         self.assertFalse(registry["shared_layer"]["discoverable"])
-        discovered = {path.name for path in (PLUGIN / "skills").iterdir() if path.is_dir()}
+        discovered = {
+            path.name
+            for path in (PLUGIN / "skills").iterdir()
+            if path.is_dir() and (path / "SKILL.md").is_file()
+        }
         self.assertEqual(len(discovered), 26)
         self.assertNotIn("nature-shared", discovered)
+        shared = PLUGIN / "skills" / "nature-shared"
+        self.assertFalse((shared / "SKILL.md").exists())
+        for relative in (
+            "manifest.yaml",
+            "core/ethics.md",
+            "core/paper-type-taxonomy.md",
+            "core/reader-workflow.md",
+            "core/terminology-ledger.md",
+            "journal-formats/nat-comms.md",
+        ):
+            self.assertTrue((shared / relative).is_file(), relative)
 
     def test_runtime_entries_preserve_source_body_and_provenance(self) -> None:
         vendor = PLUGIN / "vendor" / "nature-skills" / COMMIT / "skills"

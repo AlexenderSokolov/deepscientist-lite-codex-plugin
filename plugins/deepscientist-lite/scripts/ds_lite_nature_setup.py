@@ -193,7 +193,7 @@ def verify_snapshot(registry: dict) -> dict:
             if provenance.get("upstream", {}).get("source_skill_sha256") != canonical_text_sha256(source_skill):
                 mismatches.append(f"{name}:provenance-hash-mismatch")
     shared_path = root / PurePosixPath(registry["shared_layer"]["path"])
-    shared_discoverable = (runtime / registry["shared_layer"]["name"]).is_dir()
+    shared_discoverable = (runtime / registry["shared_layer"]["name"] / "SKILL.md").is_file()
     if not shared_path.is_dir():
         mismatches.append("nature-shared:missing")
     if shared_discoverable:

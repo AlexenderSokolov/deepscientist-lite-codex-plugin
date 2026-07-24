@@ -178,7 +178,7 @@ The fresh Loop acceptance receipt `.validation-tmp/offline-loop-acceptance-20260
 
 ## Current upstream integration status (2026-07-24)
 
-- The plugin candidate is `0.6.0-beta.1`. It exposes the nine DS Lite core skills plus the complete 17-skill `nature-skills` snapshot at commit `91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b`; `nature-shared` remains an internal, non-discoverable layer.
+- The plugin candidate is `0.6.0-beta.1`. It exposes the nine DS Lite core skills plus the complete 17-skill `nature-skills` snapshot at commit `91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b`; `skills/nature-shared/` carries internal shared materials without a `SKILL.md`, so it remains non-discoverable while sibling manifest references resolve.
 - Nature integrations are opt-in. `ds_lite_nature_setup.py inventory|doctor|onboarding|apply|verify` checks local tools and environment-key presence, writes only workspace-local `.ds-lite/nature/` files, and never changes global Codex, credential, marketplace, or MCP configuration.
 - `codex-autoresearch` is an authorized fixed snapshot at commit `f2389bffbb4cd7789deb6796bc4ba35bf31f2a90` / npm `0.1.5-beta.0`. The adapter preserves bounded goals, completion evidence, zero retry, and fail-closed stopping, but does not execute the upstream CLI until a redacted child-output contract is supplied.
 - `tools/validation/upstream_manager.py` inventories every registered upstream, verifies local provenance, and produces read-only update plans. It never overwrites vendor sources or auto-publishes changes.

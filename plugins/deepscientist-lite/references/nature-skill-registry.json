@@ -10,7 +10,7 @@
   "shared_layer": {
     "name": "nature-shared",
     "discoverable": false,
-    "path": "plugins/deepscientist-lite/references/nature-shared"
+    "path": "plugins/deepscientist-lite/skills/nature-shared"
   },
   "skills": [
     {

@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 from pathlib import Path
 
 COMMIT = "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b"
@@ -133,6 +134,18 @@ def generate(repo_root: Path) -> dict[str, object]:
         }
         (runtime / "provenance.json").write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
         inventory.append(provenance)
+
+    shared_source = vendor_root / "nature-shared"
+    shared_runtime = runtime_root / "nature-shared"
+    if not shared_source.is_dir():
+        raise GenerationError("nature-shared snapshot is missing")
+    for source_path in shared_source.rglob("*"):
+        if not source_path.is_file() or source_path.name == "SKILL.md":
+            continue
+        target_path = shared_runtime / source_path.relative_to(shared_source)
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source_path, target_path)
+
     registry = {
         "schema_version": "ds-lite.nature-skill-registry.v1",
         "upstream": {
@@ -142,7 +155,7 @@ def generate(repo_root: Path) -> dict[str, object]:
             "vendor_root": f"plugins/deepscientist-lite/vendor/nature-skills/{COMMIT}",
         },
         "runtime_skill_count": len(SKILLS),
-        "shared_layer": {"name": "nature-shared", "discoverable": False, "path": "plugins/deepscientist-lite/references/nature-shared"},
+        "shared_layer": {"name": "nature-shared", "discoverable": False, "path": "plugins/deepscientist-lite/skills/nature-shared"},
         "skills": inventory,
     }
     registry_path = repo_root / "plugins" / "deepscientist-lite" / "references" / "nature-skill-registry.json"
