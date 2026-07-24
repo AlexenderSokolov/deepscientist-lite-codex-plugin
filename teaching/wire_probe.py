@@ -8,10 +8,14 @@ import hashlib
 import json
 import socket
 import ssl
-import tomllib
 from pathlib import Path, PurePosixPath
 from typing import Any
 from urllib.parse import urlsplit
+
+try:
+    from .toml_compat import tomllib
+except ImportError:
+    from toml_compat import tomllib
 
 try:
     import transport_diagnostics

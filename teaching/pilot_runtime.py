@@ -14,10 +14,14 @@ import subprocess
 import sys
 import threading
 import time
-import tomllib
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Iterable
+
+try:
+    from .toml_compat import tomllib
+except ImportError:
+    from toml_compat import tomllib
 
 try:
     import acceptance_gate

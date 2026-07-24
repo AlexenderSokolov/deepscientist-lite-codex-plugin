@@ -6,9 +6,13 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import tomllib
 import warnings
 from pathlib import Path
+
+try:
+    from .toml_compat import tomllib
+except ImportError:
+    from toml_compat import tomllib
 
 
 class AcceptanceError(RuntimeError):

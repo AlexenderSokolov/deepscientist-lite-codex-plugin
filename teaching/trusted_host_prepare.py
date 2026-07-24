@@ -86,7 +86,10 @@ def prepare(*, codex_bin: Path | str, source_home: Path | str,
     # Keep plugin/marketplace tables created by Codex while placing route keys first.
     config.write_text("\n".join(lines) + ("\n" + existing if existing else "\n"), encoding="utf-8", newline="\n")
     try:
-        import tomllib
+        try:
+            from .toml_compat import tomllib
+        except ImportError:
+            from toml_compat import tomllib
         parsed = tomllib.loads(config.read_text(encoding="utf-8"))
     except Exception as exc:
         raise PreparationError("generated TOML failed validation") from exc
