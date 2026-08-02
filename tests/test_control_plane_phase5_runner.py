@@ -17,7 +17,7 @@ INPUT_NAMES = {
 
 class Phase5RunnerContractTests(unittest.TestCase):
     def test_bash_runner_is_fail_closed_final_assembly_only(self) -> None:
-        path = ROOT / "run_control_plane_phase5.sh"
+        path = ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase5.sh"
         text = path.read_text(encoding="ascii")
         self.assertIn("set -euo pipefail", text)
         self.assertIn('codex_version="0.146.0"', text)
@@ -39,7 +39,7 @@ class Phase5RunnerContractTests(unittest.TestCase):
             self.assertNotIn(forbidden, text)
 
     def test_powershell_runner_has_equivalent_contract(self) -> None:
-        path = ROOT / "run_control_plane_phase5.ps1"
+        path = ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase5.ps1"
         text = path.read_text(encoding="ascii")
         self.assertIn('$ErrorActionPreference = "Stop"', text)
         self.assertIn('$CodexVersion = "0.146.0"', text)
@@ -55,12 +55,12 @@ class Phase5RunnerContractTests(unittest.TestCase):
         if bash:
             probe = subprocess.run([bash, "--version"], capture_output=True)
             if probe.returncode == 0:
-                subprocess.run([bash, "-n", str(ROOT / "run_control_plane_phase5.sh")], check=True)
+                subprocess.run([bash, "-n", str(ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase5.sh")], check=True)
         powershell = shutil.which("powershell") or shutil.which("pwsh")
         if powershell:
             probe = subprocess.run([powershell, "-NoProfile", "-Command", "$PSVersionTable.PSVersion"], capture_output=True)
             if probe.returncode == 0:
-                script = str(ROOT / "run_control_plane_phase5.ps1").replace("'", "''")
+                script = str(ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase5.ps1").replace("'", "''")
                 command = f"[scriptblock]::Create((Get-Content -Raw -LiteralPath '{script}')) | Out-Null"
                 subprocess.run([
                     powershell, "-NoProfile", "-Command", command,

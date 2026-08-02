@@ -37,7 +37,7 @@
 - Record any installation or cache failure in `known-issues.md`.
 - Confirm contract/environment JSON contains no credentials, process environment dump, or workstation absolute root.
 - If publishing source/package-only, state that cache installation and new-thread discovery are not verified; do not silently perform those external state changes.
-- Feed independent `passed` receipts for source, offline, CLI, provider, Hook, delegation, matched effect, formal cache, fresh Desktop, OpenScience, and docs into `run_accept_formal_host.*` using `ds-lite.formal-release-gate.v2`. A missing or non-passing receipt must keep release blocked; adjacent evidence cannot substitute.
+- Feed independent `passed` receipts for source, offline, CLI, provider, Hook, delegation, matched effect, formal cache, fresh Desktop, OpenScience, and docs into `tools/validation/runners/run_accept_formal_host.*` using `ds-lite.formal-release-gate.v2`. A missing or non-passing receipt must keep release blocked; adjacent evidence cannot substitute.
 
 ## Stable public release
 

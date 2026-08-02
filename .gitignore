@@ -1,7 +1,17 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-.validation-tmp/
+
+# Generated validation/evidence trees. Keep receipts locally, but never stage
+# an entire run root into the source repository.
+research/
+.validation-tmp*/
+.tmp-*/
+.ds-lite-test-temp-*/
+ds-lite-autoresearch-*/
+ds-lite-hook*/
+runner-probe-*/
+System.Management.Automation.Internal.Host.InternalHost/
+
 .DS_Store
 Thumbs.db
-
