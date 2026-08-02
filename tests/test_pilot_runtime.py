@@ -8,6 +8,7 @@ import tempfile
 import textwrap
 import time
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 import sys
 
@@ -42,6 +43,90 @@ class PilotRuntimeEntrypointTests(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertTrue(hasattr(pilot_runtime, name), f"missing pilot runtime API: {name}")
 
+    def test_powershell_codex_launcher_uses_explicit_host(self) -> None:
+        launcher = Path(r"C:\\isolated\\codex.ps1")
+        self.assertEqual(
+            pilot_runtime._command_prefix(launcher),
+            ["powershell.exe", "-NoProfile", "-File", str(launcher)],
+        )
+
+    def test_windows_canary_isolated_from_wsl_only_preflight_block(self) -> None:
+        self.assertTrue(
+            pilot_runtime._windows_canary_preflight_ready(
+                {"status": "blocked", "blocking_reasons": ["wsl-precondition"]}
+            )
+        )
+        self.assertFalse(
+            pilot_runtime._windows_canary_preflight_ready(
+                {"status": "blocked", "blocking_reasons": ["wsl-precondition", "authentication"]}
+            )
+        )
+
+    def test_validated_wsl_host_probe_requires_complete_host_evidence(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-wsl-host-probe-"))
+        receipt = root / "wsl-host-probe.json"
+        receipt.write_text(json.dumps({
+            "schema_version": "ds-lite.wsl-host-probe.v1", "status": "passed",
+            "host": "windows-powershell", "distribution": "DS-Lite-Ubuntu-24.04",
+            "assertion": "uname-s-is-linux", "exit_code": 0,
+            "raw_output_persisted": False,
+        }), encoding="utf-8")
+        self.assertTrue(pilot_runtime._validated_wsl_host_probe(receipt))
+        receipt.write_text("\ufeff" + receipt.read_text(encoding="utf-8"), encoding="utf-8")
+        self.assertTrue(pilot_runtime._validated_wsl_host_probe(receipt))
+        receipt.write_text(json.dumps({"schema_version": "ds-lite.wsl-host-probe.v1", "status": "passed"}), encoding="utf-8")
+        self.assertFalse(pilot_runtime._validated_wsl_host_probe(receipt))
+
+    def test_execution_arguments_use_an_absolute_workspace(self) -> None:
+        args = pilot_runtime._codex_args(
+            {"session_mode": "ephemeral", "call_id": "case-01"},
+            Path("research/.validation-tmp/relative-workspace"),
+            "",
+        )
+        workspace = Path(args[args.index("-C") + 1])
+        self.assertTrue(workspace.is_absolute())
+
+    def test_numerical_call_uses_call_scoped_wsl_capable_sandbox_only(self) -> None:
+        numerical = pilot_runtime._codex_args(
+            {"case": "numerical-seeds", "session_mode": "ephemeral", "call_id": "numerical-seeds--plain--r1"},
+            Path("research/.validation-tmp/numerical-workspace"),
+            "",
+        )
+        ordinary = pilot_runtime._codex_args(
+            {"case": "math-counterexample", "session_mode": "ephemeral", "call_id": "math-counterexample--plain--r1"},
+            Path("research/.validation-tmp/math-workspace"),
+            "",
+        )
+        self.assertEqual(numerical[numerical.index("-s") + 1], "danger-full-access")
+        self.assertEqual(ordinary[ordinary.index("-s") + 1], "workspace-write")
+
+    def test_stable_resume_uses_exact_session_and_inherits_original_workspace_policy(self) -> None:
+        args = pilot_runtime._codex_args(
+            {"session_mode": "temporary-resume", "call_id": "case-02"},
+            Path("research/.validation-tmp/relative-workspace"),
+            "session-123",
+        )
+        self.assertEqual(args[:2], ["exec", "resume"])
+        self.assertNotIn("--last", args)
+        self.assertNotIn("-s", args)
+        self.assertNotIn("-C", args)
+        self.assertEqual(args[-1], "session-123")
+
+    def test_session_cleanup_uses_absolute_home_and_workspace_boundaries(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-pilot-cleanup-"))
+        binary = root / "codex.exe"
+        home = Path("research/.validation-tmp/relative-home")
+        workspace = Path("research/.validation-tmp/relative-workspace")
+        with patch.object(
+            pilot_runtime.subprocess, "run",
+            return_value=type("Completed", (), {"returncode": 0})(),
+        ) as run:
+            self.assertTrue(
+                pilot_runtime._delete_session(binary, home, workspace, "session-123")
+            )
+        self.assertEqual(run.call_args.kwargs["env"]["CODEX_HOME"], str(home.resolve()))
+        self.assertEqual(run.call_args.kwargs["cwd"], workspace.resolve())
+
     def test_cross_platform_pilot_wrappers_and_validation_lists_exist(self) -> None:
         wrappers = (
             REPO_ROOT / "teaching" / "run_pilot.ps1",
@@ -56,6 +141,9 @@ class PilotRuntimeEntrypointTests(unittest.TestCase):
                 self.assertNotIn("auth.json", text)
                 self.assertNotIn("plugins/cache", text.replace("\\", "/"))
                 self.assertNotIn("matched-pilot-20260717-01", text)
+                self.assertIn("temp_root", text)
+                self.assertIn("research/.validation-tmp", text.replace("\\", "/"))
+                self.assertIn("authorized-retry-call", text)
         for relative in ("tools/validation/run_validate.ps1", "tools/validation/run_validate.sh"):
             with self.subTest(validation=relative):
                 text = (REPO_ROOT / relative).read_text(encoding="utf-8").replace("\\", "/")
@@ -147,6 +235,19 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
         payload = self.execution()
         payload["extensions"] = {"example.org/blind-label": "group-a"}
         self.assertEqual(pilot_runtime.validate_execution(payload), payload)
+
+    def test_current_candidate_requires_stable_codex_but_legacy_receipts_remain_readable(self) -> None:
+        current = self.execution()
+        current["source"]["plugin_version"] = "0.8.1-beta.1"
+        current["cli"]["version"] = "0.146.0"
+        self.assertEqual(pilot_runtime.validate_execution(current), current)
+
+        current["cli"]["version"] = "0.144.5"
+        with self.assertRaisesRegex(pilot_runtime.PilotError, "cli identity"):
+            pilot_runtime.validate_execution(current)
+
+        legacy = self.execution()
+        self.assertEqual(pilot_runtime.validate_execution(legacy), legacy)
 
     def test_execution_schema_rejects_missing_field(self) -> None:
         payload = self.execution()
@@ -444,6 +545,315 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
                 self.assertEqual(blocked["action"], "stop")
                 self.assertIn("call-risk", blocked["blocking_calls"])
 
+    def test_attempt_retry_requires_transient_failure_and_absent_workspace_effect(self) -> None:
+        before = {"TASK.md": "a" * 64}
+        transient = {
+            "status": "failed",
+            "stop_reason": "process-failed",
+            "extensions": {
+                "process_diagnostic": {
+                    "failure_class": "network",
+                    "http_status_category": "none",
+                }
+            },
+        }
+        decision = pilot_runtime.reconcile_attempt_retry(
+            transient,
+            before_inventory=before,
+            after_inventory=dict(before),
+            attempt_number=1,
+            max_attempts=3,
+        )
+        self.assertEqual(decision["disposition"], "retry")
+        self.assertTrue(decision["effect_absent"])
+        self.assertGreater(decision["delay_seconds"], 0)
+
+        changed = pilot_runtime.reconcile_attempt_retry(
+            transient,
+            before_inventory=before,
+            after_inventory={**before, "REPORT.md": "b" * 64},
+            attempt_number=1,
+            max_attempts=3,
+        )
+        self.assertEqual(changed["disposition"], "blocked")
+        self.assertEqual(changed["reason"], "workspace-effect-observed")
+
+    def test_attempt_retry_fails_closed_for_auth_ambiguous_and_exhaustion(self) -> None:
+        inventory = {"TASK.md": "a" * 64}
+        for result, expected_reason in (
+            (
+                {
+                    "status": "failed",
+                    "stop_reason": "process-failed",
+                    "extensions": {"process_diagnostic": {"failure_class": "auth", "http_status_category": "4xx"}},
+                },
+                "non-retryable-failure",
+            ),
+            (
+                {
+                    "status": "ambiguous",
+                    "stop_reason": "ambiguous-transport",
+                    "extensions": {"process_diagnostic": {"failure_class": "ambiguous", "http_status_category": "none"}},
+                },
+                "ambiguous-effect",
+            ),
+        ):
+            with self.subTest(expected_reason=expected_reason):
+                decision = pilot_runtime.reconcile_attempt_retry(
+                    result,
+                    before_inventory=inventory,
+                    after_inventory=dict(inventory),
+                    attempt_number=1,
+                    max_attempts=3,
+                )
+                self.assertEqual(decision["disposition"], "blocked")
+                self.assertEqual(decision["reason"], expected_reason)
+
+        exhausted = pilot_runtime.reconcile_attempt_retry(
+            {
+                "status": "timeout",
+                "stop_reason": "timeout",
+                "extensions": {"process_diagnostic": {"failure_class": "timeout", "http_status_category": "none"}},
+            },
+            before_inventory=inventory,
+            after_inventory=dict(inventory),
+            attempt_number=3,
+            max_attempts=3,
+        )
+        self.assertEqual(exhausted["reason"], "attempt-budget-exhausted")
+
+    def test_terminal_attempts_are_write_once_and_only_success_becomes_canonical(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-pilot-attempts-"))
+        item = {
+            "call_id": "math-counterexample--plain--r1",
+            "result_ref": "results/executions/math-counterexample--plain--r1.json",
+        }
+        failed = self.execution()
+        failed.update(
+            {
+                "execution_id": "execution:math-counterexample--plain--r1:attempt:1",
+                "call_id": item["call_id"],
+                "status": "failed",
+                "exit_code": 1,
+                "stop_reason": "process-failed",
+                "completed_at": "2026-08-01T00:00:00Z",
+            }
+        )
+        failed_ref = pilot_runtime.persist_terminal_attempt(root, item, failed, attempt_number=1)
+        self.assertTrue((root / failed_ref["attempt_ref"]).is_file())
+        self.assertFalse((root / item["result_ref"]).exists())
+        with self.assertRaises(FileExistsError):
+            pilot_runtime.persist_terminal_attempt(root, item, failed, attempt_number=1)
+
+        completed = self.execution()
+        completed.update(
+            {
+                "execution_id": "execution:math-counterexample--plain--r1:attempt:2",
+                "call_id": item["call_id"],
+            }
+        )
+        success_ref = pilot_runtime.persist_terminal_attempt(root, item, completed, attempt_number=2)
+        canonical = root / item["result_ref"]
+        index = root / success_ref["index_ref"]
+        self.assertEqual(canonical.read_bytes(), (root / success_ref["attempt_ref"]).read_bytes())
+        self.assertEqual(json.loads(index.read_text(encoding="utf-8"))["canonical_attempt_number"], 2)
+        self.assertEqual(json.loads(index.read_text(encoding="utf-8"))["canonical_sha256"], success_ref["attempt_sha256"])
+
+    def test_call_attempt_sequence_retries_transient_absent_effect_and_indexes_success(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-pilot-sequence-"))
+        workspace = root / "arms" / "math-counterexample" / "plain"
+        workspace.mkdir(parents=True)
+        (workspace / "TASK.md").write_text("bounded task\n", encoding="utf-8")
+        item = {
+            "call_id": "math-counterexample--plain--r1",
+            "result_ref": "results/executions/math-counterexample--plain--r1.json",
+        }
+        base = self.execution()
+        base.update({"call_id": item["call_id"], "case": "math-counterexample"})
+        calls = []
+
+        def invoke(attempt_number: int, execution: dict, runtime_path: Path) -> dict:
+            calls.append((attempt_number, runtime_path))
+            if attempt_number == 2:
+                (workspace / "REPORT.md").write_text("completed effect\n", encoding="utf-8")
+            result = dict(execution)
+            result.update(
+                {
+                    "status": "failed" if attempt_number == 1 else "completed",
+                    "exit_code": 1 if attempt_number == 1 else 0,
+                    "stop_reason": "process-failed" if attempt_number == 1 else "completed",
+                    "completed_at": f"2026-08-01T00:00:0{attempt_number}Z",
+                }
+            )
+            result["extensions"] = {
+                "process_diagnostic": {
+                    "failure_class": "network" if attempt_number == 1 else "none",
+                    "http_status_category": "none",
+                }
+            }
+            return result
+
+        delays = []
+        result = pilot_runtime.run_call_attempt_sequence(
+            root,
+            workspace=workspace,
+            item=item,
+            base_execution=base,
+            invoke=invoke,
+            max_attempts=3,
+            sleep_fn=delays.append,
+        )
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["extensions"]["attempt_reconciliation"]["disposition"], "terminal")
+        self.assertEqual(result["extensions"]["attempt_reconciliation"]["reason"], "completed")
+        self.assertEqual([number for number, _ in calls], [1, 2])
+        self.assertEqual(delays, [5])
+        self.assertTrue((root / "results/execution-attempts/math-counterexample--plain--r1/attempt-001.json").is_file())
+        self.assertTrue((root / "results/execution-attempts/math-counterexample--plain--r1/attempt-002.json").is_file())
+        self.assertEqual(
+            json.loads((root / "results/execution-index/math-counterexample--plain--r1.json").read_text(encoding="utf-8"))["canonical_attempt_number"],
+            2,
+        )
+
+    def test_call_attempt_sequence_does_not_retry_after_workspace_effect(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-pilot-effect-"))
+        workspace = root / "workspace"
+        workspace.mkdir()
+        (workspace / "TASK.md").write_text("bounded task\n", encoding="utf-8")
+        item = {"call_id": "call-effect", "result_ref": "results/executions/call-effect.json"}
+        base = self.execution()
+        base.update({"execution_id": "execution-call-effect", "call_id": "call-effect"})
+        call_count = 0
+
+        def invoke(attempt_number: int, execution: dict, runtime_path: Path) -> dict:
+            nonlocal call_count
+            call_count += 1
+            (workspace / "REPORT.md").write_text("partial effect\n", encoding="utf-8")
+            result = dict(execution)
+            result.update({"status": "failed", "exit_code": 1, "stop_reason": "process-failed", "completed_at": "2026-08-01T00:00:01Z"})
+            result["extensions"] = {"process_diagnostic": {"failure_class": "network", "http_status_category": "none"}}
+            return result
+
+        result = pilot_runtime.run_call_attempt_sequence(
+            root,
+            workspace=workspace,
+            item=item,
+            base_execution=base,
+            invoke=invoke,
+            max_attempts=3,
+            sleep_fn=lambda _seconds: self.fail("workspace effects must prevent retry"),
+        )
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(call_count, 1)
+        self.assertEqual(result["extensions"]["attempt_reconciliation"]["reason"], "workspace-effect-observed")
+        self.assertFalse((root / item["result_ref"]).exists())
+
+    def test_one_operator_authorized_retry_can_recover_exact_terminal_auth_attempt(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-pilot-operator-retry-"))
+        workspace = root / "workspace"
+        workspace.mkdir()
+        (workspace / "TASK.md").write_text("bounded task\n", encoding="utf-8")
+        item = {"call_id": "call-auth", "result_ref": "results/executions/call-auth.json"}
+        prior = self.execution()
+        prior.update(
+            {
+                "execution_id": "execution:call-auth:attempt:1",
+                "call_id": "call-auth",
+                "status": "failed",
+                "exit_code": 1,
+                "stop_reason": "process-failed",
+                "completed_at": "2026-08-01T00:00:01Z",
+            }
+        )
+        inventory = pilot_runtime._inventory(workspace)
+        prior["extensions"] = {
+            "event_summary": {"turn_failed": True},
+            "process_diagnostic": {"failure_class": "auth", "http_status_category": "4xx"},
+            "attempt_reconciliation": pilot_runtime.reconcile_attempt_retry(
+                prior,
+                before_inventory=inventory,
+                after_inventory=dict(inventory),
+                attempt_number=1,
+                max_attempts=3,
+            ),
+        }
+        pilot_runtime.persist_terminal_attempt(root, item, prior, attempt_number=1)
+        calls = []
+
+        def invoke(attempt_number: int, execution: dict, runtime_path: Path) -> dict:
+            calls.append(attempt_number)
+            result = dict(execution)
+            result.update({"status": "completed", "exit_code": 0, "stop_reason": "completed", "completed_at": "2026-08-01T00:00:02Z"})
+            result["extensions"] = {"process_diagnostic": {"failure_class": "none", "http_status_category": "none"}}
+            return result
+
+        result = pilot_runtime.run_call_attempt_sequence(
+            root,
+            workspace=workspace,
+            item=item,
+            base_execution={**prior, "status": "pending", "exit_code": None, "stop_reason": "not-started", "completed_at": "", "extensions": {}},
+            invoke=invoke,
+            max_attempts=3,
+            authorized_retry=True,
+            authorization_ref="phase5-user-authorization-20260801",
+            sleep_fn=lambda _seconds: None,
+        )
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(calls, [2])
+        authorization = result["extensions"]["operator_retry_authorization"]
+        self.assertEqual(authorization["prior_attempt_number"], 1)
+        self.assertRegex(authorization["prior_attempt_sha256"], r"^[0-9a-f]{64}$")
+        self.assertEqual(authorization["authorization_ref"], "phase5-user-authorization-20260801")
+
+    def test_operator_retry_can_recover_exact_effect_absent_wsl_precondition(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-pilot-wsl-retry-"))
+        workspace = root / "workspace"
+        workspace.mkdir()
+        (workspace / "TASK.md").write_text("bounded task\n", encoding="utf-8")
+        item = {"call_id": "numerical-seeds--plain--r1", "result_ref": "results/executions/numerical-seeds--plain--r1.json"}
+        prior = self.execution()
+        prior.update(
+            {
+                "execution_id": "execution:numerical-seeds--plain--r1:attempt:1",
+                "call_id": item["call_id"],
+                "case": "numerical-seeds",
+                "status": "blocked",
+                "stop_reason": "precondition",
+                "input": {**prior["input"], "workspace_surface": "wsl"},
+                "wsl": {"status": "missing", "distribution": "DS-Lite-Ubuntu-24.04", "proof_ref": "", "extensions": {}},
+            }
+        )
+        inventory = pilot_runtime._inventory(workspace)
+        prior["extensions"] = {
+            "event_summary": {"turn_completed": True, "turn_failed": False},
+            "process_diagnostic": {"failure_class": "none", "http_status_category": "none"},
+            "attempt_reconciliation": pilot_runtime.reconcile_attempt_retry(
+                prior,
+                before_inventory=inventory,
+                after_inventory=dict(inventory),
+                attempt_number=1,
+                max_attempts=3,
+            ),
+        }
+        pilot_runtime.persist_terminal_attempt(root, item, prior, attempt_number=1)
+        calls = []
+
+        def invoke(attempt_number: int, execution: dict, runtime_path: Path) -> dict:
+            calls.append(attempt_number)
+            return prior
+
+        pilot_runtime.run_call_attempt_sequence(
+            root,
+            workspace=workspace,
+            item=item,
+            base_execution=prior,
+            invoke=invoke,
+            max_attempts=3,
+            authorized_retry=True,
+            authorization_ref="phase5-user-authorization-20260801",
+        )
+        self.assertEqual(calls, [2])
+
     def test_prepare_and_install_create_cross_drive_isolated_homes(self) -> None:
         parent = Path(tempfile.mkdtemp(prefix="ds-lite-pilot-layout-"))
         windows_root = parent / "windows" / "pilot"
@@ -457,7 +867,7 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
         )
         self.assertTrue((windows_root / "pilot-manifest.json").is_file())
         self.assertTrue((windows_root / "execution-plan.json").is_file())
-        self.assertTrue((windows_root / "source-snapshot" / "plugins" / "deepscientist-lite" / "skills").is_dir())
+        self.assertTrue((windows_root / "source-snapshot" / "plugins" / "deepscientist-lite-core" / "skills").is_dir())
         self.assertTrue((wsl_root / "arms" / "numerical-seeds" / "plain" / "TASK.md").is_file())
         wrapper = wsl_root / "arms" / "numerical-seeds" / "plain" / "materials" / "run_simulation_wsl.sh"
         self.assertTrue(wrapper.is_file())
@@ -478,9 +888,7 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
             for path in ds_lite_skills.iterdir()
             if path.is_dir() and (path / "SKILL.md").is_file()
         ]
-        self.assertEqual(len(discovered), 26)
-        self.assertTrue((ds_lite_skills / "nature-shared" / "core" / "ethics.md").is_file())
-        self.assertFalse((ds_lite_skills / "nature-shared" / "SKILL.md").exists())
+        self.assertEqual(len(discovered), 9)
         home_manifest = (windows_root / "home-manifest.json").read_text(encoding="utf-8")
         self.assertNotIn(str(windows_root), home_manifest)
         self.assertIn('"installation_kind": "isolated-skill-home"', home_manifest)
@@ -577,7 +985,7 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
 
                 args = sys.argv[1:]
                 if args == ["--version"]:
-                    print("codex-cli 0.144.5")
+                    print("codex-cli 0.146.0")
                 elif args[:2] == ["login", "status"]:
                     if os.environ.get("FAKE_LOGIN_STATUS") == "not-logged-in":
                         print("Not logged in")
@@ -607,7 +1015,7 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
             encoding="utf-8",
         )
         fake_wsl = root / "fake_wsl.py"
-        fake_wsl.write_text("print('Linux')\n", encoding="utf-8")
+        fake_wsl.write_text("print('wsl: non-fatal warning')\nprint('Linux')\n", encoding="utf-8")
         return fake_codex, fake_wsl
 
     def _write_provider_home(self, root: Path) -> Path:
@@ -650,7 +1058,7 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
         self.assertEqual(result["status"], "passed")
         self.assertTrue(result["cli"]["authenticated"])
         self.assertEqual(result["homes"]["control"]["prompt_skill_names"], [])
-        self.assertEqual(len(result["homes"]["ds_lite"]["prompt_skill_names"]), 26)
+        self.assertEqual(len(result["homes"]["ds_lite"]["prompt_skill_names"]), 9)
         self.assertFalse(result["extensions"]["cache_installation_verified"])
         saved = (windows_root / "results" / "preflight.json").read_text(encoding="utf-8")
         self.assertNotIn(str(parent), saved)
@@ -787,7 +1195,7 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
         fake_codex.write_text(
             "import json, sys\n"
             "if '--version' in sys.argv:\n"
-            "    print('codex 0.144.5')\n"
+            "    print('codex 0.146.0')\n"
             "    raise SystemExit(0)\n"
             "print(json.dumps({'type':'thread.started','thread_id':'019f-gate'}), flush=True)\n"
             "print(json.dumps({'type':'item.completed','item':{'type':'command_execution','command':'pwd','exit_code':0}}), flush=True)\n"
@@ -803,6 +1211,25 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
     def test_execution_loop_numbers_calls_before_building_progress_context(self) -> None:
         source = inspect.getsource(pilot_runtime.execute_pilot)
         self.assertIn("for call_number, item in enumerate(plan, start=1):", source)
+
+    def test_execution_loop_routes_each_logical_call_through_attempt_recovery(self) -> None:
+        source = inspect.getsource(pilot_runtime.execute_pilot)
+        self.assertIn("run_call_attempt_sequence(", source)
+        self.assertNotIn("record_path=record_path", source)
+
+    def test_resume_cli_accepts_an_exact_operator_authorized_retry_call(self) -> None:
+        args = pilot_runtime.parser().parse_args(
+            [
+                "resume",
+                "--windows-root", "windows",
+                "--wsl-root", "wsl",
+                "--codex-bin", "codex.exe",
+                "--authorized-retry-call", "engineering-continuity--scratchpad--r3",
+                "--authorization-ref", "phase5-user-authorization-20260801",
+            ]
+        )
+        self.assertEqual(args.authorized_retry_call, ["engineering-continuity--scratchpad--r3"])
+        self.assertEqual(args.authorization_ref, "phase5-user-authorization-20260801")
 
     def test_fake_codex_records_success_failure_and_ambiguous_without_raw_jsonl(self) -> None:
         root = Path(tempfile.mkdtemp(prefix="ds-lite-fake-codex-"))
@@ -886,6 +1313,56 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
                     self.assertEqual(diagnostic["structured_error_sources"], ["turn.failed"])
                     self.assertEqual(diagnostic["stderr_line_count"], 0)
                     self.assertRegex(diagnostic["stderr_sha256"], r"^[0-9a-f]{64}$")
+
+    def test_completed_turn_does_not_wait_for_inherited_pipe_handles(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="ds-lite-completed-pipe-"))
+        fake = root / "completed_pipe.py"
+        fake.write_text(
+            textwrap.dedent(
+                """
+                import json
+                import subprocess
+                import sys
+                import time
+
+                subprocess.Popen([sys.executable, "-c", "import time; time.sleep(2)"])
+                print(json.dumps({"type": "thread.started", "thread_id": "019f-completed-pipe"}), flush=True)
+                print(json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": "finished"}}), flush=True)
+                print(json.dumps({"type": "turn.completed", "usage": {"input_tokens": 9, "output_tokens": 3}}), flush=True)
+                raise SystemExit(0)
+                """
+            ).strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        payload = self.execution()
+        payload.update(
+            {
+                "execution_id": "execution-completed-pipe",
+                "call_id": "call-completed-pipe",
+                "status": "pending",
+                "elapsed_seconds": 0,
+                "exit_code": None,
+                "session_id": "",
+                "final_message": "",
+                "stop_reason": "not-started",
+                "completed_at": "",
+            }
+        )
+        started = time.monotonic()
+        result = pilot_runtime.run_codex_call(
+            codex_bin=fake,
+            cwd=root,
+            codex_home=root / "home",
+            prompt="perform one bounded fake task",
+            record_path=root / "completed-pipe.json",
+            execution=payload,
+            timeout_seconds=0.5,
+        )
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["stop_reason"], "completed")
+        self.assertLess(time.monotonic() - started, 1.5)
+        self.assertTrue(result["extensions"]["event_summary"]["turn_completed"])
 
     @unittest.skipUnless(os.name == "nt", "Windows .cmd process-tree regression")
     def test_timeout_terminates_cmd_child_tree_before_finalizing_receipt(self) -> None:

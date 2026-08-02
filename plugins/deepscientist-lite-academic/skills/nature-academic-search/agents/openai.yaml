@@ -1,0 +1,6 @@
+interface:
+  display_name: "Nature Academic Search"
+  short_description: "Use the complete vendored nature-academic-search workflow with DS Lite evidence and dependency boundaries."
+  default_prompt: "Use $nature-academic-search for one bounded academic workflow."
+policy:
+  allow_implicit_invocation: true

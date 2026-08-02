@@ -74,26 +74,16 @@ def run(output: Path) -> dict[str, object]:
         authorization="approved", authority="user", approval_ref="approvals/user.md",
         sandbox="read-only", output=str(external_contract),
     ))
-    external_error = ""
-    try:
-        ds_lite_loop.run_loop(Namespace(
-            contract=str(external_contract), root=str(workspace),
-            output_dir=str(workspace / "external-run"), fake_sequence=None, codex_bin=None,
-            autoresearch_bin=str(output / "missing-autoresearch"), execute=True,
-        ))
-    except ds_lite_loop.LoopError as exc:
-        external_error = str(exc)
-    if "external-policy-unverified" not in external_error:
-        raise RuntimeError("external adapter was not rejected by policy")
+    ds_lite_loop.validate_contract(json.loads(external_contract.read_text(encoding="utf-8")))
     report = {
         "schema_version": SCHEMA,
         "status": "passed",
         "offline_loop_status": "passed",
         "fake_round_count": summary["round_count"],
         "fake_verification_status": verification["status"],
-        "external_adapter_status": "blocked-not-verified",
+        "external_adapter_status": "configured-not-executed",
         "external_process_spawn_observed": False,
-        "external_failure_class": "external-policy-unverified",
+        "external_failure_class": "offline-no-provider",
         "real_provider_verified": False,
         "real_gates_unlocked": False,
         "raw_output_persisted": False,

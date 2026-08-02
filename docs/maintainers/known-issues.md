@@ -93,9 +93,9 @@ The coordinator must stop before execution when approval is missing. It must als
 
 ## Plugin-local Hook is not host enforcement proof
 
-The unreleased v0.5 source includes `hooks/hooks.json` and a tested standard-library helper for redacted Mission context, deterministic pre-tool blocks, post-tool consistency summaries, and one guarded Stop continuation. The manifest intentionally does not declare a `hooks` field because the target host contract has not been verified. A file on disk does not prove that Codex loaded or enforced it.
+The Core source includes `hooks/hooks.json` and a tested standard-library helper for redacted Mission context, deterministic pre-tool blocks, post-tool consistency summaries, and one guarded Stop continuation. Codex stable `0.146.0` has actually auto-discovered that directory without relying on a `hooks` manifest field. Source retains the explicit pointer; the deterministic release-package projection removes only that redundant field because the pinned official validator rejects it, while preserving the Hook config. A file on disk or one discovery event still does not prove the full Hook sequence.
 
-Until a separately authorized fresh-host probe succeeds, report Hook behavior as source-tested and host loading as `not-verified`. If the host ignores it, fall back to the shared skill covenant, `ds_lite_iteration.py verify`, and repository validation. Do not claim that Hook can enforce approvals, prevent every indirect Graph edit, or make multiple files transactional.
+Report only the sequence present in the cited fresh-host receipt. The Phase 5 stable receipt observes one CLI turn with `Stop:block`, same-turn repair, and `Stop:allow`; it does not make Hook a cross-process controller or prove every future host build. If a pinned host stops auto-discovering the directory, fail closed and fall back to the shared skill covenant, `ds_lite_iteration.py verify`, and repository validation. Do not claim that Hook can enforce approvals, prevent every indirect Graph edit, or make multiple files transactional.
 
 ## Minimal iteration is not exactly-once execution
 

@@ -1,0 +1,9 @@
+{
+  "schema_version": "ds-lite.environment.v1",
+  "python": "python --version output",
+  "platform": "operating system and architecture",
+  "packages": "path to a lock file or a short package/version list",
+  "container": "container image digest or not-applicable",
+  "hardware": "relevant CPU/GPU information without host secrets",
+  "notes": "Do not include tokens, passwords, credentials, or the complete process environment."
+}

@@ -190,7 +190,7 @@ Manifest 和 marketplace 属于对外接口。修改插件名、skills 路径、
 
 | Skill | 主要输入 | 主要动作 | 持久输出 | 常见状态变化 |
 | --- | --- | --- | --- | --- |
-| `ds-lite` | 用户任务、当前目录、Mission Board | 识别新项目/已有工作区，解释介入理由，只路由到一个动作 skill | 无独立科研产物 | 不自行循环或跨越阶段 |
+| `ds-lite` | 用户任务、当前目录、Mission Board、已批准 autonomy contract | 识别新项目/已有工作区，解释介入理由；多 gate 项目连续推进独立 ready gate，窄任务才路由一个动作 skill | 进度回执与终态 summary | 不创建 daemon，不越过证据、预算或审批边界 |
 | `ds-lite-intake` | 研究问题，或已有代码、笔记和结果 | 新项目初始化；旧项目审计；建立目标、约束和验收标准 | `PROJECT.md`、`STATUS.md`、graph、初始 Research Map | 创建 `intake-root`；保持已有结论不被静默覆盖 |
 | `ds-lite-scout` | 项目合同、当前节点、已有资料 | 澄清问题，检查文献、数据、baseline、benchmark、metric 和风险 | `scout-*.md` artifact | 通常以 `next` 进入 scout；证据不足时可标记 blocked |
 | `ds-lite-idea` | scout 证据、项目约束 | 比较 2 至 3 个可验证候选，选出最小有用实验 | `idea-*.md` artifact | 候选使用 `branch`；选中路线成为 active |

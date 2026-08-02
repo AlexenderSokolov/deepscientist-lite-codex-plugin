@@ -1,7 +1,7 @@
 param([string]$TempRoot = "")
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
-if (-not $TempRoot) { $TempRoot = Join-Path $repoRoot ".validation-tmp" }
+if (-not $TempRoot) { $TempRoot = if ($env:TEMP_ROOT) { $env:TEMP_ROOT } else { Join-Path $repoRoot "research\.validation-tmp" } }
 $receiptId = (Get-Date -Format "yyyyMMddTHHmmssfffffff") + "-" + $PID
 $runTemp = Join-Path $TempRoot ("cross-system-" + $receiptId)
 try {

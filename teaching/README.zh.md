@@ -1,8 +1,10 @@
 ﻿# DeepScientist Lite 教学课程
 
-这里不是功能清单，而是一条可以照着走的学习路线。课程面向第一次接触科研工作流插件的学生：先看见一个项目怎样留下状态，再学习如何检查证据、比较分支和处理冲突。
+本目录在拆包兼容期保留旧路径。确定性 runner、fixture 和评分器已由 `evaluation/README.md` 统一索引；少量供 Agent 按需读取的“输入—决策—产物—失败—回退”案例放进各插件 `references/`。这里的历史课程不再承担运行时功能说明。
 
-插件本体位于 `plugins/deepscientist-lite/`。本目录只放课程、确定性 fixture 和教学 runner，不会进入插件运行时。
+以下内容仍可用于人工课程和旧链接兼容，但它不是插件功能清单，也不会进入运行时包。
+
+旧 `plugins/deepscientist-lite/` 单体只保留冻结证据身份；当前 marketplace 候选位于六个 `plugins/deepscientist-lite-*` 目录。本目录只放课程、确定性 fixture 和评测 runner，不会进入插件运行时。
 
 ## 从哪一课开始
 

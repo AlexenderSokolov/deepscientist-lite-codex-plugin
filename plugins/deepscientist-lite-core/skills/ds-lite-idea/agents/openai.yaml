@@ -1,0 +1,6 @@
+interface:
+  display_name: "DS Lite Idea"
+  short_description: "Compare a few testable directions and choose the smallest useful experiment."
+  default_prompt: "$ds-lite-idea propose 2-3 testable directions, compare their risks, and choose one"
+policy:
+  allow_implicit_invocation: true

@@ -9,6 +9,12 @@ import sys
 import tempfile
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.validation.project_temp import install_tempfile_policy
+
 EXPECTED_SKILLS = [
     "ds-lite",
     "ds-lite-intake",
@@ -45,7 +51,9 @@ def fail(message: str) -> None:
 
 
 def run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(cmd, cwd=str(cwd), text=True, encoding="utf-8", capture_output=True)
+    # Child tools may inherit a legacy Windows console encoding. Validation
+    # must retain the failure category without crashing while decoding it.
+    result = subprocess.run(cmd, cwd=str(cwd), text=True, encoding="utf-8", errors="replace", capture_output=True)
     if result.returncode != 0:
         print(result.stdout)
         print(result.stderr, file=sys.stderr)
@@ -630,6 +638,7 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
 
 
 def validate_docs(repo_root: Path, plugin_root: Path) -> None:
+    active_core_root = repo_root / "plugins" / "deepscientist-lite-core"
     required_paths = [
         repo_root / "README.md",
         repo_root / "README.zh.md",
@@ -767,15 +776,16 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         fail(f"runtime references missing: {sorted(expected_refs - runtime_refs)}")
 
     loop_requirements = {
-        plugin_root / "scripts" / "ds_lite_loop.py": (
-            "ds-lite.loop-contract.v1",
+        active_core_root / "scripts" / "ds_lite_loop.py": (
+        "ds-lite.loop-contract.v1",
+            "ds-lite.loop-contract.v2",
             "ds-lite.loop-receipt.v1",
             "duplicate-risk",
             "automatic_retry_observed",
             "raw_output_persisted",
             "default=3",
         ),
-        plugin_root / "references" / "bounded-loop-protocol.md": (
+        active_core_root / "references" / "bounded-loop-protocol.md": (
             "bounded round count",
             "continuation is not a retry",
             "completion signal",
@@ -800,8 +810,10 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         for required_text in required_texts:
             if required_text.lower() not in text.lower():
                 fail(f"{path} missing bounded Loop anchor: {required_text}")
-    if "automatic_retry_observed" not in (plugin_root / "scripts" / "ds_lite_loop.py").read_text(encoding="utf-8"):
-        fail("Loop receipts must prove no automatic retry")
+    autonomy_source = (active_core_root / "scripts" / "ds_lite_autonomy.py").read_text(encoding="utf-8")
+    for required in ("ds-lite.autonomy-contract.v1", "ds-lite.progress-report.v1", "max_attempts_per_gate", "TRANSIENT_FAILURES"):
+        if required not in autonomy_source:
+            fail(f"autonomy controller missing required anchor: {required}")
 
     hook_config = json.loads((plugin_root / "hooks" / "hooks.json").read_text(encoding="utf-8"))
     if set(hook_config.get("hooks", {})) != {
@@ -1278,6 +1290,7 @@ def validate_teaching_runner(repo_root: Path) -> None:
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
+    install_tempfile_policy(repo_root)
     plugin_root = repo_root / "plugins" / "deepscientist-lite"
     validate_manifest(plugin_root)
     validate_skills(plugin_root)

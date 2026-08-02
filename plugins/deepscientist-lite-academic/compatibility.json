@@ -1,0 +1,7 @@
+{
+  "schema_version": "ds-lite.pack-compatibility.v1",
+  "pack": "deepscientist-lite-academic",
+  "version": "0.8.1-beta.1",
+  "requires": {"plugin": "deepscientist-lite", "version": "0.8.1-beta.1"},
+  "missing_core": "blocked"
+}

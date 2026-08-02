@@ -1,0 +1,6 @@
+interface:
+  display_name: "Nature Figure"
+  short_description: "Use the complete vendored nature-figure workflow with DS Lite evidence and dependency boundaries."
+  default_prompt: "Use $nature-figure for one bounded academic workflow."
+policy:
+  allow_implicit_invocation: true

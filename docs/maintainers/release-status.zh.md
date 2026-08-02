@@ -4,7 +4,7 @@
 
 当前源码候选为 `0.6.0-beta.1`，包含 9 个 DS Lite 核心 skill 和固定
 commit `91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b` 的 17 个 `nature-skills`
-功能 skill，共 26 个可发现入口。`nature-shared` 只作为 vendor 内部共享层，
+功能 skill，共 26 个可发现入口（历史单体口径）。当前 marketplace 改为 Core 9、Academic 17 和四个各 1 入口的可选包；`nature-shared` 只作为 vendor 内部共享层，
 不计入用户 skill。Nature 的 MCP/API、浏览器、下载、LaTeX、Node/Python 依赖
 通过 `ds_lite_nature_setup.py` 做工作区级首次配置引导，不修改全局 Codex 或
 凭据。
@@ -24,6 +24,26 @@ validator、PowerShell 5.1 语法检查、`py_compile` 和 `git diff --check`。
 报告为 `passed`，扫描 1465 个文件且编码/格式失败为 0；Bash、PowerShell 7 和
 shellcheck 在当前执行面不可用，均记录为 `not-observed`。证据：
 `.validation-tmp/validation-20260724T0120359466120-21292/cross-system-validation-20260724T0120359466120-21292.json`。
+
+> 当前 0.8 候选以六包 marketplace 结构为准：Core/Academic `0.8.1-beta.1`，Web/Knowledge/Empirical/Engineering `0.2.0-alpha.1`。下文早期 `0.6.0-beta.1` 记录保留为历史证据，不代表当前安装边界。
+
+## 2026-07-25 本轮源码进展
+
+Web CLI 已把域名范围从文档约定提升为执行门：`fetch`、`search`、`render`、
+`benchmark` 都要求重复传入 `--allowed-domain`；初始 URL、重定向和
+Firecrawl 搜索结果逐一复核，缺失或越界均返回 `policy/blocked`。新增的
+provider mock 覆盖成功渲染、越界结果、429、超时和非法 JSON，密钥不会进入
+source record 或错误信息。Web 专用验证入口已纳入协议测试和 `py_compile`。
+
+九个 Core skill 的文字层回归已通过：每个入口都明确要求保护内容原样保留，
+Core runtime notice 不暴露内部 upstream 快照路径。六包矩阵、包体积、兼容性、
+Web/Empirical/Engineering doctor、通信层测试和 `git diff --check` 通过。
+
+当前执行面仍无法写入系统 Temp 或仓库 `.validation-tmp`，因此完整 unittest、
+学习/质量集成测试和需要产物目录的 CLI 测试只能记录为 `not-observed`，不能升级
+为失败。Knowledge doctor 未发现 Tapestry/ScholarAIO 外部 CLI；真实 provider、
+四类 Hook、delegation、matched effect、formal cache、fresh Desktop、OpenScience
+和 release 继续保持 `not-verified/blocked`，不得发布。
 
 ## 2026-07-24 最新真实门
 

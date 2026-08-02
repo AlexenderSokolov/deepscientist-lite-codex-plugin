@@ -2,23 +2,31 @@
 
 This repository is a Codex marketplace repository.
 
-## Runtime Plugin Package
+## Runtime Plugin Packages
 
-- `.agents/plugins/marketplace.json`: marketplace index for Codex.
-- `plugins/deepscientist-lite/`: installable plugin package.
-- `plugins/deepscientist-lite/.codex-plugin/plugin.json`: plugin manifest.
-- `plugins/deepscientist-lite/skills/`: 26 runtime skills: nine DS Lite continuity/evidence skills and the complete 17-skill nature-skills academic workflow family.
-- `plugins/deepscientist-lite/vendor/`: fixed, provenance-preserving snapshots of `nature-skills` (Apache-2.0) and the authorized `codex-autoresearch` package (MIT declaration). Vendor files are source evidence, not silently executed entrypoints.
-- `plugins/deepscientist-lite/scripts/ds_lite_state.py`: no-dependency state graph helper.
-- `plugins/deepscientist-lite/scripts/ds_lite_evidence.py`: no-dependency Evidence Pack contract, finalize, and verification helper.
-- `plugins/deepscientist-lite/scripts/ds_lite_protocol.py`: strict work-unit, review-result, Factor Card, and bounded-delegation validator.
-- `plugins/deepscientist-lite/scripts/ds_lite_iteration.py`: strict init/finalize/verify helper for one reflective iteration; not an exactly-once transaction.
-- `plugins/deepscientist-lite/scripts/ds_lite_hook.py` and `hooks/hooks.json`: optional, stateless, redacted Hook helper and candidate host configuration; fresh-host loading is not verified.
-- `plugins/deepscientist-lite/scripts/ds_lite_state_v1_legacy.py`: preserved v1 implementation for audit only; it is not the runtime entry point.
-- `plugins/deepscientist-lite/scripts/ds_lite_nature_setup.py`: workspace-local first-use inventory, doctor, onboarding, apply, and verify CLI for MCP/API/tool dependencies.
-- `plugins/deepscientist-lite/scripts/codex_autoresearch_adapter.py`: bounded, redacted compatibility adapter; external execution remains policy-blocked until its child-output contract is verified.
-- `plugins/deepscientist-lite/assets/templates/`: project file templates.
-- `plugins/deepscientist-lite/references/`: skill-facing protocol references only.
+- `.agents/plugins/marketplace.json`: one marketplace exposing six independently installable packages.
+- `plugins/deepscientist-lite-core/`: `deepscientist-lite` `0.8.1-beta.1`; nine Core skills, Graph/Evidence/iteration/delegation/handoff scripts, templates, learning/quality gates, Hooks, and the bounded foreground autonomy controller. The package has no vendor snapshot, MCP server, daemon, database, or browser runtime.
+- `plugins/deepscientist-lite-academic/`: `0.8.1-beta.1`; the 17 adapted Nature skills plus citation, revision, and adversarial-review protocols. It checks for the matching Core and owns no Hook.
+- `plugins/deepscientist-lite-web/`: `0.2.0-alpha.1`; public-only capability and v1/v2 source-record protocols plus bounded HTTP provenance recording. Playwright, Firecrawl, Tapestry, and agent-browser remain optional external backends.
+- `plugins/deepscientist-lite-knowledge/`: `0.2.0-alpha.1`; review-gated Tapestry and ScholarAIO handoffs. It does not own either upstream store or write formal ResearchKB knowledge directly.
+- `plugins/deepscientist-lite-empirical/`: `0.2.0-alpha.1`; one method-neutral router for empirical specs, diagnostics, robustness, and Core Evidence Pack results.
+- `plugins/deepscientist-lite-engineering/`: `0.2.0-alpha.1`; one router for numerical, FFT, sampling, simulation, units, and figure checks.
+- `plugins/deepscientist-lite/`: frozen `0.6.0-beta.1` monolith retained only for evidence identity and compatibility during the transition. It is no longer the marketplace target.
+
+Each optional package publishes `compatibility.json` and fails closed unless it observes `deepscientist-lite` `0.8.1-beta.1`. Marketplace dependency propagation is not assumed.
+
+## Core Runtime Files
+
+- `plugins/deepscientist-lite-core/scripts/ds_lite_state.py`: no-dependency state graph helper.
+- `plugins/deepscientist-lite-core/scripts/ds_lite_evidence.py`: no-dependency Evidence Pack contract, finalize, and verification helper.
+- `plugins/deepscientist-lite-core/scripts/ds_lite_protocol.py`: strict work-unit, review-result, Factor Card, and bounded-delegation validator.
+- `plugins/deepscientist-lite-core/scripts/ds_lite_iteration.py`: strict init/finalize/verify helper for one reflective iteration; not an exactly-once transaction.
+- `plugins/deepscientist-lite-core/scripts/ds_lite_hook.py` and `hooks/hooks.json`: stateless, redacted Hook helper and candidate host configuration; split-package fresh-host loading is not verified.
+- `plugins/deepscientist-lite-core/scripts/ds_lite_loop.py`: bounded loop adapter with fail-closed external execution boundaries.
+- `plugins/deepscientist-lite-core/scripts/ds_lite_autonomy.py`: foreground DAG controller for frozen, authorized gates, bounded transient retries, and sanitized progress receipts.
+- `plugins/deepscientist-lite-academic/scripts/ds_lite_nature_setup.py`: package-local inventory, onboarding, and workspace configuration checks.
+- `plugins/deepscientist-lite-core/assets/templates/`: project file templates.
+- `plugins/deepscientist-lite-core/references/`: Core protocol references only.
 
 ## Non-Runtime Material
 
@@ -31,4 +39,6 @@ This repository is a Codex marketplace repository.
 
 ## Release Boundary
 
-The plugin remains lightweight: no MCP server, daemon, Web/TUI, connector, or local model bundle is declared in the manifest. MCP and external APIs are opt-in workspace templates, not silent global registration. The plugin-local Hook helper does not own a queue, scheduler, background worker, or approval state.
+Core remains lightweight: no MCP server, daemon, Web/TUI, connector, local model bundle, academic snapshot, or web backend is declared in its manifest. Optional packages do not acquire global state or bypass Core approval and stopping rules.
+
+Run `run_validate_core.*`, `run_validate_academic.*`, `run_validate_web.*`, `run_validate_knowledge.*`, `run_validate_empirical.*`, or `run_validate_engineering.*` for package-specific checks. `tools/validation/validate_packages.py --package all` checks eight install matrices, route collisions, compatibility contracts, package digests, and Core/domain size limits. It deliberately reports real Hook, delegation, matched effect, formal cache, fresh Desktop, and release gates as `not-verified`.

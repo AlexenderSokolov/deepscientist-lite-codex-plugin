@@ -1,0 +1,21 @@
+{
+  "name": "deepscientist-lite-empirical",
+  "version": "0.2.0-alpha.1",
+  "description": "Reviewable empirical-research specifications, diagnostics, robustness checks, and result handoffs for DeepScientist Lite.",
+  "author": {"name": "DeepScientist Lite maintainers"},
+  "homepage": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+  "repository": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+  "license": "Apache-2.0",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "DeepScientist Lite Empirical",
+    "shortDescription": "Plan and audit bounded empirical analyses.",
+    "longDescription": "An experimental method-neutral empirical pack. One router covers estimands, samples, identification, assumptions, diagnostics, robustness, negative results, and Evidence Pack handoff without creating another data store or state machine.",
+    "developerName": "DeepScientist Lite maintainers",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": ["Use $ds-lite-empirical to specify, execute, or review one bounded empirical work unit."],
+    "brandColor": "#3F654C",
+    "screenshots": []
+  }
+}

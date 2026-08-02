@@ -63,6 +63,7 @@ def parse_output(result: subprocess.CompletedProcess[str]) -> dict:
 
 def portable_bash() -> str | None:
     """Prefer Git Bash on Windows; System32 bash may launch an unrelated WSL host."""
+    candidate: Path | None = None
     if sys.platform == "win32":
         completed = subprocess.run(
             ["git", "--exec-path"],
@@ -75,10 +76,26 @@ def portable_bash() -> str | None:
             git_exec = Path(completed.stdout.strip())
             if len(git_exec.parents) >= 3:
                 candidate = git_exec.parents[2] / "bin" / "bash.exe"
-                if candidate.is_file():
-                    return str(candidate)
+        if candidate is None or not candidate.is_file():
+            return None
+    else:
+        resolved = shutil.which("bash")
+        candidate = Path(resolved) if resolved else None
+    if candidate is None:
         return None
-    return shutil.which("bash")
+    try:
+        capability = subprocess.run(
+            [str(candidate), "--version"],
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            capture_output=True,
+            timeout=5,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return str(candidate) if capability.returncode == 0 else None
 
 
 def make_v1_graph(root: Path, evidence_path: str = "PROJECT.md") -> None:

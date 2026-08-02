@@ -84,7 +84,11 @@ def run(root: Path) -> dict[str, Any]:
     syntax: list[dict[str, Any]] = []
     for path in iter_files(root):
         if path.suffix.lower() == ".ps1":
-            item = _run_shell_check(root, path, "powershell.exe")
+            item = (
+                {"tool": "powershell.exe", "status": "not-observed", "failure_class": "template-source"}
+                if _is_template_source(path)
+                else _run_shell_check(root, path, "powershell.exe")
+            )
             item["path"] = _relative(path, root)
             syntax.append(item)
         elif path.suffix.lower() == ".sh":

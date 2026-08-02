@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import importlib
 import json
 import hashlib
 import socket
@@ -28,9 +29,18 @@ PLUGIN_SCRIPTS = REPO_ROOT / "plugins" / "deepscientist-lite" / "scripts"
 if str(PLUGIN_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(PLUGIN_SCRIPTS))
 
-import ds_lite_hook  # noqa: E402
-import ds_lite_iteration  # noqa: E402
-import ds_lite_protocol  # noqa: E402
+# The frozen monolith and split Core intentionally expose the same script
+# module names. Import the legacy modules under a protected dependency window
+# so full unittest discovery cannot substitute whichever Hook loaded first.
+_legacy_names = ("ds_lite_hook", "ds_lite_iteration", "ds_lite_protocol", "ds_lite_state", "ds_lite_evidence")
+_legacy_saved = {name: sys.modules.pop(name) for name in _legacy_names if name in sys.modules}
+try:
+    ds_lite_hook = importlib.import_module("ds_lite_hook")
+    ds_lite_iteration = importlib.import_module("ds_lite_iteration")
+    ds_lite_protocol = importlib.import_module("ds_lite_protocol")
+finally:
+    for _name, _module in _legacy_saved.items():
+        sys.modules[_name] = _module
 
 
 SCHEMA_VERSION = "ds-lite.offline-protocol-acceptance.v1"
@@ -321,7 +331,8 @@ def _execution(scenario: str) -> dict[str, Any]:
         "arm": "plain",
         "round": 1,
         "status": "pending",
-        "source": {"git_commit": "0" * 40, "tree_digest": "0" * 64, "plugin_version": "0.0.0-offline", "skill_count": 26, "extensions": {}},
+        # Keep the fake transport envelope aligned with the active Core pilot identity.
+        "source": {"git_commit": "0" * 40, "tree_digest": "0" * 64, "plugin_version": "0.0.0-offline", "skill_count": pilot_runtime.EXPECTED_SKILL_COUNT, "extensions": {}},
         "cli": {"name": "codex", "version": pilot_runtime.CODEX_VERSION, "model": pilot_runtime.MODEL, "reasoning_effort": pilot_runtime.REASONING_EFFORT, "extensions": {"runtime": "fake-codex"}},
         "input": {"workspace_surface": "windows", "workspace_ref": ".", "prompt_ref": "offline/prompt", "input_digest": "1" * 64, "extensions": {}},
         "usage": {"input_tokens": 0, "cached_input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "extensions": {}},
@@ -369,6 +380,11 @@ def run_offline_acceptance(output_root: Path | str) -> dict[str, Any]:
                 extra_env={
                     "DS_LITE_FAKE_PROVIDER_URL": provider_url,
                     "DS_LITE_FAKE_SCENARIO": scenario,
+                    # The fake provider is loopback-only. Do not let a host
+                    # proxy (or Windows semicolon-separated NO_PROXY) alter
+                    # deterministic transport classifications.
+                    "NO_PROXY": "*",
+                    "no_proxy": "*",
                 },
                 progress_context={"receipt_ref": receipt_ref},
             )
@@ -427,6 +443,9 @@ def run_offline_acceptance(output_root: Path | str) -> dict[str, Any]:
         "schema_version": SCHEMA_VERSION,
         "claim_scope": "fake-provider-and-fake-codex-only",
         "overall_status": "passed" if transport_passed and protocol_passed else "blocked",
+        # Formal release aggregation consumes a uniform top-level status;
+        # retain overall_status for v1 readers and expose the same value here.
+        "status": "passed" if transport_passed and protocol_passed else "blocked",
         "real_provider_verified": False,
         "real_codex_wire_compatibility_verified": False,
         "real_gates_unlocked": False,

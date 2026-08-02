@@ -43,7 +43,7 @@ class LabError(RuntimeError):
 
 def write_text(path: Path, value: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(value.rstrip() + "\n", encoding="utf-8")
+    path.write_text(value.rstrip() + "\n", encoding="utf-8", newline="\n")
 
 
 def write_json(path: Path, value: Any) -> None:
@@ -1294,7 +1294,7 @@ Use only files below this arm workspace. Do not use DeepScientist Lite. `NOTES.m
 """,
             "ds-lite": """# DeepScientist Lite arm
 
-Use only files below this arm workspace. Use PROJECT, STATUS, Graph, work unit, and explicit artifacts for continuity; do not edit `graph.json` directly. Run one bounded action at a time and stop at checkpoints. Do not delegate subagents. Factor Cards are decision artifacts, not evidence, and are appropriate only for the idea-evaluation case.
+Use the installed `$ds-lite` gateway for this call. Use only files below this arm workspace. Use PROJECT, STATUS, Graph, work unit, and explicit artifacts for continuity; do not edit `graph.json` directly. Run one bounded action at a time and stop at checkpoints. Do not delegate subagents. Factor Cards are decision artifacts, not evidence, and are appropriate only for the idea-evaluation case. Finish with the gateway's exact End report labels even when the action completed successfully; include observed evidence, unverified items, and one concrete next action. Use repository-relative artifact refs and never quote raw stderr or absolute private paths; report only a normalized failure class and private-evidence digest when diagnostics are relevant.
 """,
         }
         return instructions[arm_id]
@@ -1515,7 +1515,7 @@ def main() -> int:
     output = args.output
     if output is None:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        output = REPO_ROOT / ".validation-tmp" / f"{args.lab}-{args.mode}-{args.case}-{stamp}"
+        output = REPO_ROOT / "research" / ".validation-tmp" / f"{args.lab}-{args.mode}-{args.case}-{stamp}"
     try:
         builder = MatchedPilotBuilder(output) if args.lab == "matched-pilot" else LabBuilder(args.lab, args.mode, args.case, output)
         builder.build()

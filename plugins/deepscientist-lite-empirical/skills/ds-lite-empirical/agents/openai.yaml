@@ -1,0 +1,6 @@
+interface:
+  display_name: "DS Lite Empirical"
+  short_description: "Specify and audit bounded empirical research"
+  default_prompt: "Use $ds-lite-empirical to define or evaluate one empirical work unit with explicit identification, diagnostics, robustness, and evidence references."
+policy:
+  allow_implicit_invocation: true

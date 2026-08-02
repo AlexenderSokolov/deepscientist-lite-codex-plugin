@@ -4,7 +4,7 @@
 
 ## 1. 先建立一个简单的心智模型
 
-遇到 provider、认证、Windows/WSL 路径、编码、命令行或配置格式冲突时，先查插件内的[环境兼容性排障手册](../plugins/deepscientist-lite/references/environment-compatibility-playbook.md)。它要求先分类故障、保留证据，再决定是否继续，不把环境故障写成科研结论。
+遇到 provider、认证、Windows/WSL 路径、编码、命令行或配置格式冲突时，先查 Core 内的[环境兼容性排障手册](../plugins/deepscientist-lite-core/references/environment-compatibility-playbook.md)。它要求先分类故障、保留证据，再决定是否继续，不把环境故障写成科研结论。
 
 DeepScientist Lite 不接管科研项目。它更像一本有格式的实验台账，由 Codex 帮你维护。
 
@@ -29,13 +29,15 @@ flowchart LR
 
 `research/work-unit.json` 使用 `ds-lite.work-unit.v1`。新项目起初没有 claim requirement，所以证据状态是 planning；开始 claim-bearing experiment 前，才声明 profile、typed validator 和 canonical evidence refs。普通 Markdown、日志、PROJECT/STATUS 或任意非空路径都不是 typed evidence。schema 不认识的字段只能放进 `extensions`。
 
-## 2. 26 个技能分别在什么时候用
+## 2. Core 与可选包分别在什么时候用
 
-前九个 `ds-lite-*` skill 负责项目接手、证据、实验、审查和有界迭代；十七个 `nature-*` skill 负责文献检索、引用、数据、图表、论文阅读与写作、统计、回复信和投稿辅助。Nature skill 保留上游完整工作流，不是摘要说明；每个入口都先执行依赖和授权检查。
+默认安装的九个 `ds-lite-*` Core skill 负责项目接手、证据、实验、审查和有界迭代。可选 Academic 包的十七个 `nature-*` skill 负责文献检索、引用、数据、图表、论文阅读与写作、统计、回复信和投稿辅助；Web 与 Knowledge 各提供一个实验入口。Nature skill 保留上游完整工作流，不是摘要说明；可选包首次使用时先检查 Core 版本、依赖和授权。
 
 ### DS Lite：不知道从哪里开始时的统一入口
 
-`$ds-lite` 用于接手或恢复科研/工程项目、跨轮连续工作、实验比较、证据审查、假设管理、上下文重启和任务式指挥。它先判断当前目录是不是 DS Lite 工作区，读取 Mission Board，说明为什么插件适用，然后只选择下面一个动作 skill。
+`$ds-lite` 用于接手或恢复科研/工程项目、跨轮连续工作、实验比较、证据审查、假设管理、上下文重启和任务式指挥。它先判断当前目录是不是 DS Lite 工作区，读取 Mission Board，并说明为什么插件适用。对于已批准的多 gate 项目，默认使用前台 `ds-lite.autonomy-contract.v1` 连续推进所有独立 ready gate：瞬态、幂等的 provider 或网络失败可按合同做三到六次退避重试；命令结束后会静默轮询回执；会话中断后用 `--resume` 恢复但不重跑已完成或已冻结身份。非幂等操作、有重复风险的外部写入和未授权发布仍立即冻结。用户明确要求只做一步、只规划或禁止副作用时，才只选择一个动作 skill。
+
+每个 gate 的终态必须写 `ds-lite.progress-report.v1`。它必须交代执行原因、实际动作、证据引用、失败层、已完成与冻结的门、下一自动动作和下次汇报时限。遇到单个 blocker 时，控制器冻结该 identity 并继续所有无依赖门；只有没有可运行门、预算耗尽，或所有门到达终态时才收束。它是可观察、可中断的前台过程，不是 daemon、队列或权限绕过。
 
 你应当看到：开始反馈中明确本轮目标、选择的 skill、唯一动作、风险和检查点。
 
@@ -174,16 +176,30 @@ Mission Board 重点回答：
 
 ### Hook 能做什么，不能做什么
 
-候选 `0.6.0-beta.1` 带有一个插件局部 `hooks/hooks.json` 和标准库 helper。它只尝试附加脱敏状态、阻断确定违规、运行轻量一致性检查，并在 iteration 未闭合时让 Stop 最多续跑一次；不会保存原 prompt、完整工具参数、输出、stderr 或 secret，也不会自创批准事实。
+Core 候选 `0.8.1-beta.1` 带有插件局部 `hooks/hooks.json` 和标准库 helper。它只尝试附加脱敏状态、阻断确定违规、运行轻量一致性检查，并在 iteration 未闭合时让 Stop 最多续跑一次；明确选择 active skill 时还会检查 learning receipt 和 quality plan；不会保存原 prompt、完整工具参数、输出、stderr 或 secret，也不会自创批准事实。拆包后的真实宿主 Hook 仍须重新验收。
 
-当前只能确认 Hook helper 和配置通过源码测试；`trusted-hook-05` 已观察到真实 UserPromptSubmit、PreToolUse 和 PostToolUse，但任务在 `turn.failed` 前没有出现阻断决定或 Stop 续行，完整四事件序列仍未通过。manifest 已显式声明 `hooks: "./hooks/hooks.json"`，但不能把配置文件或单个事件说成完整运行时保护已经生效。若宿主后续仍不支持，继续依靠 26 个 skill、iteration CLI 和仓库 validator。
+### 活动自治合同如何控制会话
+
+当项目根存在 `research/autonomy/contract.json`，且 `research/autonomy/run/summary.json` 缺失、不可读或不是 `completed` 时，自治合同拥有当前会话的收束权。Hook 不会把阶段性总结视为完成：
+
+- `UserPromptSubmit` 注入当前 gate、进度回执和唯一续跑动作；
+- `PostToolUse` 在每次工具调用后重新投影控制器状态；
+- `Stop` 必须返回 `block`，并把下一自动动作固定为 `resume-autonomy-controller`；
+- 唯一允许的继续入口是 `run_autonomy --resume --root . --contract research/autonomy/contract.json --output research/autonomy/run`；控制器必须继续所有独立 ready gate，不得因单个 gate 冻结而结束会话。
+
+只有自治 summary 明确为 `completed`，且 iteration、质量、用户动作和 communication audit 等其他 Stop 门也全部闭合，Stop 才允许会话结束。这个机制控制的是宿主允许的会话收束与下一步指令，不创建后台 daemon，也不绕过宿主权限、预算、用户批准或 provider 策略。
+
+当前 pinned `codex exec` 的验收已证明它会调用并记录 `Stop block`，但该非交互执行面仍可能同时产生 `turn.completed`，不能据此宣称续跑成功。验收器会将这种组合判为 `hook-continuation-not-observed`；只有 fresh Desktop 交互执行面实际观察到 `Stop block -> resume -> completed summary -> Stop allow`，才算会话控制门通过。
+
+Codex stable `0.146.0` 已在隔离 host 中实际从 Core 的 `hooks/hooks.json` 自动发现 Hook helper，并观察到单一 CLI turn 内的 `Stop:block -> same-turn repair -> Stop:allow`。源码 manifest 保留明确 Hook 指针；确定性发布包投影仅移除当前官方 validator 不接受的冗余字段，Hook 目录和配置保持不变。目录自动发现只证明加载路径，完整运行时保护仍必须由对应真实 host receipt 证明，不能由配置文件或单个 Hook 事件替代。
 
 ### Nature skill 的首次配置
 
 第一次使用需要 MCP、外部 API、浏览器、下载器、LaTeX、Node 或 Python 的 Nature skill 前，运行：
 
 ```text
-python plugins/deepscientist-lite/scripts/ds_lite_nature_setup.py onboarding --workspace .
+python <academic-plugin>/scripts/ds_lite_pack_doctor.py --core-root <core-plugin>
+python <academic-plugin>/scripts/ds_lite_nature_setup.py onboarding --workspace .
 ```
 
 `doctor` 只报告环境变量是否存在和工具是否可见，不读取密钥；`apply` 只写当前工作区 `.ds-lite/nature/`，不会修改正式 `CODEX_HOME`、全局 MCP、credential 或 marketplace。缺少依赖时结果必须保留 `needs-config`、`missing-dependency` 或 `not-observed`，不能假装外部能力可用。
@@ -323,3 +339,14 @@ matched pilot 比较普通 Codex、单个 `NOTES.md` 和 DS Lite workspace。run
 2026-07-18 的第二次验收通过了 preflight，但唯一一次 canary 只建立 thread，随后以 `rate-limit` 类别和 `timeout` 结束：0 token、0 tool、没有 turn terminal event 或最终反馈，工作区未修改。因此本轮冻结且没有进入 trigger/18-call 阶段。参见[canary 失败案例](../teaching/canary-failure-case-20260718.zh.md)。这说明“九技能已注入 prompt”与“模型实际隐式选择了技能”是两个不同的证据门。
 
 外部验收现在还会附加统一审计门。看到 `extensions.acceptance_gate.status=blocked|ambiguous|not-verified` 时，含义是“本门证据不足，下一门没有启动”，不是插件已经完成或已经失败。只有 receipt 中同时有预期/实际事件、非零 usage、相对证据引用、失败层和下一动作，才可以进入后续 Hook、cache、delegation 或 matched comparison 门。
+
+## 11. 跨学科可选包
+
+Academic 保持 17 个可发现的 `nature-*` skill，不增加近义入口。`nature-ref-verifier` 现在可以调用 `ds-lite.citation-check.v1`：Crossref、OpenAlex、Semantic Scholar 和 arXiv 的结构化结果必须形成精确标识符匹配，或至少两个独立的标题/作者/年份匹配；网络超时、429 和服务不可用只会得到 `pending`。投稿模式只有 `verified` 才能通过。`nature-polishing`、`nature-response` 使用 `ds-lite.revision-constraints.v1` 限制路径、新引用/数值/定理、删除和每轮操作数；`nature-reviewer` 的 adversarial 模式要求 fresh reviewer 与 fresh adjudicator 使用不同 context ID，否则记录 `not-observed`。
+
+Empirical 和 Engineering 各只有一个路由 skill，并且要求 Core `0.8.1-beta.1`。它们按需加载，不自动安装 Python、StatsPAI、R、Stata、MATLAB 或 Octave：
+
+- `$ds-lite-empirical` 先写 `ds-lite.empirical-spec.v1`，明确 estimand、样本、识别策略、假设、诊断和稳健性，再写引用 Core Evidence Pack 的 `ds-lite.empirical-result.v1`。失败的平行趋势、缺失数据、稳健性不一致和零/负结果必须保留。
+- `$ds-lite-engineering` 写 `ds-lite.engineering-analysis.v1`，记录单位、采样率、预处理、窗函数、频率分辨率、缩放、随机种子、命令和产物。单位、维度、混叠、泄漏和图轴检查是强制项；缺物理参数时停止，不补猜。
+
+相应入口是 `run_validate_empirical.*`、`run_validate_engineering.*`。Academic 的真实 provider 验收入口是 `run_accept_academic_providers.*`，必须显式传入 `--authorized-external-provider`；未授权时会写阻断收据且不发起网络请求。六包源码矩阵不等于 marketplace 安装或新 Desktop 任务证据，真实 Hook、delegation、matched effect、formal cache、fresh Desktop 和 release 仍需各自独立 receipt。

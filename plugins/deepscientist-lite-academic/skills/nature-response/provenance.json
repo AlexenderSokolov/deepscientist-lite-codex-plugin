@@ -1,0 +1,43 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-response",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-response",
+    "source_skill_sha256": "790aa49a26d46e5075ce7ec81ce9e3c518fc78de5976ae14ce13050067d944ce"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-response",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "latex": [
+      "README.md",
+      "README_EN.md",
+      "SKILL.md",
+      "manifest.yaml",
+      "references/intake-and-routing.md",
+      "references/latex-templates.md",
+      "references/qa-checklist.md",
+      "references/response-structure.md",
+      "static/core/stance.md",
+      "static/core/workflow.md",
+      "tests/rubric.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

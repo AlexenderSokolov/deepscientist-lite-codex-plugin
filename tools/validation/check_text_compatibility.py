@@ -40,6 +40,23 @@ DEFAULT_IGNORED_DIRS = {
     "vendor",
     "System.Management.Automation.Internal.Host.InternalHost",
 }
+GENERATED_DIR_PREFIXES = (
+    "academic-provider-",
+    "app-server-continuation-",
+    "appserver-continuation-",
+    "autonomy-runner-",
+    "desktop-delegation-",
+    "formal-cache-",
+    "hook-autonomy-auto-",
+    "hook-conversation-control-",
+    "matched-effect-",
+    "offline-diagnostic-",
+    "rust-provider-",
+    "test-temp-",
+    "web-benchmark-",
+    "web-validation-temp-",
+)
+TEMP_DIR_PREFIXES = (".tmp-",)
 
 
 def _configure_stdio() -> None:
@@ -143,7 +160,19 @@ def iter_files(root: str | Path, *, ignored_dirs: Iterable[str] = DEFAULT_IGNORE
         yield root_path
         return
     for current, dirnames, filenames in os.walk(root_path, topdown=True, onerror=lambda _error: None):
-        dirnames[:] = sorted(name for name in dirnames if name not in ignored)
+        relative_current = Path(current).relative_to(root_path).parts
+        # ``research/artifacts`` is the durable evidence surface. Other
+        # research children are isolated acceptance workspaces or temporary
+        # run material and must not be treated as owned source files.
+        if len(relative_current) >= 2 and relative_current[0] == "research" and relative_current[1] != "artifacts":
+            dirnames[:] = []
+            continue
+        dirnames[:] = sorted(
+            name for name in dirnames
+            if name not in ignored
+            and not name.startswith(GENERATED_DIR_PREFIXES)
+            and not name.startswith(TEMP_DIR_PREFIXES)
+        )
         for name in sorted(filenames):
             path = Path(current) / name
             relative_parts = path.relative_to(root_path).parts
@@ -158,8 +187,19 @@ def scan_tree(root: str | Path) -> dict[str, object]:
     for path in candidates:
         is_template = "assets" in path.parts and "templates" in path.parts
         item = check_file(path, parse_structured=not is_template)
-        if "vendor" in path.parts:
-            # Vendor snapshots are immutable provenance, not DS Lite entrypoints.
+        try:
+            relative_parts = path.relative_to(root_path).parts
+        except ValueError:
+            relative_parts = ()
+        immutable_receipt = (
+            len(relative_parts) >= 2
+            and relative_parts[0] == "research"
+            and relative_parts[1] == "artifacts"
+        )
+        if "vendor" in path.parts or immutable_receipt:
+            # Vendor snapshots and write-once receipts are immutable provenance,
+            # not owned source that the compatibility check may rewrite.
+            item["observed_violations"] = list(item["violations"])
             # Keep their byte-level observations without failing the owned tree.
             item["provenance_only"] = True
             item["status"] = "not-observed"

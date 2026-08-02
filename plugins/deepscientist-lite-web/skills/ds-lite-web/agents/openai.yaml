@@ -1,0 +1,6 @@
+interface:
+  display_name: "DS Lite Web"
+  short_description: "Acquire public sources with bounded provenance"
+  default_prompt: "Use $ds-lite-web to acquire public sources within explicit domain, page, byte, and time limits."
+policy:
+  allow_implicit_invocation: true

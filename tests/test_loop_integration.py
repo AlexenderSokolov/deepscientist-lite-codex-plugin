@@ -47,8 +47,10 @@ class LoopIntegrationTests(unittest.TestCase):
     def test_trusted_hook_runner_enforces_pinned_cli_identity(self):
         source = self._text("teaching/trusted_hook_run.py")
         self.assertIn('EXPECTED_CODEX_VERSION = "0.144.5"', source)
-        self.assertIn("expected_cli_version=EXPECTED_CODEX_VERSION", source)
-        self.assertIn("expected_cli_sha256=EXPECTED_SHA256", source)
+        self.assertIn('parser.add_argument("--expected-version", default=EXPECTED_CODEX_VERSION)', source)
+        self.assertIn('parser.add_argument("--expected-sha256", default=EXPECTED_SHA256)', source)
+        self.assertIn("expected_cli_version=args.expected_version", source)
+        self.assertIn("expected_cli_sha256=expected_sha256", source)
 
     def test_loop_acceptance_wrappers_are_offline_ascii_and_lf(self):
         for relative in (

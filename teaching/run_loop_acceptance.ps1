@@ -1,7 +1,7 @@
 param([string]$TempRoot = "")
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
-if (-not $TempRoot) { $TempRoot = Join-Path $repoRoot ".validation-tmp" }
+if (-not $TempRoot) { $TempRoot = if ($env:TEMP_ROOT) { $env:TEMP_ROOT } else { Join-Path $repoRoot "research\.validation-tmp" } }
 $runId = (Get-Date -Format "yyyyMMddTHHmmssfffffff") + "-" + $PID
 $runTemp = Join-Path $TempRoot ("loop-acceptance-" + $runId)
 try {
@@ -16,7 +16,7 @@ $env:PYTHONUTF8 = "1"
 $env:PYTHONDONTWRITEBYTECODE = "1"
 $env:PYTHONPYCACHEPREFIX = Join-Path $runTemp "pycache"
 $python = if ($env:PYTHON_BIN) { $env:PYTHON_BIN } else { "python" }
-$loopCli = Join-Path $repoRoot "plugins\deepscientist-lite\scripts\ds_lite_loop.py"
+$loopCli = Join-Path $repoRoot "plugins\deepscientist-lite-core\scripts\ds_lite_loop.py"
 $loopTests = Join-Path $repoRoot "tests\test_loop_runner.py"
 $offlineCli = Join-Path $repoRoot "teaching\offline_loop_acceptance.py"
 

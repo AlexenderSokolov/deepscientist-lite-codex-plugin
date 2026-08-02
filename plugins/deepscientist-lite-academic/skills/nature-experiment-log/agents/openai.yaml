@@ -1,0 +1,6 @@
+interface:
+  display_name: "Nature Experiment Log"
+  short_description: "Use the complete vendored nature-experiment-log workflow with DS Lite evidence and dependency boundaries."
+  default_prompt: "Use $nature-experiment-log for one bounded academic workflow."
+policy:
+  allow_implicit_invocation: true

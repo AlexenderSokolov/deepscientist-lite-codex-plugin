@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
-temp_root="${1:-$repo_root/.validation-tmp}"
+temp_root="${1:-${TEMP_ROOT:-$repo_root/research/.validation-tmp}}"
 receipt_id="$(date -u +%Y%m%dT%H%M%S)-$$-${RANDOM:-0}"
 run_temp="$temp_root/cross-system-$receipt_id"
 if ! mkdir -p "$run_temp"; then

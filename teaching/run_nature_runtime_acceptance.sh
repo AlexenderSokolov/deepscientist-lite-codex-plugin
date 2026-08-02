@@ -12,7 +12,7 @@ if [[ "$output" == *"<"* || "$output" == *">"* ]]; then
 fi
 if [[ -z "$output" ]]; then
   run_id="$(date -u +%Y%m%dT%H%M%S)-$$-${RANDOM:-0}"
-  output_root="$repo_root/.validation-tmp/nature-runtime-$run_id"
+  output_root="${TEMP_ROOT:-$repo_root/research/.validation-tmp}/nature-runtime-$run_id"
   mkdir -p "$output_root"
   output="$output_root/receipt.json"
 fi

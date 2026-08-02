@@ -1,0 +1,21 @@
+{
+  "name": "deepscientist-lite-web",
+  "version": "0.2.0-alpha.1",
+  "description": "Public-only web acquisition and provenance records for DeepScientist Lite.",
+  "author": {"name": "DeepScientist Lite maintainers"},
+  "homepage": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+  "repository": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+  "license": "Apache-2.0",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "DeepScientist Lite Web",
+    "shortDescription": "Acquire public sources with explicit provenance and limits.",
+    "longDescription": "An experimental public-only web pack. It records backend capabilities and source provenance, forbids authenticated browsing and form submission in v1, and treats Playwright CLI, Firecrawl, Tapestry, and agent-browser as optional external backends.",
+    "developerName": "DeepScientist Lite maintainers",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": ["Use $ds-lite-web to acquire public evidence within an explicit domain and resource budget."],
+    "brandColor": "#315F78",
+    "screenshots": []
+  }
+}

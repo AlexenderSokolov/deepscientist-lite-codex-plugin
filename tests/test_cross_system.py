@@ -4,6 +4,7 @@ from subprocess import CompletedProcess
 from unittest.mock import patch
 
 from tools.validation.check_cross_system import _run_shell_check, run
+from tools.validation.check_text_compatibility import iter_files
 
 
 class CrossSystemValidationTests(unittest.TestCase):
@@ -76,6 +77,23 @@ class CrossSystemValidationTests(unittest.TestCase):
         )
         self.assertEqual(item["status"], "not-observed")
         self.assertEqual(item["failure_class"], "template-source")
+
+    def test_unrendered_powershell_templates_are_not_syntax_checked(self):
+        root = Path(__file__).resolve().parents[1]
+        report = run(root)
+        item = next(
+            entry
+            for entry in report["syntax"]
+            if entry["path"] == "plugins/deepscientist-lite-core/assets/templates/run_autonomy.ps1"
+        )
+        self.assertEqual(item["status"], "not-observed")
+        self.assertEqual(item["failure_class"], "template-source")
+
+    def test_generated_acceptance_workspaces_are_not_scanned_as_source(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        paths = {path.as_posix() for path in iter_files(root)}
+        self.assertFalse(any("research/appserver-continuation-" in path for path in paths))
+        self.assertTrue(any(path.endswith("research/artifacts/handoff-20260728-continuation.json") for path in paths))
 
 
 if __name__ == "__main__":

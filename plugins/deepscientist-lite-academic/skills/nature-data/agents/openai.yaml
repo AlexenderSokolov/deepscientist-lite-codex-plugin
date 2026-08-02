@@ -1,0 +1,6 @@
+interface:
+  display_name: "Nature Data"
+  short_description: "Use the complete vendored nature-data workflow with DS Lite evidence and dependency boundaries."
+  default_prompt: "Use $nature-data for one bounded academic workflow."
+policy:
+  allow_implicit_invocation: true

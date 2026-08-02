@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 import subprocess
 import sys
@@ -15,11 +16,29 @@ HOOK_SCRIPT = PLUGIN_ROOT / "scripts" / "ds_lite_hook.py"
 HOOK_CONFIG = PLUGIN_ROOT / "hooks" / "hooks.json"
 STATE_SCRIPT = PLUGIN_ROOT / "scripts" / "ds_lite_state.py"
 SCRIPT_DIR = HOOK_SCRIPT.parent
-if str(SCRIPT_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_DIR))
 
-import ds_lite_hook  # noqa: E402
-import ds_lite_iteration  # noqa: E402
+# The split Core and frozen monolith both expose top-level script module names.
+# Load this legacy fixture with isolated module identities so unittest discovery
+# order cannot silently substitute the Core Hook implementation.
+_module_names = ("ds_lite_hook", "ds_lite_iteration", "ds_lite_protocol", "ds_lite_state", "ds_lite_evidence")
+_saved_modules = {name: sys.modules.pop(name) for name in _module_names if name in sys.modules}
+try:
+    sys.path.insert(0, str(SCRIPT_DIR))
+    _spec = importlib.util.spec_from_file_location("ds_lite_legacy_hook", HOOK_SCRIPT)
+    assert _spec is not None and _spec.loader is not None
+    ds_lite_hook = importlib.util.module_from_spec(_spec)
+    sys.modules["ds_lite_legacy_hook"] = ds_lite_hook
+    _spec.loader.exec_module(ds_lite_hook)
+    _iteration_spec = importlib.util.spec_from_file_location("ds_lite_legacy_iteration", SCRIPT_DIR / "ds_lite_iteration.py")
+    assert _iteration_spec is not None and _iteration_spec.loader is not None
+    ds_lite_iteration = importlib.util.module_from_spec(_iteration_spec)
+    sys.modules["ds_lite_legacy_iteration"] = ds_lite_iteration
+    _iteration_spec.loader.exec_module(ds_lite_iteration)
+finally:
+    sys.modules.pop("ds_lite_legacy_hook", None)
+    sys.modules.pop("ds_lite_legacy_iteration", None)
+    for _name, _module in _saved_modules.items():
+        sys.modules[_name] = _module
 
 
 class HookEntrypointTests(unittest.TestCase):

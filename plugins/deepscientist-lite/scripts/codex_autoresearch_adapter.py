@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
-"""Compatibility adapter for the authorized codex-autoresearch snapshot.
-
-The upstream runner writes raw event and runner logs. Until a caller provides a
-sanitized child contract, this adapter only performs compatibility inspection and
-refuses to spawn the external process.
-"""
+"""DS Lite adapter for the authorized codex-autoresearch snapshot."""
 
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import subprocess
@@ -55,11 +51,39 @@ def validate_binary(path: Path) -> dict[str, object]:
     return {"binary_present": True, "version_match": matched, "spawn_observed": True, "raw_output_persisted": False}
 
 
+def run_session(root: Path, job_id: str, prompt_file: Path, goals: list[str], codex_bin: str, state_dir: Path | None, max_attempts: int) -> dict[str, object]:
+    runner_path = root / "plugins" / "deepscientist-lite-core" / "scripts" / "ds_lite_autoresearch_runner.py"
+    if not runner_path.is_file():
+        raise AdapterError("DS Lite autoresearch runner is missing")
+    spec = importlib.util.spec_from_file_location("ds_lite_autoresearch_runner", runner_path)
+    if spec is None or spec.loader is None:
+        raise AdapterError("DS Lite autoresearch runner cannot be loaded")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    prompt = prompt_file.read_text(encoding="utf-8")
+    result = module.run_job(root=root, job_id=job_id, initial_prompt=prompt, frozen_goals=goals, codex_bin=codex_bin, state_dir=state_dir, max_attempts=max_attempts)
+    return {
+        "status": result.get("status", "failed"),
+        "job_id": job_id,
+        "session_id_observed": bool(result.get("session_id")),
+        "spawn_observed": int(result.get("attempt_count", 0)) > 0,
+        "next_action": result.get("next_automatic_action", "inspect-runner-state"),
+        "raw_output_persisted": False,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Inspect the authorized autoresearch adapter without spawning it.")
+    parser = argparse.ArgumentParser(description="Inspect or run the authorized autoresearch adapter.")
     parser.add_argument("command", choices=("inspect", "validate-binary", "run"))
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--binary")
+    parser.add_argument("--root", default=".")
+    parser.add_argument("--job-id")
+    parser.add_argument("--prompt-file")
+    parser.add_argument("--goal", action="append", default=[])
+    parser.add_argument("--codex-bin", default="codex")
+    parser.add_argument("--state-dir")
+    parser.add_argument("--max-attempts", type=int, default=3)
     args = parser.parse_args(argv)
     try:
         root = Path(args.repo_root).resolve()
@@ -70,7 +94,9 @@ def main(argv: list[str] | None = None) -> int:
                 raise AdapterError("validate-binary requires --binary")
             result = validate_binary(Path(args.binary).resolve())
         else:
-            result = {"status": "blocked", "failure_layer": "external-policy-unverified", "spawn_observed": False, "raw_output_persisted": False, "next_action": "provide-a-sanitized-child-output-contract"}
+            if not args.job_id or not args.prompt_file or not args.goal:
+                raise AdapterError("run requires --job-id, --prompt-file, and at least one --goal")
+            result = run_session(Path(args.root).resolve(), args.job_id, Path(args.prompt_file).resolve(), args.goal, args.codex_bin, Path(args.state_dir).resolve() if args.state_dir else None, args.max_attempts)
         print(json.dumps(result, ensure_ascii=True))
         return 0 if result.get("status") == "passed" else 1
     except (AdapterError, OSError, UnicodeError, json.JSONDecodeError) as exc:

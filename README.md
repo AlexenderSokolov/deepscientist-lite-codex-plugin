@@ -1,6 +1,6 @@
 ﻿# DeepScientist Lite Codex Plugin
 
-[中文说明](README.zh.md) · [Chinese user guide](docs/user-guide.zh.md) · [Documentation](docs/README.md) · [Teaching materials](teaching/README.zh.md) · [Plugin package](plugins/deepscientist-lite/)
+[中文说明](README.zh.md) · [Chinese user guide](docs/user-guide.zh.md) · [Documentation](docs/README.md) · [Evaluation](evaluation/README.md) · [Core package](plugins/deepscientist-lite-core/) · [Acknowledgments](ACKNOWLEDGMENTS.md)
 
 DeepScientist Lite is a lightweight Codex plugin for learning and practicing a traceable, reviewable research workflow. It keeps project memory, research maps, artifacts, experiment contracts, Evidence Packs, review gates, and route tracing without asking users to deploy the full DeepScientist platform.
 
@@ -8,7 +8,7 @@ DeepScientist Lite is a lightweight Codex plugin for learning and practicing a t
 
 It is designed for onboarding, teaching demos, and small research projects where the first goal is to make the research process clear and recoverable.
 
-The [Chinese user guide](docs/user-guide.zh.md) explains the 26 runtime skills: nine DS Lite continuity/evidence skills and the complete 17-skill nature-skills academic workflow family. It also covers Graph revisions, Mission Board, reflective iterations, Evidence Packs, review boundaries, bounded delegation, path aliases, first-use MCP/API onboarding, and cross-session recovery. The teaching area separates deterministic lab preparation from the judgments students or Codex must make.
+The [Chinese user guide](docs/user-guide.zh.md) explains the nine Core skills and five optional packs. Academic contains the 17 Nature workflows plus citation/revision gates; Web records public-source provenance; Knowledge emits review-gated proposals; Empirical and Engineering each expose one domain router. It also covers Graph revisions, Mission Board, reflective iterations, Evidence Packs, review boundaries, bounded delegation, path aliases, first-use onboarding, and cross-session recovery.
 
 ## What It Does
 
@@ -24,19 +24,21 @@ The [Chinese user guide](docs/user-guide.zh.md) explains the 26 runtime skills: 
 
 ## What It Does Not Do
 
-DeepScientist Lite does not start a daemon, run a Web/TUI, install local models, expose an MCP server, connect chat channels, or replace the full DeepScientist platform. Nature MCP/API integrations are opt-in workspace configuration and require explicit user authorization. It is a teaching-first plugin and file protocol.
+Core does not start a daemon, run a Web/TUI, install local models, expose an MCP server, connect chat channels, or replace the full DeepScientist platform. Academic MCP/API integrations and hosted Web backends are opt-in workspace configuration and require explicit user authorization.
+
+The Web package is public-only and fail-closed: every `fetch`, `search`, `render`, or `benchmark` run must pass one or more `--allowed-domain` values. Initial URLs, redirects, and Firecrawl results are checked against that scope. Login, cookies, form submission, uploads, and automatic browser/provider installation are not supported.
 
 ## Install From A Marketplace Repository
 
 Requirements: Codex and Python 3.10 or newer. The runtime state helper uses only the Python standard library.
 
-This repository follows the Codex marketplace layout: `.agents/plugins/marketplace.json` points to `plugins/deepscientist-lite/`.
+This repository follows the Codex marketplace layout: `.agents/plugins/marketplace.json` exposes six independent packages under `plugins/deepscientist-lite-*`.
 
 ```bash
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-This command adds a plugin source; it does not by itself prove that the plugin is installed. Open `/plugins`, select this marketplace, and install `deepscientist-lite`. After installing or upgrading, restart Codex Desktop and use a fresh thread to verify the actual plugin version and skill count. The published `0.4.0-beta.2` has seven skills; the current source candidate `0.6.0-beta.1` has 26. Do not infer cache state from the source tree.
+This command adds a plugin source; it does not by itself prove that a plugin is installed. Open `/plugins`, select this marketplace, and install `deepscientist-lite` Core by default. Install Academic, Web, Knowledge, Empirical, or Engineering separately when needed. After installing or upgrading, restart Codex Desktop and use a fresh task to verify actual versions and skill counts. The split candidates expect 9 Core skills, 17 Academic skills, and one skill in each other pack. Do not infer cache state from the source tree.
 
 ## Start Using It
 
@@ -59,7 +61,12 @@ Graph v2 uses atomic writes, revision checks, and project-relative or symbolic e
 
 ## Repository Map
 
-- `plugins/deepscientist-lite/`: installable Codex plugin package.
+- `plugins/deepscientist-lite-core/`: default Core package with nine skills and Hooks.
+- `plugins/deepscientist-lite-academic/`: optional 17-skill academic package.
+- `plugins/deepscientist-lite-web/` and `plugins/deepscientist-lite-knowledge/`: experimental public-web and review-proposal packages.
+- `plugins/deepscientist-lite-empirical/`: `0.2.0-alpha.1` method-neutral empirical specification and result handoff.
+- `plugins/deepscientist-lite-engineering/`: `0.2.0-alpha.1` numerical, FFT, sampling, and figure-audit protocol.
+- `plugins/deepscientist-lite/`: frozen `0.6.0-beta.1` monolith retained for evidence identity, not a marketplace target.
 - `docs/README.md`: implementation and maintainer documentation index.
 - `teaching/README.zh.md`: teaching materials and demo scripts.
 - `tools/validation/`: maintainer validation tools.

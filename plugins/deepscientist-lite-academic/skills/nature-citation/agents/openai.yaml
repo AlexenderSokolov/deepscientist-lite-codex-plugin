@@ -1,0 +1,6 @@
+interface:
+  display_name: "Nature Citation"
+  short_description: "Use the complete vendored nature-citation workflow with DS Lite evidence and dependency boundaries."
+  default_prompt: "Use $nature-citation for one bounded academic workflow."
+policy:
+  allow_implicit_invocation: true

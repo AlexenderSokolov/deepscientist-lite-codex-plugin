@@ -28,6 +28,7 @@ CONFIG_FIELDS = {
     "shell_surface", "plugin_version", "skill_count", "workspace_ref", "source_digest",
 }
 ABSOLUTE_WINDOWS = re.compile(r"(?:^|\s)[A-Za-z]:[\\/]")
+HOST_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 
 
 class HandoffError(ValueError):
@@ -85,6 +86,26 @@ def validate_handoff(payload: dict[str, Any]) -> dict[str, Any]:
     expected = context_digest(goal=payload["goal"], facts=payload["observed_facts"], configuration=payload["configuration"])
     if payload["context_digest"] != expected:
         raise HandoffError("context_digest does not match the redacted projection")
+    host_mapping = payload["extensions"].get("host_mapping") if isinstance(payload["extensions"], dict) else None
+    if host_mapping is not None:
+        expected_fields = {"schema_version", "coordinator_host_id", "worker_host_ids"}
+        if not isinstance(host_mapping, dict) or set(host_mapping) != expected_fields:
+            raise HandoffError("host_mapping fields do not match ds-lite.host-mapping.v1")
+        if host_mapping["schema_version"] != "ds-lite.host-mapping.v1":
+            raise HandoffError("host_mapping schema is unsupported")
+        coordinator = host_mapping["coordinator_host_id"]
+        workers = host_mapping["worker_host_ids"]
+        if not isinstance(coordinator, str) or not HOST_ID.fullmatch(coordinator):
+            raise HandoffError("coordinator_host_id is invalid")
+        if not isinstance(workers, dict) or not workers:
+            raise HandoffError("worker_host_ids must be a non-empty task-to-host mapping")
+        for task_id, host_id in workers.items():
+            if not isinstance(task_id, str) or not HOST_ID.fullmatch(task_id):
+                raise HandoffError("worker task id is invalid")
+            if not isinstance(host_id, str) or not HOST_ID.fullmatch(host_id):
+                raise HandoffError("worker host id is invalid")
+        if coordinator in workers.values() or len(set(workers.values())) != len(workers):
+            raise HandoffError("host_mapping ids must be unique")
     _scan(payload)
     return payload
 

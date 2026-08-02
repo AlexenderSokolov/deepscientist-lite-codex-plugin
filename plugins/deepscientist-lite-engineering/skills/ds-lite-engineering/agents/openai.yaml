@@ -1,0 +1,6 @@
+interface:
+  display_name: "DS Lite Engineering"
+  short_description: "Audit numerical and signal-processing work"
+  default_prompt: "Use $ds-lite-engineering to define or review one engineering analysis with explicit units, sampling, transforms, seeds, checks, commands, and evidence references."
+policy:
+  allow_implicit_invocation: true

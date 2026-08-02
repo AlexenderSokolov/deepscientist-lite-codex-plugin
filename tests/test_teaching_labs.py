@@ -302,6 +302,17 @@ class TeachingLabTests(unittest.TestCase):
                 self.assertTrue((arm / "TASK.md").is_file())
                 self.assertTrue((arm / "ARM_INSTRUCTIONS.md").is_file())
 
+        ds_instructions = (
+            output / "arms" / "idea-evaluation" / "ds-lite" / "ARM_INSTRUCTIONS.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("$ds-lite", ds_instructions)
+        self.assertIn("exact End report labels", ds_instructions)
+        self.assertIn("repository-relative artifact refs", ds_instructions)
+        self.assertIn("never quote raw stderr or absolute private paths", ds_instructions)
+
+        wrapper = output / "arms" / "numerical-seeds" / "plain" / "materials" / "run_simulation_wsl.sh"
+        self.assertNotIn(b"\r\n", wrapper.read_bytes())
+
     def test_matched_pilot_keeps_task_materials_equal_and_arm_memory_distinct(self) -> None:
         output = self.root / "matched arm boundaries"
         result = run_lab(output, "matched-pilot")

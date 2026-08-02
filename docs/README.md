@@ -23,10 +23,19 @@ This folder explains how the plugin is built and maintained. Start with the root
 - [Release status](maintainers/release-status.zh.md): current positioning and long-term maintenance notes.
 - [Roadmap and deferred gates](maintainers/roadmap.zh.md): active short-term work and the P1-P3 interfaces that remain explicitly deferred.
 - [Writing guide](maintainers/writing-guide.zh.md): Chinese terminology, claim strength, examples, and version-fact maintenance rules.
+- [Cross-disciplinary adoption audit](maintainers/cross-disciplinary-adoption.zh.md): design-atom, license, clean-room, companion, and deferred decisions for the new Academic, Empirical, and Engineering packs.
+- [上游设计原子吸收审计表](maintainers/upstream-design-atom-audit-20260726.zh.md):逐项核对推荐项目的精华落点、协议、测试、吸收深度和明确排除项。
+- [0.8 真实验收审计表](maintainers/real-acceptance-audit-20260726.zh.md):本轮新身份的实际证据、状态、阻塞和用户动作。
+- [0.8 续验审计表](maintainers/real-acceptance-audit-20260727.zh.md):完整回归、包矩阵、真实宿主门和下一条用户动作。
+- [Learning and quality protocol](maintainers/learning-quality-protocol.zh.md): short on-demand tutorials, learning receipts, industrial quality plans, and public-only Web/Knowledge boundaries.
 
 ## Runtime References
 
-The installable plugin keeps only skill-facing protocol references under `plugins/deepscientist-lite/references/`. Teaching cases and maintainer notes live outside the runtime plugin package.
+Core keeps skill-facing protocol references under `plugins/deepscientist-lite-core/references/`; optional packs keep only their own domain references. Evaluation cases and maintainer notes live outside runtime packages.
 
-- [external-long-task-protocol.md](../plugins/deepscientist-lite/references/external-long-task-protocol.md): ownership, manual tmux capacity handshakes, persistence probes, append-only task records, and recovery rules for work that may outlive a Codex worker or SSH connection.
-- [responsible-exploration-covenant.md](../plugins/deepscientist-lite/references/responsible-exploration-covenant.md): the seven runtime actions and shared start/progress/end feedback protocol loaded by all nine skills.
+- [external-long-task-protocol.md](../plugins/deepscientist-lite-core/references/external-long-task-protocol.md): ownership, manual tmux capacity handshakes, persistence probes, append-only task records, and recovery rules for work that may outlive a Codex worker or SSH connection.
+- [responsible-exploration-covenant.md](../plugins/deepscientist-lite-core/references/responsible-exploration-covenant.md): the seven runtime actions and shared start/progress/end feedback protocol loaded by all nine Core skills.
+- [Academic citation-check protocol](../plugins/deepscientist-lite-academic/references/citation-check-protocol.md): provider states, verification thresholds, reading scope, and cache policy.
+- [Academic revision protocol](../plugins/deepscientist-lite-academic/references/revision-protocol.md): bounded revision constraints and adversarial-review isolation.
+- [Empirical protocol](../plugins/deepscientist-lite-empirical/references/protocol.md): estimands, diagnostics, robustness, and Evidence Pack result handoff.
+- [Engineering protocol](../plugins/deepscientist-lite-engineering/references/protocol.md): units, sampling, FFT, seeds, numerical checks, and figure axes.

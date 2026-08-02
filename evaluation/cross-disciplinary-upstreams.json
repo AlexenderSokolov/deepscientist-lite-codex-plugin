@@ -1,0 +1,160 @@
+{
+  "schema_version": "ds-lite.upstream-adoption.v1",
+  "observed_on": "2026-07-27",
+  "policy": {
+    "copy_prompts": false,
+    "vendor_repositories": false,
+    "classification_gate": ["core", "profile", "fixture", "reject"],
+    "frozen_legacy_registry": "plugins/deepscientist-lite/references/upstream-project-registry.json"
+  },
+  "upstreams": [
+    {
+      "id": "opencli",
+      "repository": "https://github.com/jackwener/opencli",
+      "package": "@jackwener/opencli",
+      "version": "1.8.6",
+      "commit": "cad35e7a6a5ff3f7d6b859bfa4c45195c0390260",
+      "license": "Apache-2.0",
+      "classification": "fixture",
+      "decision": "challenger",
+      "copied_content": false,
+      "design_atoms": ["structured-cli-output", "public-adapter-manifest", "browser-capability-discovery"],
+      "not_adopted": ["chrome-bridge", "daemon", "logged-in-browser", "cookies", "forms", "uploads", "site-catalog"],
+      "implementation_refs": ["plugins/deepscientist-lite-web/scripts/ds_lite_extensions.py", "docs/maintainers/opencli-adoption-audit-20260727.zh.md"],
+      "package_integrity": "sha512-2+phJOV7JkSeQR4uOnapAkhSwQDjNzHYzlCXZJBYiYi7bUxQz95nGbGuXeTseprZWES0kysVGySH63B1HG51hw==",
+      "tarball_sha256": "d271cf3ebab40dfd85c77d328592c8c34d6df20ff2aee9b641f984740d3c6670",
+      "audited_files": [
+        {"path": "package.json", "sha256": "41c84e1993ad5d0bc52367f93d86ac49ac311dac6a3a6c5eb867b42b2c5eb4a2"},
+        {"path": "LICENSE", "sha256": "0210b8b66cf00358242cb921ba2be3a46dfe0190159b1b952388a3880ce1ff54"}
+      ]
+    },
+    {
+      "id": "ars-codex",
+      "repository": "https://github.com/Imbad0202/academic-research-skills-codex",
+      "commit": "f8d6b061efe98564a3f554c917fce66dcef6ca54",
+      "license": "CC-BY-NC-4.0",
+      "classification": "profile",
+      "decision": "clean-room",
+      "copied_content": false,
+      "design_atoms": ["five-layer-socratic-convergence", "multi-index-citation-verification", "reading-scope", "claim-location"],
+      "not_adopted": ["licensed-prompt-content", "material-passport-state-machine", "hooks", "agent-team-runtime"],
+      "implementation_refs": ["plugins/deepscientist-lite-academic/scripts/ds_lite_citation_check.py"],
+      "audited_files": [
+        {"path": "README.md", "sha256": "4307f6785942b80a5db5d58f4fba5ddf0048f37c3b89cbe672aae2e61ab3e285"},
+        {"path": "LICENSE", "sha256": "b3848009d12a173f549ef98d9ee486e64459e8eb5d9f895bff53782b4aa86d7c"}
+      ]
+    },
+    {
+      "id": "claude-scholar",
+      "repository": "https://github.com/Galaxy-Dawn/claude-scholar",
+      "commit": "2f7766fd541a723d4ddc6230b3277f948d61b093",
+      "license": "MIT",
+      "classification": "profile",
+      "decision": "companion",
+      "copied_content": false,
+      "design_atoms": ["sources-to-knowledge-promotion", "zotero-import-boundary", "project-knowledge-layers"],
+      "not_adopted": ["duplicate-nature-skills", "obsidian-knowledge-base", "planning-with-files", "default-hooks"],
+      "implementation_refs": ["plugins/deepscientist-lite-knowledge/references/adapter-boundary.md"],
+      "audited_files": [
+        {"path": "README.md", "sha256": "58362c5da01c36167327b5c84a955ffabbfc349379f385b9bb8e29f462ee6e29"},
+        {"path": "LICENSE", "sha256": "5a1e92b9b489ec750c774555a7840af3978bc574e1395f6796695ffc67a62bef"}
+      ]
+    },
+    {
+      "id": "ai-research-skills",
+      "repository": "https://github.com/Orchestra-Research/AI-Research-SKILLs",
+      "commit": "773a52944ba4747a18bd4ae9ade53fff041adcbc",
+      "license": "MIT",
+      "classification": "fixture",
+      "decision": "deferred",
+      "copied_content": false,
+      "design_atoms": ["fine-tuning-requirements", "rag-requirements", "evaluation-requirements"],
+      "not_adopted": ["full-catalog", "repository-mirror"],
+      "implementation_refs": [],
+      "audited_files": [
+        {"path": "README.md", "sha256": "d5442649de72ecd33a9e90e820d76d5d5fe658777d39f1f8977641e1d264f3bb"},
+        {"path": "LICENSE", "sha256": "80b5899a9ab121a2d4aae63724f0c11defba7f23da487086932bb9abfb0f2a00"}
+      ]
+    },
+    {
+      "id": "auto-empirical",
+      "repository": "https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills",
+      "commit": "dba82ba61be93f6621256fe9d1e688a98303913f",
+      "license": "CC-BY-SA-4.0 aggregation; nested sources may differ",
+      "classification": "fixture",
+      "decision": "fixture-only",
+      "copied_content": false,
+      "design_atoms": ["method-taxonomy", "empirical-stage-map", "golden-workflow-test-idea"],
+      "not_adopted": ["aggregated-content", "nested-skills", "catalog-runtime"],
+      "implementation_refs": ["tests/test_empirical_pack.py"],
+      "audited_files": [
+        {"path": "README.md", "sha256": "b414dbb19c2c32d34771277893ec231b8fb2464489d8bb2f44e20946fee91e61"},
+        {"path": "LICENSE", "sha256": "22401c14e67fc2f4b5bc4987a5ee367e52e833066901b94ad798d46eaf7917f8"}
+      ]
+    },
+    {
+      "id": "scientific-agent-skills",
+      "repository": "https://github.com/K-Dense-AI/scientific-agent-skills",
+      "commit": "70a0d595e54b8d92ca54f216d4315e0ab8c7d967",
+      "license": "MIT",
+      "classification": "profile",
+      "decision": "deferred",
+      "copied_content": false,
+      "design_atoms": ["rdkit-adapter-candidate", "scanpy-adapter-candidate", "professional-runtime-doctor"],
+      "not_adopted": ["full-skill-catalog", "professional-runtimes"],
+      "implementation_refs": [],
+      "audited_files": [
+        {"path": "README.md", "sha256": "65a61599851b82dcf44e4b273110ed0de25524ecfd2e05e189b52510c582d6ca"},
+        {"path": "LICENSE.md", "sha256": "09b02a3c9df3053c55531d503357a9c7cde275970e6c3ceaa1ddf5f0e90b40c1"}
+      ]
+    },
+    {
+      "id": "codex-claude-academic-skills",
+      "repository": "https://github.com/zLanqing/codex-claude-academic-skills",
+      "commit": "7ed6377f0efb6a38951b48ef03b19d996e454b1f",
+      "license": "MIT",
+      "classification": "profile",
+      "decision": "clean-room",
+      "copied_content": false,
+      "design_atoms": ["matlab-python-capability-discovery", "fft-window-resolution", "unit-and-figure-checks"],
+      "not_adopted": ["office-skills", "duplicate-writing-entrypoints"],
+      "implementation_refs": ["plugins/deepscientist-lite-engineering/scripts/ds_lite_engineering.py"],
+      "audited_files": [
+        {"path": "README.md", "sha256": "6ff21b88d1c9e508189e1b082eb1fe92803e73791a0abdda52c9ba92c6453be6"},
+        {"path": "LICENSE", "sha256": "36567c1c66b9971768a8693f6c6bc230655c3cbd7a8ec3de754e549398af8c00"}
+      ]
+    },
+    {
+      "id": "aris",
+      "repository": "https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep",
+      "commit": "53562a7c64cc1d55946cba1fb8a8416137143d14",
+      "license": "MIT",
+      "classification": "fixture",
+      "decision": "clean-room",
+      "copied_content": false,
+      "design_atoms": ["fresh-context-review", "revision-whitelist", "single-strongest-objection", "claim-citation-audit"],
+      "not_adopted": ["unattended-loop", "monitor", "mcp", "experiment-queue", "automatic-data-writing"],
+      "implementation_refs": ["plugins/deepscientist-lite-academic/scripts/ds_lite_revision_guard.py"],
+      "audited_files": [
+        {"path": "README.md", "sha256": "47d1a5234b8e192db5fc309b69f4210eb7ff2dd355c00b2cb7862feb502d8975"},
+        {"path": "LICENSE", "sha256": "e30cf5dd5f49b4f9b656590e23d782b4756c924a9f0ff0162b3e7b5d87006bf5"}
+      ]
+    },
+    {
+      "id": "kim-service",
+      "repository": "https://github.com/KimYx0207/Kim_Service",
+      "commit": "ba71e80379c7439d97b4b42d666aafc7f386e969",
+      "license": "MIT",
+      "classification": "fixture",
+      "decision": "fixture-only",
+      "copied_content": false,
+      "design_atoms": ["core-question-gate", "trigger-evaluation", "source-abstraction", "baseline", "real-acceptance-evidence"],
+      "not_adopted": ["memory-three-layer", "find-skill", "goalpro", "decision-runtime", "teams-runtime", "xiaohongshu"],
+      "implementation_refs": ["evaluation/README.md", "tools/validation/validate_packages.py"],
+      "audited_files": [
+        {"path": "README.md", "sha256": "6ae6cd9653da15ad06d15eb37130132bb628eaf4e336333c7f7679aa68d61ec3"},
+        {"path": "LICENSE", "sha256": "70feaa9dba9a4b99e43499a9ffa09388348772d536df825fb14a2efbc7a08d39"}
+      ]
+    }
+  ]
+}

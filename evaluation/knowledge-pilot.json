@@ -1,0 +1,15 @@
+{
+  "schema_version": "ds-lite.knowledge-pilot-plan.v1",
+  "status": "prepared-not-executed",
+  "public_web_item_range": {"minimum": 10, "maximum": 20},
+  "scholaraio_collection": {"collections": 1, "paper_minimum": 20, "paper_maximum": 50},
+  "required_checks": [
+    "review-queue-only",
+    "duplicate-tracking",
+    "source-traceability",
+    "withdrawal",
+    "supersession",
+    "privacy-boundary"
+  ],
+  "claim_boundary": "Prepared fixtures do not prove Tapestry, ScholarAIO, or ResearchKB interoperability."
+}

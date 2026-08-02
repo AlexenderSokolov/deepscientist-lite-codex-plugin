@@ -171,6 +171,11 @@ def verify_snapshot(registry: dict) -> dict:
             if not source_path.is_file() or source_path.name == "SKILL.md":
                 continue
             relative = source_path.relative_to(source_root)
+            # Python/Node runtimes may materialize bytecode beside the pinned
+            # sources. Generated cache files are not upstream identity and
+            # must never turn a clean snapshot into a false drift report.
+            if "__pycache__" in relative.parts or source_path.suffix.lower() in {".pyc", ".pyo"}:
+                continue
             runtime_path = runtime_root / relative
             if not runtime_path.is_file():
                 mismatches.append(f"{name}:{relative.as_posix()}:missing")

@@ -169,6 +169,16 @@ class LoopRunnerTests(unittest.TestCase):
         with self.assertRaises(ds_lite_loop.LoopError):
             self.prepare(adapter="native-codex", authorization="approved", approval_ref="../approval.md")
 
+    def test_v2_contract_requires_explicit_bounded_autonomy_controls(self):
+        contract = self.prepare()
+        payload = json.loads(contract.read_text(encoding="utf-8"))
+        payload["schema_version"] = "ds-lite.loop-contract.v2"
+        payload["extensions"] = {"autonomy": {"retry_policy": "exponential-3", "progress_required": True}}
+        self.assertEqual(ds_lite_loop.validate_contract(payload)["schema_version"], "ds-lite.loop-contract.v2")
+        payload["extensions"] = {}
+        with self.assertRaises(ds_lite_loop.LoopError):
+            ds_lite_loop.validate_contract(payload)
+
     def test_evidence_must_be_inside_an_allowed_path(self):
         contract = self.prepare(allowed_paths=["work"])
         (self.root / "evidence").mkdir()
@@ -363,6 +373,20 @@ class LoopRunnerTests(unittest.TestCase):
         self.assertEqual(reduced["result"], {"status": "partial", "goal_ids": ["goal-a"]})
         self.assertIsNone(reduced["completion"])
 
+    def test_strict_terminal_result_outweighs_incidental_authorization_text(self):
+        script = self.root / "successful-partial-with-diagnostic.py"
+        script.write_text(
+            'import json, sys\n'
+            'sys.stderr.write("tool note: authorization boundary checked\\n")\n'
+            'print(json.dumps({"type":"thread.started","thread_id":"session-1"}))\n'
+            'print(json.dumps({"type":"item.completed","item":{"type":"agent_message","text":"DS_LITE_LOOP_RESULT {\\"status\\":\\"partial\\",\\"goal_ids\\":[\\"goal-a\\"]}"}}))\n'
+            'print(json.dumps({"type":"turn.completed"}))\n',
+            encoding="utf-8",
+        )
+        result = ds_lite_loop._run_process([sys.executable, str(script)], self.root, 10)
+        self.assertEqual(result["failure_layer"], "none")
+        self.assertEqual(result["result"], {"status": "partial", "goal_ids": ["goal-a"]})
+
     def test_spawn_and_child_early_exit_are_fail_closed(self):
         spawn = ds_lite_loop._run_process([str(self.root / "missing-command.exe")], self.root, 10)
         self.assertEqual(spawn["failure_layer"], "child-process")
@@ -393,15 +417,24 @@ class LoopRunnerTests(unittest.TestCase):
         self.assertEqual(result["next_action"], "inspect-terminal-receipt")
         self.assertNotIn("SECRET_MARKER", json.dumps(result))
 
-    def test_external_adapter_is_blocked_when_bounded_policy_is_unverified(self):
+    def test_autoresearch_adapter_uses_the_same_pinned_resume_contract(self):
         self.approve()
         contract = self.prepare(adapter="codex-autoresearch", authorization="approved")
-        with patch.object(ds_lite_loop, "_run_process") as process:
-            with self.assertRaisesRegex(ds_lite_loop.LoopError, "external-policy-unverified"):
-                ds_lite_loop.run_loop(Namespace(contract=str(contract), root=str(self.root),
-                    output_dir=str(self.root / "external-run"), fake_sequence=None,
-                    codex_bin=None, autoresearch_bin=str(self.root / "codex-autoresearch.exe"), execute=True))
-        process.assert_not_called()
+        (self.root / "evidence").mkdir()
+        (self.root / "evidence" / "a.txt").write_text("a", encoding="utf-8")
+        (self.root / "evidence" / "b.txt").write_text("b", encoding="utf-8")
+        observations = [
+            {"process_started": True, "returncode_observed": True, "session_id": "session-1", "result": {"status": "partial", "goal_ids": ["goal-a"]}, "completion": None, "terminal_event_observed": True, "failure_layer": "none"},
+            {"process_started": True, "returncode_observed": True, "session_id": "session-1", "result": {"status": "completed", "goal_ids": ["goal-a", "goal-b"]}, "completion": {"status": "completed", "goal_ids": ["goal-a", "goal-b"]}, "terminal_event_observed": True, "failure_layer": "none"},
+        ]
+        with patch.object(ds_lite_loop, "_validate_codex_binary", return_value=self.root / "codex.exe"), \
+             patch.object(ds_lite_loop, "_validate_autoresearch_binary", return_value=self.root / "codex-autoresearch.exe"), \
+             patch.object(ds_lite_loop, "_run_process", side_effect=observations) as process:
+            summary = ds_lite_loop.run_loop(Namespace(contract=str(contract), root=str(self.root),
+                output_dir=str(self.root / "external-run"), fake_sequence=None,
+                codex_bin=str(self.root / "codex.exe"), autoresearch_bin=str(self.root / "codex-autoresearch.exe"), execute=True))
+        self.assertEqual(summary["status"], "completed")
+        self.assertEqual(process.call_count, 2)
 
     def test_pipe_failure_is_reduced_without_raising_or_persisting_output(self):
         class BrokenPipeProcess:
