@@ -1,0 +1,28 @@
+{
+  "schema_version": "ds-lite.learning-catalog.v1",
+  "package": "deepscientist-lite",
+  "package_version": "0.8.0-beta.1",
+  "tutorials": [
+    {"id": "state-recovery", "version": "1.0.0", "path": "references/learning/tutorials/state-recovery.md", "sha256": "d50ba25dabc4d0727e9f4c126a4f01212d58c5db01d9a4b13c2a69642b5c709e"},
+    {"id": "evidence-claims", "version": "1.0.0", "path": "references/learning/tutorials/evidence-claims.md", "sha256": "ed8fa420cd01f645cd4cc03228ef703c04faf3882d1ebfa32528d191cbf03050"},
+    {"id": "spec-first-experiment", "version": "1.0.0", "path": "references/learning/tutorials/spec-first-experiment.md", "sha256": "cf14c471769db64eed4b6feb34a76f1aa73baa787a77d3867f3f4245d36fc3d5"},
+    {"id": "code-quality", "version": "1.0.0", "path": "references/learning/tutorials/code-quality.md", "sha256": "6445859b140c2f5588730cd9fde8e693a61c761de88b2651d1fb3d70520508dd"},
+    {"id": "academic-writing", "version": "1.0.0", "path": "references/learning/tutorials/academic-writing.md", "sha256": "dc319a42bb7fb9981be449c3b4650f37ff8077663ecae4033aed8a553e75996d"},
+    {"id": "citation-revision", "version": "1.0.0", "path": "references/learning/tutorials/citation-revision.md", "sha256": "1166869af38da04f11482c614c88030e35b8335aba9aa71edb7044884e56d3c7"},
+    {"id": "web-provenance", "version": "1.0.0", "path": "references/learning/tutorials/web-provenance.md", "sha256": "b297e421b8990487ffe17eb40fea2287d09de730e9b2b4ae054b2658204f803d"},
+    {"id": "knowledge-promotion", "version": "1.0.0", "path": "references/learning/tutorials/knowledge-promotion.md", "sha256": "cd5fb18e6a9a55b9dcca83865d234a22b2a63ad618dafeca10b370ff44170622"},
+    {"id": "delegation-handoff", "version": "1.0.0", "path": "references/learning/tutorials/delegation-handoff.md", "sha256": "1135cb9a3eaf4f9cc418f6fa4d1422713364c80f9214f31c02ef8f0f13b47d5b"},
+    {"id": "empirical-engineering", "version": "1.0.0", "path": "references/learning/tutorials/empirical-engineering.md", "sha256": "ca98258bfec6840f77a6abd554f5a8891a01df679a31f2d23b565fe98b7a6377"}
+  ],
+  "skill_map": {
+    "ds-lite": ["state-recovery", "evidence-claims"],
+    "ds-lite-intake": ["state-recovery", "code-quality"],
+    "ds-lite-scout": ["evidence-claims", "web-provenance"],
+    "ds-lite-idea": ["evidence-claims", "spec-first-experiment"],
+    "ds-lite-experiment": ["spec-first-experiment", "code-quality"],
+    "ds-lite-review": ["evidence-claims", "code-quality"],
+    "ds-lite-analysis-write": ["evidence-claims", "academic-writing"],
+    "ds-lite-iterate": ["state-recovery", "evidence-claims"],
+    "ds-lite-coordinate": ["delegation-handoff", "code-quality"]
+  }
+}

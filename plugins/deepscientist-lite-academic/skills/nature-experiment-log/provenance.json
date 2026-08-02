@@ -1,0 +1,36 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-experiment-log",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-experiment-log",
+    "source_skill_sha256": "fd079f111119c6746f63d8d5367286d2cc37b500b0af97b3e9506294c0f0ef8c"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-experiment-log",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "download": [
+      "SKILL.md"
+    ],
+    "python": [
+      "SKILL.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

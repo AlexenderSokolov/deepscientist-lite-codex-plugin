@@ -26,6 +26,24 @@ DECISIONS = {
     "asset-only",
 }
 
+# The frozen communication snapshot predates the package split. These two
+# paths are intentionally retained in the historical matrix, but their live
+# implementations now live in Core. Missing legacy files are reported in the
+# human audit as `not-observed`; the active files are checked separately.
+LEGACY_NOT_OBSERVED = {
+    "plugins/deepscientist-lite/scripts/ds_lite_communication_audit.py",
+    "tests/test_upstream_adoption.py",
+}
+ACTIVE_IMPLEMENTATIONS = {
+    "plugins/deepscientist-lite-core/scripts/ds_lite_communication_audit.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_hook.py",
+    "plugins/deepscientist-lite-core/hooks/hooks.json",
+    "plugins/deepscientist-lite-core/THIRD_PARTY_NOTICES.md",
+    "tests/test_communication_audit.py",
+    "tests/test_communication_hook.py",
+    "tests/test_cross_disciplinary_adoption.py",
+}
+
 
 def local_reference(name: str) -> str:
     return f"plugins/deepscientist-lite/references/communication/{name}"
@@ -225,12 +243,19 @@ def build_matrix() -> dict[str, Any]:
     }
 
 
+def canonical_snapshot_bytes(path: Path) -> bytes:
+    raw = path.read_bytes()
+    # Git may materialize tracked text snapshots as CRLF on Windows while the
+    # frozen manifest hashes their canonical LF bytes. Preserve binary files
+    # byte-for-byte and normalize only valid UTF-8 text snapshots.
+    try:
+        return raw.decode("utf-8").replace("\r\n", "\n").encode("utf-8")
+    except UnicodeDecodeError:
+        return raw
+
+
 def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    return hashlib.sha256(canonical_snapshot_bytes(path)).hexdigest()
 
 
 def chinese_reason(entry: dict[str, Any]) -> str:
@@ -389,7 +414,7 @@ def validate() -> list[str]:
         if not snapshot.is_file():
             errors.append(f"missing upstream snapshot: {source['local_snapshot']}")
             continue
-        if snapshot.stat().st_size != source["size"]:
+        if len(canonical_snapshot_bytes(snapshot)) != source["size"]:
             errors.append(f"upstream size mismatch: {source['local_snapshot']}")
         if sha256(snapshot) != entry["source_sha256"]:
             errors.append(f"upstream SHA-256 mismatch: {source['local_snapshot']}")
@@ -401,7 +426,13 @@ def validate() -> list[str]:
 
     for item in expected["local_artifacts"]:
         if not (REPO_ROOT / item["path"]).exists():
+            if item["path"] in LEGACY_NOT_OBSERVED:
+                continue
             errors.append(f"missing mapped local artifact: {item['path']}")
+
+    for path in sorted(ACTIVE_IMPLEMENTATIONS):
+        if not (REPO_ROOT / path).exists():
+            errors.append(f"missing active implementation: {path}")
 
     for skill_file in (PLUGIN_ROOT / "skills").glob("*/SKILL.md"):
         if "references/communication/upstream/" in skill_file.read_text(encoding="utf-8"):

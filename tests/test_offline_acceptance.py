@@ -41,6 +41,7 @@ class OfflineAcceptanceTests(unittest.TestCase):
         self.assertEqual(report["schema_version"], "ds-lite.offline-protocol-acceptance.v1")
         self.assertEqual(report["claim_scope"], "fake-provider-and-fake-codex-only")
         self.assertEqual(report["overall_status"], "passed")
+        self.assertEqual(report["status"], report["overall_status"])
         self.assertFalse(report["real_provider_verified"])
         self.assertFalse(report["real_gates_unlocked"])
         rows = {row["scenario"]: row for row in report["transport"]["scenarios"]}

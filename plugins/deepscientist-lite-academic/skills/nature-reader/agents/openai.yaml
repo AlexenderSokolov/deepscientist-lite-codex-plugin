@@ -1,0 +1,6 @@
+interface:
+  display_name: "Nature Reader"
+  short_description: "Use the complete vendored nature-reader workflow with DS Lite evidence and dependency boundaries."
+  default_prompt: "Use $nature-reader for one bounded academic workflow."
+policy:
+  allow_implicit_invocation: true

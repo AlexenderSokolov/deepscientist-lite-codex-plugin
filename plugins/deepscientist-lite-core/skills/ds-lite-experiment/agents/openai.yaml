@@ -1,0 +1,6 @@
+interface:
+  display_name: "DS Lite Experiment"
+  short_description: "Define the run contract, execute or save commands, and package the evidence."
+  default_prompt: "$ds-lite-experiment define the contract first, then run or record this experiment and its evidence"
+policy:
+  allow_implicit_invocation: true

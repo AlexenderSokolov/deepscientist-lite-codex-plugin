@@ -8,11 +8,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 class AutoresearchAuditTests(unittest.TestCase):
-    def test_external_adapter_is_documented_as_bounded_and_blocked_until_authorized(self) -> None:
-        protocol = (REPO_ROOT / "plugins" / "deepscientist-lite" / "references" / "bounded-loop-protocol.md").read_text(encoding="utf-8")
+    def test_external_adapter_is_documented_as_bounded_and_requires_fixed_identity(self) -> None:
+        protocol = (REPO_ROOT / "plugins" / "deepscientist-lite-core" / "references" / "bounded-loop-protocol.md").read_text(encoding="utf-8")
         audit = (REPO_ROOT / "docs" / "maintainers" / "codex-autoresearch-integration-audit.zh.md").read_text(encoding="utf-8")
         combined = protocol + "\n" + audit
-        for anchor in ("blocked-not-verified", "external-policy-unverified", "bounded", "does not execute"):
+        for anchor in ("bounded", "foreground", "three", "fixed"):
             with self.subTest(anchor=anchor):
                 self.assertIn(anchor, combined)
 

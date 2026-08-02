@@ -1,0 +1,6 @@
+interface:
+  display_name: "Nature Statistics"
+  short_description: "Use the complete vendored nature-statistics workflow with DS Lite evidence and dependency boundaries."
+  default_prompt: "Use $nature-statistics for one bounded academic workflow."
+policy:
+  allow_implicit_invocation: true

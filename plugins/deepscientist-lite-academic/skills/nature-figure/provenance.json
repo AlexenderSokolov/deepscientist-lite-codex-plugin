@@ -1,0 +1,84 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-figure",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-figure",
+    "source_skill_sha256": "fbc78556785feba7a145a15150e33ebeee805bd9a529459cc51d9ef736fa6963"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-figure",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "api": [
+      "README.md",
+      "README_EN.md",
+      "SKILL.md",
+      "assets/figures4papers/figure_Dispersion/plot_illustration.py",
+      "assets/figures4papers/figure_VIGIL/plot_comparison_radar.py",
+      "manifest.yaml",
+      "references/api.md",
+      "references/chart-types.md",
+      "references/common-patterns.md",
+      "references/demos.md",
+      "references/design-theory.md",
+      "references/openrouter-image-generation.md",
+      "references/tutorials.md",
+      "scripts/generate_openrouter_schematic.py",
+      "static/core/stance.md",
+      "static/fragments/backend/python.md"
+    ],
+    "download": [
+      "references/r-template-index.md"
+    ],
+    "latex": [
+      "references/api.md",
+      "references/design-theory.md",
+      "static/fragments/backend/python.md"
+    ],
+    "python": [
+      "README.md",
+      "README_EN.md",
+      "SKILL.md",
+      "evals/evals.json",
+      "manifest.yaml",
+      "references/api.md",
+      "references/asset-adaptation.md",
+      "references/backend-selection.md",
+      "references/chart-types.md",
+      "references/common-patterns.md",
+      "references/demos.md",
+      "references/design-theory.md",
+      "references/figure-contract.md",
+      "references/nature-2026-observations.md",
+      "references/openrouter-image-generation.md",
+      "references/qa-contract.md",
+      "references/r-workflow.md",
+      "references/template-catalog.md",
+      "references/tutorials.md",
+      "scripts/nature_figure_backend.py",
+      "scripts/plot_templates.py",
+      "scripts/validate_figure.py",
+      "static/core/contract.md",
+      "static/core/stance.md",
+      "static/fragments/backend/python.md",
+      "static/fragments/backend/r.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
-validation_root="$repo_root/.validation-tmp"
+validation_root="${TEMP_ROOT:-$repo_root/research/.validation-tmp}"
 pilot_id="${1:-communication-beta2-20260723-trusted-hook-01}"
 pilot_root="$validation_root/$pilot_id"
 if [[ -e "$pilot_root" ]]; then echo "fresh host already exists; refusing overwrite" >&2; exit 1; fi

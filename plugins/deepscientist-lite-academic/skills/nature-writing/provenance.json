@@ -1,0 +1,82 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-writing",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-writing",
+    "source_skill_sha256": "ee5a26c639e40ee1d2df71684873626b3e207651f72662e93d46f9bb14f2b42b"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-writing",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "latex": [
+      "README.md",
+      "README_EN.md",
+      "references/examples/abstract/template-a.md",
+      "references/examples/abstract/template-b.md",
+      "references/examples/abstract/template-c.md",
+      "references/examples/introduction/novel-task-challenge-decomposition.md",
+      "references/examples/introduction/pipeline-not-recommended-abstract-only.md",
+      "references/examples/introduction/pipeline-version-1-one-contribution-multi-advantages.md",
+      "references/examples/introduction/pipeline-version-2-two-contributions.md",
+      "references/examples/introduction/pipeline-version-3-new-module-on-existing-pipeline.md",
+      "references/examples/introduction/pipeline-version-4-observation-driven.md",
+      "references/examples/introduction/technical-challenge-version-1-existing-task.md",
+      "references/examples/introduction/technical-challenge-version-2-existing-task-insight-backed-by-traditional.md",
+      "references/examples/introduction/technical-challenge-version-3-novel-task.md",
+      "references/examples/introduction/version-1-task-then-application.md",
+      "references/examples/introduction/version-2-application-first.md",
+      "references/examples/introduction/version-3-general-to-specific-setting.md",
+      "references/examples/introduction/version-4-open-with-challenge.md",
+      "references/examples/method/example-of-the-three-elements.md",
+      "references/examples/method/module-design-instant-ngp.md",
+      "references/examples/method/overview-template.md",
+      "references/examples/method/section-skeleton.md",
+      "references/experiments.md",
+      "references/introduction.md",
+      "references/method.md",
+      "references/submission-package.md",
+      "static/fragments/task/submission-package.md"
+    ],
+    "python": [
+      "manifest.yaml",
+      "references/examples/abstract/template-c.md",
+      "references/examples/index.md",
+      "references/examples/introduction-examples.md",
+      "references/examples/introduction/novel-task-challenge-decomposition.md",
+      "references/examples/introduction/pipeline-not-recommended-abstract-only.md",
+      "references/examples/introduction/pipeline-version-1-one-contribution-multi-advantages.md",
+      "references/examples/introduction/pipeline-version-2-two-contributions.md",
+      "references/examples/introduction/pipeline-version-3-new-module-on-existing-pipeline.md",
+      "references/examples/introduction/pipeline-version-4-observation-driven.md",
+      "references/examples/introduction/technical-challenge-version-3-novel-task.md",
+      "references/examples/method/neural-body-annotated-figure-text.md",
+      "references/examples/method/overview-template.md",
+      "references/experiments.md",
+      "references/introduction.md",
+      "references/method.md",
+      "references/nature-summary-paragraph.md",
+      "references/paper-review.md",
+      "static/fragments/paper_type/algorithmic.md",
+      "static/fragments/section/intro.md",
+      "static/fragments/section/method.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

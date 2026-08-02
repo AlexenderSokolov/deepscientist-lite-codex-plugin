@@ -1,0 +1,16 @@
+{
+  "schema_version": "$schema_version",
+  "revision": 0,
+  "project": {
+    "id": $project_id_json,
+    "title": $project_title_json
+  },
+  "root_node_id": "intake-root",
+  "active_node_id": "intake-root",
+  "nodes": {
+    "intake-root": $root_node_json
+  },
+  "adjacency": {
+    "intake-root": []
+  }
+}

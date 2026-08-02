@@ -1,0 +1,6 @@
+interface:
+  display_name: "DS Lite Scout"
+  short_description: "Check evidence, baselines, metrics, feasibility, and unresolved risks."
+  default_prompt: "$ds-lite-scout check the evidence, baselines, metrics, and risks before we choose a direction"
+policy:
+  allow_implicit_invocation: true

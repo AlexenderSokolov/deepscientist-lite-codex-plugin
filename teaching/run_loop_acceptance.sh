@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
-temp_root="${1:-$repo_root/.validation-tmp}"
+temp_root="${1:-${TEMP_ROOT:-$repo_root/research/.validation-tmp}}"
 run_id="$(date -u +%Y%m%dT%H%M%S)-$$-${RANDOM:-0}"
 run_temp="$temp_root/loop-acceptance-$run_id"
 if ! mkdir -p "$run_temp"; then
@@ -12,7 +12,7 @@ fi
 export TEMP="$run_temp" TMP="$run_temp" PYTHONUTF8=1 PYTHONDONTWRITEBYTECODE=1
 export PYTHONPYCACHEPREFIX="$run_temp/pycache"
 python_bin="${PYTHON_BIN:-python3}"
-loop_cli="$repo_root/plugins/deepscientist-lite/scripts/ds_lite_loop.py"
+loop_cli="$repo_root/plugins/deepscientist-lite-core/scripts/ds_lite_loop.py"
 loop_tests="$repo_root/tests/test_loop_runner.py"
 offline_cli="$repo_root/teaching/offline_loop_acceptance.py"
 

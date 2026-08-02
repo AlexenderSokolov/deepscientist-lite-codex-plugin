@@ -68,11 +68,37 @@ class TextCompatibilityTests(unittest.TestCase):
             source = self.make_file(root, "owned.py", b"value = 1\n")
             self.assertEqual(list(checker.iter_files(root)), [source])
 
+    def test_authorized_temp_roots_are_not_scanned_as_owned_sources(self):
+        with self.temp_root() as parent:
+            root = Path(parent)
+            temp_root = root / ".tmp-validation-full"
+            self.make_file(temp_root, "fixture.sh", b"#!/bin/sh\r\necho fixture\r\n")
+            source = self.make_file(root, "owned.py", b"value = 1\n")
+            self.assertEqual(list(checker.iter_files(root)), [source])
+
     def test_binary_assets_are_not_misclassified_as_text(self):
         with self.temp_root() as root:
             result = checker.check_file(self.make_file(root, "figure.png", b"\x89PNG\r\n\x1a\n\x00\xff"))
             self.assertEqual(result["status"], "passed")
             self.assertFalse(result["violations"])
+
+    def test_write_once_research_receipts_are_reported_as_provenance_only(self):
+        with self.temp_root() as root:
+            self.make_file(
+                root,
+                "research/artifacts/phase0/receipt.json",
+                b'{\r\n"status":"passed"\n}\r\n',
+            )
+            report = checker.scan_tree(root)
+            receipt = next(
+                item for item in report["files"]
+                if str(item["path"]).endswith("receipt.json")
+            )
+            self.assertIn("mixed-line-endings", receipt["observed_violations"])
+            self.assertEqual(receipt["violations"], [])
+            self.assertTrue(receipt["provenance_only"])
+            self.assertEqual(receipt["status"], "not-observed")
+            self.assertEqual(report["failed_count"], 0)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,33 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-data",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-data",
+    "source_skill_sha256": "06e10a29462ec691e43314f82bc3e14402c97ec68a701c45a213db92b0576386"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-data",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "python": [
+      "references/fair-metadata-checklist.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

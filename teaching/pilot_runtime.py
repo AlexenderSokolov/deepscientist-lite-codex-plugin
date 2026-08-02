@@ -33,7 +33,8 @@ except ModuleNotFoundError:  # Package import from repository tests and tools.
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MODEL = "gpt-5.6-sol"
 REASONING_EFFORT = "low"
-CODEX_VERSION = "0.144.5"
+CODEX_VERSION = "0.146.0"
+LEGACY_CODEX_VERSIONS = {"0.144.5"}
 FROZEN_PILOT_IDS = {"matched-pilot-20260717-01"}
 EXPECTED_SKILLS = (
     "ds-lite",
@@ -45,23 +46,6 @@ EXPECTED_SKILLS = (
     "ds-lite-iterate",
     "ds-lite-review",
     "ds-lite-scout",
-    "nature-academic-search",
-    "nature-citation",
-    "nature-data",
-    "nature-downloader",
-    "nature-experiment-log",
-    "nature-figure",
-    "nature-literature-pipeline",
-    "nature-paper-to-patent",
-    "nature-paper2ppt",
-    "nature-polishing",
-    "nature-proposal-writer",
-    "nature-reader",
-    "nature-ref-verifier",
-    "nature-response",
-    "nature-reviewer",
-    "nature-statistics",
-    "nature-writing",
 )
 LEGACY_SKILL_COUNTS = {9}
 CANARY_PROMPT = """上下文重启了。请接手这个科研工程目录，从项目文件恢复当前路线、证据门和下一步。
@@ -342,7 +326,10 @@ def validate_execution(payload: dict) -> dict:
 
     cli = _require_object(value["cli"], "cli")
     _validate_fields(cli, CLI_FIELDS, "cli")
-    if cli["name"] != "codex" or cli["version"] != CODEX_VERSION:
+    version_valid = cli["version"] == CODEX_VERSION or (
+        legacy_receipt and cli["version"] in LEGACY_CODEX_VERSIONS
+    )
+    if cli["name"] != "codex" or not version_valid:
         raise PilotError("cli identity is invalid")
     if cli["model"] != MODEL or cli["reasoning_effort"] != REASONING_EFFORT:
         raise PilotError("cli model configuration is invalid")
@@ -629,6 +616,279 @@ def _write_json(path: Path, value: Any) -> None:
     os.replace(temporary, path)
 
 
+def _canonical_json_bytes(value: Any) -> bytes:
+    return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+
+
+def _write_fresh_bytes(path: Path, content: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("xb") as handle:
+        handle.write(content)
+        handle.flush()
+        os.fsync(handle.fileno())
+
+
+def _inventory_digest(inventory: dict[str, str]) -> str:
+    return hashlib.sha256(_canonical_json_bytes(inventory)).hexdigest()
+
+
+def reconcile_attempt_retry(
+    result: dict[str, Any],
+    *,
+    before_inventory: dict[str, str],
+    after_inventory: dict[str, str],
+    attempt_number: int,
+    max_attempts: int,
+) -> dict[str, Any]:
+    """Decide whether a fresh call attempt is safe after a terminal failure."""
+    if attempt_number < 1 or max_attempts < 1:
+        raise PilotError("attempt numbers and budget must be positive")
+    effect_absent = before_inventory == after_inventory
+    base = {
+        "schema_version": "ds-lite.matched-pilot-attempt-reconciliation.v1",
+        "attempt_number": attempt_number,
+        "max_attempts": max_attempts,
+        "before_inventory_sha256": _inventory_digest(before_inventory),
+        "after_inventory_sha256": _inventory_digest(after_inventory),
+        "effect_absent": effect_absent,
+        "delay_seconds": 0,
+    }
+    status = result.get("status")
+    diagnostic = result.get("extensions", {}).get("process_diagnostic", {})
+    failure_class = diagnostic.get("failure_class", "unknown")
+    http_category = diagnostic.get("http_status_category", "none")
+    if status == "ambiguous" or failure_class == "ambiguous":
+        return {**base, "disposition": "blocked", "reason": "ambiguous-effect"}
+    if status == "completed":
+        return {**base, "disposition": "terminal", "reason": "completed"}
+    if not effect_absent:
+        return {**base, "disposition": "blocked", "reason": "workspace-effect-observed"}
+    if attempt_number >= max_attempts:
+        return {**base, "disposition": "blocked", "reason": "attempt-budget-exhausted"}
+    transient = failure_class in {"network", "rate-limit", "timeout"} or (
+        failure_class == "protocol" and http_category == "5xx"
+    )
+    if not transient:
+        return {**base, "disposition": "blocked", "reason": "non-retryable-failure"}
+    if failure_class == "rate-limit":
+        delay = 30 * attempt_number
+    elif http_category == "5xx":
+        delay = 15 * attempt_number
+    else:
+        delay = 5 * (2 ** (attempt_number - 1))
+    return {**base, "disposition": "retry", "reason": "transient-effect-absent", "delay_seconds": delay}
+
+
+def _attempt_ref(item: dict[str, Any], attempt_number: int) -> str:
+    return f"results/execution-attempts/{item['call_id']}/attempt-{attempt_number:03d}.json"
+
+
+def _attempt_index_ref(item: dict[str, Any]) -> str:
+    return f"results/execution-index/{item['call_id']}.json"
+
+
+def _attempt_receipts(windows: Path, item: dict[str, Any]) -> list[tuple[int, Path, dict[str, Any]]]:
+    directory = windows / "results" / "execution-attempts" / item["call_id"]
+    receipts: list[tuple[int, Path, dict[str, Any]]] = []
+    if not directory.is_dir():
+        return receipts
+    for path in sorted(directory.glob("attempt-*.json")):
+        match = re.fullmatch(r"attempt-([0-9]{3})\.json", path.name)
+        if match:
+            receipts.append((int(match.group(1)), path, _read_json(path)))
+    return receipts
+
+
+def _ensure_success_index(windows: Path, item: dict[str, Any], attempt_number: int, attempt_path: Path) -> dict[str, Any]:
+    content = attempt_path.read_bytes()
+    canonical_path = windows / item["result_ref"]
+    if canonical_path.exists():
+        if canonical_path.read_bytes() != content:
+            raise PilotError(f"canonical execution conflicts with successful attempt: {item['call_id']}")
+    else:
+        _write_fresh_bytes(canonical_path, content)
+    attempts = _attempt_receipts(windows, item)
+    index = {
+        "schema_version": "ds-lite.matched-pilot-call-index.v1",
+        "call_id": item["call_id"],
+        "canonical_attempt_number": attempt_number,
+        "canonical_ref": item["result_ref"],
+        "canonical_sha256": hashlib.sha256(content).hexdigest(),
+        "attempts": [
+            {
+                "attempt_number": number,
+                "attempt_ref": path.relative_to(windows).as_posix(),
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "status": payload.get("status"),
+            }
+            for number, path, payload in attempts
+        ],
+        "completed_at": _read_json(attempt_path).get("completed_at", ""),
+        "extensions": {},
+    }
+    index_path = windows / _attempt_index_ref(item)
+    index_bytes = _canonical_json_bytes(index)
+    if index_path.exists():
+        if index_path.read_bytes() != index_bytes:
+            raise PilotError(f"canonical execution index conflicts: {item['call_id']}")
+    else:
+        _write_fresh_bytes(index_path, index_bytes)
+    return index
+
+
+def persist_terminal_attempt(
+    windows_root: Path | str,
+    item: dict[str, Any],
+    result: dict[str, Any],
+    *,
+    attempt_number: int,
+) -> dict[str, Any]:
+    """Freeze one terminal attempt and, on success, its canonical call result."""
+    windows = Path(windows_root)
+    if result.get("status") in {"pending", "running"}:
+        raise PilotError("only terminal attempts can be persisted")
+    if result.get("call_id") != item.get("call_id"):
+        raise PilotError("attempt call identity does not match the execution plan")
+    validate_execution(result)
+    attempt_ref = _attempt_ref(item, attempt_number)
+    attempt_path = windows / attempt_ref
+    content = _canonical_json_bytes(result)
+    _write_fresh_bytes(attempt_path, content)
+    response = {
+        "attempt_ref": attempt_ref,
+        "attempt_sha256": hashlib.sha256(content).hexdigest(),
+        "index_ref": "",
+    }
+    if result.get("status") == "completed":
+        _ensure_success_index(windows, item, attempt_number, attempt_path)
+        response["index_ref"] = _attempt_index_ref(item)
+    return response
+
+
+def run_call_attempt_sequence(
+    windows_root: Path | str,
+    *,
+    workspace: Path | str,
+    item: dict[str, Any],
+    base_execution: dict[str, Any],
+    invoke: Callable[[int, dict[str, Any], Path], dict[str, Any]],
+    max_attempts: int = 3,
+    sleep_fn: Callable[[float], None] = time.sleep,
+    finalize_result: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+    authorized_retry: bool = False,
+    authorization_ref: str = "",
+) -> dict[str, Any]:
+    """Run or recover one logical call without overwriting terminal attempts."""
+    windows = Path(windows_root)
+    workdir = Path(workspace)
+    attempts = _attempt_receipts(windows, item)
+    successful = [(number, path, value) for number, path, value in attempts if value.get("status") == "completed"]
+    if len(successful) > 1:
+        raise PilotError(f"multiple successful attempts observed: {item['call_id']}")
+    if successful:
+        number, path, value = successful[0]
+        _ensure_success_index(windows, item, number, path)
+        return value
+
+    next_attempt = 1
+    operator_authorization: dict[str, Any] | None = None
+    if attempts:
+        number, prior_path, prior = attempts[-1]
+        reconciliation = prior.get("extensions", {}).get("attempt_reconciliation", {})
+        if reconciliation.get("disposition") != "retry":
+            diagnostic = prior.get("extensions", {}).get("process_diagnostic", {})
+            event_summary = prior.get("extensions", {}).get("event_summary", {})
+            operator_already_used = any(
+                bool(value.get("extensions", {}).get("operator_retry_authorization"))
+                for _attempt, _receipt, value in attempts
+            )
+            exact_terminal_auth = (
+                prior.get("status") == "failed"
+                and prior.get("stop_reason") == "process-failed"
+                and diagnostic.get("failure_class") == "auth"
+                and event_summary.get("turn_failed") is True
+                and reconciliation.get("effect_absent") is True
+                and reconciliation.get("reason") == "non-retryable-failure"
+            )
+            exact_wsl_precondition = (
+                prior.get("status") == "blocked"
+                and prior.get("stop_reason") == "precondition"
+                and prior.get("case") == "numerical-seeds"
+                and prior.get("wsl", {}).get("status") == "missing"
+                and event_summary.get("turn_completed") is True
+                and reconciliation.get("effect_absent") is True
+            )
+            if not (
+                authorized_retry
+                and (exact_terminal_auth or exact_wsl_precondition)
+                and not operator_already_used
+                and number < max_attempts
+            ):
+                return prior
+            _validate_id(authorization_ref, "authorization_ref")
+            operator_authorization = {
+                "schema_version": "ds-lite.matched-pilot-operator-retry.v1",
+                "authorization_ref": authorization_ref,
+                "prior_attempt_number": number,
+                "prior_attempt_ref": prior_path.relative_to(windows).as_posix(),
+                "prior_attempt_sha256": hashlib.sha256(prior_path.read_bytes()).hexdigest(),
+                "prior_terminal_turn_failed": event_summary.get("turn_failed") is True,
+                "prior_terminal_turn_completed": event_summary.get("turn_completed") is True,
+                "prior_effect_absent": True,
+            }
+        if number >= max_attempts:
+            return prior
+        next_attempt = number + 1
+
+    runtime_dir = windows / "results" / "runtime" / item["call_id"]
+    if runtime_dir.is_dir():
+        known = {number for number, _path, _value in attempts}
+        unfinished = []
+        for path in runtime_dir.glob("attempt-*.json"):
+            match = re.fullmatch(r"attempt-([0-9]{3})\.json", path.name)
+            if match and int(match.group(1)) not in known:
+                unfinished.append(path)
+        if unfinished:
+            raise PilotError(f"unfinished call attempt is ambiguous: {item['call_id']}")
+
+    for attempt_number in range(next_attempt, max_attempts + 1):
+        execution = dict(base_execution)
+        execution["execution_id"] = f"execution:{item['call_id']}:attempt:{attempt_number}"
+        if operator_authorization is not None and attempt_number == next_attempt:
+            execution["extensions"] = {
+                **execution.get("extensions", {}),
+                "operator_retry_authorization": operator_authorization,
+            }
+        before = _inventory(workdir)
+        runtime_path = runtime_dir / f"attempt-{attempt_number:03d}.json"
+        result = invoke(attempt_number, execution, runtime_path)
+        if finalize_result is not None:
+            result = finalize_result(result)
+        after = _inventory(workdir)
+        reconciliation = reconcile_attempt_retry(
+            result,
+            before_inventory=before,
+            after_inventory=after,
+            attempt_number=attempt_number,
+            max_attempts=max_attempts,
+        )
+        result = dict(result)
+        result["extensions"] = {
+            **result.get("extensions", {}),
+            "attempt_reconciliation": reconciliation,
+        }
+        if operator_authorization is not None and attempt_number == next_attempt:
+            result["extensions"]["operator_retry_authorization"] = operator_authorization
+        validate_execution(result)
+        persist_terminal_attempt(windows, item, result, attempt_number=attempt_number)
+        if result.get("status") == "completed":
+            return result
+        if reconciliation["disposition"] != "retry":
+            return result
+        sleep_fn(float(reconciliation["delay_seconds"]))
+    raise PilotError(f"attempt sequence exhausted without a terminal disposition: {item['call_id']}")
+
+
 def _read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -706,8 +966,8 @@ def prepare_pilot(
     )
     (canary_root / "PROMPT.md").write_text(CANARY_PROMPT, encoding="utf-8")
 
-    plugin_source = repository / "plugins" / "deepscientist-lite"
-    snapshot_plugin = windows / "source-snapshot" / "plugins" / "deepscientist-lite"
+    plugin_source = repository / "plugins" / "deepscientist-lite-core"
+    snapshot_plugin = windows / "source-snapshot" / "plugins" / "deepscientist-lite-core"
     shutil.copytree(plugin_source, snapshot_plugin, ignore=_copy_ignore)
     plugin_manifest = _read_json(snapshot_plugin / ".codex-plugin" / "plugin.json")
     source = {
@@ -826,6 +1086,7 @@ def _clone_nonsecret_provider_config(source_codex_home: Path, target_home: Path)
     status: dict[str, Any] = {
         "status": "not-found",
         "catalog_copied": False,
+        "catalog_configured": False,
         "provider_route_copied": False,
         "route_fidelity": {
             "source_fields_present": [],
@@ -901,6 +1162,7 @@ def _clone_nonsecret_provider_config(source_codex_home: Path, target_home: Path)
                 status["status"] = "invalid"
 
     if isinstance(catalog_ref, str) and catalog_ref and "\\" not in catalog_ref:
+        status["catalog_configured"] = True
         catalog_path = PurePosixPath(catalog_ref)
         if not catalog_path.is_absolute() and all(part not in {"", ".", ".."} for part in catalog_path.parts):
             source_catalog = source_codex_home.joinpath(*catalog_path.parts)
@@ -928,7 +1190,7 @@ def clone_nonsecret_provider_config(
 
 def install_homes(windows_root: Path | str, **_kwargs: Any) -> dict[str, Any]:
     windows = Path(windows_root)
-    snapshot_plugin = windows / "source-snapshot" / "plugins" / "deepscientist-lite"
+    snapshot_plugin = windows / "source-snapshot" / "plugins" / "deepscientist-lite-core"
     source = _read_json(windows / "source-snapshot" / "SOURCE_IDENTITY.json")
     homes_root = windows / "homes"
     if homes_root.exists():
@@ -1010,28 +1272,49 @@ def _reader(stream, label: str, events: queue.Queue[tuple[str, str | None]]) -> 
 def _command_prefix(codex_bin: Path) -> list[str]:
     if codex_bin.suffix.lower() == ".py":
         return [sys.executable, str(codex_bin)]
+    if codex_bin.suffix.lower() == ".ps1":
+        # subprocess cannot reliably invoke a PowerShell script through its
+        # file association. Use the host explicitly so the isolated runner
+        # has the same launch semantics as an interactive PowerShell call.
+        return ["powershell.exe", "-NoProfile", "-File", str(codex_bin)]
     return [str(codex_bin)]
 
 
-def _terminate_process_tree(process: subprocess.Popen[str]) -> None:
-    if process.poll() is not None:
-        return
-    if os.name == "nt":
-        subprocess.run(
-            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            capture_output=True,
-            check=False,
-        )
-    else:
-        process.terminate()
+_TREE_KILLERS: set[subprocess.Popen[str]] = set()
+
+
+def _reap_tree_killer(killer: subprocess.Popen[str]) -> None:
     try:
-        process.wait(timeout=5)
+        killer.wait()
+    finally:
+        _TREE_KILLERS.discard(killer)
+
+
+def _terminate_process_tree(process: subprocess.Popen[str]) -> None:
+    if os.name == "nt":
+        # Do not synchronously wait for taskkill: a .cmd launcher can hold
+        # inherited handles until its descendant's sleep exits. The terminal
+        # receipt records any still-open pipes below instead of delaying.
+        try:
+            killer = subprocess.Popen(
+                ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            _TREE_KILLERS.add(killer)
+            threading.Thread(target=_reap_tree_killer, args=(killer,), daemon=True).start()
+        except OSError:
+            pass
+        if process.poll() is None:
+            process.kill()
+    else:
+        if process.poll() is None:
+            process.terminate()
+    try:
+        process.wait(timeout=0.2)
     except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait(timeout=5)
+        if process.poll() is None:
+            process.kill()
 
 
 def run_codex_call(
@@ -1049,9 +1332,12 @@ def run_codex_call(
     progress_sink: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict:
     codex_path = Path(codex_bin)
-    workdir = Path(cwd)
-    home = Path(codex_home)
-    record = Path(record_path)
+    # The Codex CLI resolves -C and CODEX_HOME relative to its process cwd.
+    # A pilot supplies paths from its root, so normalize them before spawning
+    # to avoid interpreting an already-relative workspace a second time.
+    workdir = Path(cwd).resolve()
+    home = Path(codex_home).resolve()
+    record = Path(record_path).resolve()
     home.mkdir(parents=True, exist_ok=True)
     running = dict(execution)
     running.update(
@@ -1140,6 +1426,16 @@ def run_codex_call(
     closed = set()
     timed_out = False
     while len(closed) < 2 or process.poll() is None:
+        # A Windows descendant can retain inherited stdout/stderr handles after
+        # the Codex parent exits. A recorded successful terminal turn is enough
+        # to close this invocation once its parent has exited; waiting for those
+        # unrelated handles would convert a completed call into a timeout.
+        if (
+            process.poll() is not None
+            and reducer.turn_completed
+            and not reducer.turn_failed
+        ):
+            break
         if time.monotonic() - started > timeout_seconds:
             timed_out = True
             _terminate_process_tree(process)
@@ -1165,8 +1461,11 @@ def run_codex_call(
                 thread_established=bool(reducer.thread_id),
                 tool_count=reducer.tool_count,
             )
-    stdout_thread.join(timeout=1)
-    stderr_thread.join(timeout=1)
+    # A killed Windows .cmd tree can retain inherited pipe handles briefly. The
+    # receipt must still become terminal promptly; record an open pipe instead
+    # of serially waiting two seconds for reader threads that cannot close yet.
+    stdout_thread.join(timeout=0.2)
+    stderr_thread.join(timeout=0.2)
     stdout_pipe_state = "open-after-join" if stdout_thread.is_alive() else "closed"
     stderr_pipe_state = "open-after-join" if stderr_thread.is_alive() else "closed"
     while not events.empty():
@@ -1186,8 +1485,13 @@ def run_codex_call(
                     thread_established=bool(reducer.thread_id),
                     tool_count=reducer.tool_count,
                 )
-    process.stdout.close()
-    process.stderr.close()
+    # Closing a stream while its reader still owns an inherited Windows handle
+    # can block until the descendant exits. Daemon readers release it once the
+    # asynchronous tree termination completes; the receipt records that state.
+    if not stdout_thread.is_alive():
+        process.stdout.close()
+    if not stderr_thread.is_alive():
+        process.stderr.close()
     exit_code = process.poll()
     reduced = reducer.result()
     child_process_state = "terminated" if timed_out else "exited" if exit_code is not None else "running"
@@ -1324,19 +1628,42 @@ def _update_runtime_probe(windows: Path, name: str, status: str, result_ref: str
     _write_json(state_path, state)
 
 
+def _windows_canary_preflight_ready(preflight: dict[str, Any]) -> bool:
+    """Allow the Windows-only canary to progress past an isolated WSL outage."""
+    blocking = preflight.get("blocking_reasons", [])
+    return preflight.get("status") == "passed" or blocking == ["wsl-precondition"]
+
+
+def _validated_wsl_host_probe(path: Path) -> bool:
+    try:
+        probe = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return False
+    return (
+        probe.get("schema_version") == "ds-lite.wsl-host-probe.v1"
+        and probe.get("status") == "passed"
+        and probe.get("host") == "windows-powershell"
+        and probe.get("distribution") == "DS-Lite-Ubuntu-24.04"
+        and probe.get("assertion") == "uname-s-is-linux"
+        and probe.get("exit_code") == 0
+        and probe.get("raw_output_persisted") is False
+    )
+
+
 def preflight_pilot(
     windows_root: Path | str,
     wsl_root: Path | str,
     *,
     codex_bin: Path | str,
     wsl_bin: Path | str = Path("wsl.exe"),
+    wsl_host_probe: Path | str | None = None,
 ) -> dict[str, Any]:
     windows = Path(windows_root)
     wsl = Path(wsl_root)
     source = _read_json(windows / "source-snapshot" / "SOURCE_IDENTITY.json")
     homes = _read_json(windows / "home-manifest.json")
     state = _read_json(windows / "runtime-state.json")
-    snapshot = windows / "source-snapshot" / "plugins" / "deepscientist-lite"
+    snapshot = windows / "source-snapshot" / "plugins" / "deepscientist-lite-core"
     blocking: list[str] = []
 
     try:
@@ -1409,11 +1736,18 @@ def preflight_pilot(
     if home_results["ds_lite"]["prompt_skill_names"] != list(EXPECTED_SKILLS):
         blocking.append("ds-lite-skill-discovery")
 
-    wsl_probe = _run_probe(
-        wsl_bin,
-        ["-d", "DS-Lite-Ubuntu-24.04", "--", "uname", "-s"],
+    wsl_host_probe_path = Path(wsl_host_probe) if wsl_host_probe is not None else None
+    wsl_probe = _run_probe(wsl_bin, ["-d", "DS-Lite-Ubuntu-24.04", "--", "uname", "-s"])
+    # WSL may emit a non-fatal environment translation warning alongside the
+    # requested output.  The distribution probe remains strict about a zero
+    # exit status, but accepts the expected standalone uname result in that
+    # mixed output.
+    wsl_available = (
+        wsl_probe["status"] == "supported"
+        and any(line.strip() == "Linux" for line in wsl_probe["stdout"].splitlines())
     )
-    wsl_available = wsl_probe["status"] == "supported" and wsl_probe["stdout"].strip() == "Linux"
+    if wsl_host_probe_path is not None:
+        wsl_available = _validated_wsl_host_probe(wsl_host_probe_path)
     if not wsl.exists() or not wsl_available:
         blocking.append("wsl-precondition")
     if _tree_digest(snapshot) != source["tree_digest"]:
@@ -1536,8 +1870,11 @@ def _codex_args(item: dict[str, Any], workspace: Path, prior_session_id: str) ->
     if item["session_mode"] == "temporary-resume":
         if not prior_session_id:
             raise PilotError(f"missing prior session for {item['call_id']}")
+        # Stable 0.146.0 resume inherits cwd and sandbox from the exact session;
+        # its command surface rejects the start-only -C and -s options.
         return ["exec", "resume", *common, "--ephemeral", prior_session_id]
-    result = ["exec", *common, "-s", "workspace-write", "-C", str(workspace)]
+    sandbox = "danger-full-access" if item.get("case") == "numerical-seeds" else "workspace-write"
+    result = ["exec", *common, "-s", sandbox, "-C", str(workspace.resolve())]
     if item["session_mode"] == "ephemeral":
         result.append("--ephemeral")
     return result
@@ -1551,8 +1888,11 @@ def run_canary(
 ) -> dict[str, Any]:
     windows = Path(windows_root)
     preflight_path = windows / "results" / "preflight.json"
-    if not preflight_path.is_file() or _read_json(preflight_path).get("status") != "passed":
-        raise PilotError("a passed preflight is required before the real canary")
+    if not preflight_path.is_file():
+        raise PilotError("a preflight receipt is required before the real canary")
+    preflight = _read_json(preflight_path)
+    if not _windows_canary_preflight_ready(preflight):
+        raise PilotError("Windows canary preflight is not ready")
     record_path = windows / "results" / "canary.json"
     if record_path.exists():
         raise PilotError("canary receipt already exists; refusing duplicate or retry")
@@ -1586,7 +1926,8 @@ def run_canary(
         "probe": {
             "kind": "implicit-gateway-canary",
             "explicit_skill_name_in_prompt": False,
-        }
+        },
+        "preflight_scope": "full" if preflight.get("status") == "passed" else "windows-only",
     }
     home = windows / "homes" / "ds-lite"
     args = [
@@ -1602,7 +1943,7 @@ def run_canary(
         "-s",
         "read-only",
         "-C",
-        str(workspace),
+        str(workspace.resolve()),
     ]
     result = run_codex_call(
         codex_bin=codex_bin,
@@ -1686,10 +2027,10 @@ def _delete_session(codex_bin: Path, codex_home: Path, workspace: Path, session_
     if not session_id:
         return False
     env = os.environ.copy()
-    env["CODEX_HOME"] = str(codex_home)
+    env["CODEX_HOME"] = str(codex_home.resolve())
     completed = subprocess.run(
         [*_command_prefix(codex_bin), "delete", session_id, "--force"],
-        cwd=workspace,
+        cwd=workspace.resolve(),
         env=env,
         text=True,
         encoding="utf-8",
@@ -1744,15 +2085,21 @@ def execute_pilot(
     codex_bin: Path | str,
     timeout_seconds: float = 900,
     resume: bool = False,
+    max_attempts: int = 3,
+    authorized_retry_calls: set[str] | None = None,
+    authorization_ref: str = "",
 ) -> dict[str, Any]:
     windows = Path(windows_root)
     wsl = Path(wsl_root)
     codex_path = Path(codex_bin)
+    authorized_calls = set(authorized_retry_calls or set())
+    if authorized_calls:
+        _validate_id(authorization_ref, "authorization_ref")
     _codex_version(codex_path)
     plan_payload = _read_json(windows / "execution-plan.json")
     plan = plan_payload["calls"]
     source = _read_json(windows / "source-snapshot" / "SOURCE_IDENTITY.json")
-    if _tree_digest(windows / "source-snapshot" / "plugins" / "deepscientist-lite") != source["tree_digest"]:
+    if _tree_digest(windows / "source-snapshot" / "plugins" / "deepscientist-lite-core") != source["tree_digest"]:
         raise PilotError("frozen source snapshot changed after prepare")
     if not (windows / "home-manifest.json").is_file():
         raise PilotError("isolated homes are not installed")
@@ -1783,48 +2130,63 @@ def execute_pilot(
             input_digest=input_digest,
         )
         home = windows / "homes" / item["codex_home"]
-        record_path = windows / item["result_ref"]
         args = _codex_args(item, workspace, sessions.get(item["arm"], ""))
-        result = run_codex_call(
-            codex_bin=codex_path,
-            cwd=workspace,
-            codex_home=home,
-            prompt=prompt,
-            record_path=record_path,
-            execution=execution,
-            timeout_seconds=timeout_seconds,
-            codex_args=args,
-            progress_context=build_progress_context(
-                item, call_number=call_number, total_calls=len(plan)
-            ),
+
+        def invoke(_attempt_number: int, attempt_execution: dict[str, Any], runtime_path: Path) -> dict[str, Any]:
+            return run_codex_call(
+                codex_bin=codex_path,
+                cwd=workspace,
+                codex_home=home,
+                prompt=prompt,
+                record_path=runtime_path,
+                execution=attempt_execution,
+                timeout_seconds=timeout_seconds,
+                codex_args=args,
+                progress_context=build_progress_context(
+                    item, call_number=call_number, total_calls=len(plan)
+                ),
+            )
+
+        def finalize_result(result: dict[str, Any]) -> dict[str, Any]:
+            if item["case"] == "numerical-seeds" and result["status"] == "completed":
+                verified, proof_names = _verify_wsl_artifacts(workspace)
+                result["wsl"] = {
+                    "status": "verified" if verified else "missing",
+                    "distribution": "DS-Lite-Ubuntu-24.04",
+                    "proof_ref": f"{item['workspace_ref']}/wsl-proof.json" if verified else "",
+                    "extensions": {},
+                }
+                if verified:
+                    for proof_name in proof_names:
+                        result["result_refs"].append(f"{item['workspace_ref']}/{proof_name}")
+                else:
+                    result["status"] = "blocked"
+                    result["stop_reason"] = "precondition"
+            if item["delete_session_after"] and result["status"] == "completed":
+                original_session = sessions.get(item["arm"], "")
+                deleted = _delete_session(codex_path, home, workspace, original_session)
+                result["extensions"] = {**result["extensions"], "temporary_session_deleted": deleted}
+                if deleted:
+                    sessions.pop(item["arm"], None)
+                else:
+                    result["status"] = "blocked"
+                    result["stop_reason"] = "precondition"
+            validate_execution(result)
+            return result
+
+        result = run_call_attempt_sequence(
+            windows,
+            workspace=workspace,
+            item=item,
+            base_execution=execution,
+            invoke=invoke,
+            max_attempts=max_attempts,
+            finalize_result=finalize_result,
+            authorized_retry=item["call_id"] in authorized_calls,
+            authorization_ref=authorization_ref,
         )
         if item["case"] == "engineering-continuity" and item["round"] == 1 and result["status"] == "completed":
             sessions[item["arm"]] = result["session_id"]
-        if item["case"] == "numerical-seeds" and result["status"] == "completed":
-            verified, proof_names = _verify_wsl_artifacts(workspace)
-            result["wsl"] = {
-                "status": "verified" if verified else "missing",
-                "distribution": "DS-Lite-Ubuntu-24.04",
-                "proof_ref": f"{item['workspace_ref']}/wsl-proof.json" if verified else "",
-                "extensions": {},
-            }
-            if verified:
-                for proof_name in proof_names:
-                    result["result_refs"].append(f"{item['workspace_ref']}/{proof_name}")
-            else:
-                result["status"] = "blocked"
-                result["stop_reason"] = "precondition"
-            validate_execution(result)
-            _write_json(record_path, result)
-        if item["delete_session_after"] and result["status"] == "completed":
-            original_session = sessions.get(item["arm"], "")
-            deleted = _delete_session(codex_path, home, workspace, original_session)
-            result["extensions"] = {**result["extensions"], "temporary_session_deleted": deleted}
-            _write_json(record_path, result)
-            if not deleted:
-                _update_runtime_state(windows, "blocked", completed_ids, [item["call_id"]])
-                raise PilotError(f"temporary session cleanup failed: {item['call_id']}")
-            sessions.pop(item["arm"], None)
         if result["status"] != "completed":
             _update_runtime_state(windows, "blocked", completed_ids, [item["call_id"]])
             raise PilotError(f"execution stopped at {item['call_id']}: {result['stop_reason']}")
@@ -1852,6 +2214,7 @@ def parser() -> argparse.ArgumentParser:
     preflight.add_argument("--wsl-root", type=Path, required=True)
     preflight.add_argument("--codex-bin", type=Path, required=True)
     preflight.add_argument("--wsl-bin", type=Path, default=Path("wsl.exe"))
+    preflight.add_argument("--wsl-host-probe", type=Path)
 
     canary = subcommands.add_parser("canary")
     canary.add_argument("--windows-root", type=Path, required=True)
@@ -1864,6 +2227,9 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--wsl-root", type=Path, required=True)
         command.add_argument("--codex-bin", type=Path, required=True)
         command.add_argument("--timeout-seconds", type=float, default=900)
+        command.add_argument("--max-attempts", type=int, default=3)
+        command.add_argument("--authorized-retry-call", action="append", default=[])
+        command.add_argument("--authorization-ref", default="")
     return result
 
 
@@ -1885,6 +2251,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.wsl_root,
                 codex_bin=args.codex_bin,
                 wsl_bin=args.wsl_bin,
+                wsl_host_probe=args.wsl_host_probe,
             )
         elif args.command == "canary":
             result = run_canary(
@@ -1899,6 +2266,9 @@ def main(argv: list[str] | None = None) -> int:
                 codex_bin=args.codex_bin,
                 timeout_seconds=args.timeout_seconds,
                 resume=args.command == "resume",
+                max_attempts=args.max_attempts,
+                authorized_retry_calls=set(args.authorized_retry_call),
+                authorization_ref=args.authorization_ref,
             )
     except (PilotError, OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
         print(f"pilot runtime failed: {exc}", file=sys.stderr)

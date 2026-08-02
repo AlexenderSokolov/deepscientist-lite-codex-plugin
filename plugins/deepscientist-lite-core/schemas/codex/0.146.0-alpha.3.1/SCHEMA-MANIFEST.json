@@ -1,0 +1,18 @@
+{
+  "schema_version": "ds-lite.codex-schema-pin.v1",
+  "codex_version": "0.146.0-alpha.3.1",
+  "generation_command": "codex app-server generate-json-schema --out <isolated-output>",
+  "full_generation_evidence": "research/.validation-tmp/control-plane-phase3-continuation-20260731-01/generated-schema-0.146.0-alpha.3.1-full",
+  "files": {
+    "codex_app_server_protocol.v2.schemas.json": "0e79541ba5af824864df3bd14c35ea2678009bce1a6864a3ce6213d9f0228509",
+    "v1/InitializeParams.json": "4f576f99e285beb28f71f48a72b887c1f517dada86fee348fe2af0a35511de23",
+    "v2/ModelListParams.json": "10ac5c0cb8ddbe840527c8eb8053dc4ced32ea3efdfb200283cadc43447f9073",
+    "v2/ThreadArchiveParams.json": "c02dd30ee0f272ec74c36f1e5cd44a5d9a4f0ceb5ba089b26a758e1375a320ca",
+    "v2/ThreadListParams.json": "f470269d20038e472c5cf97439f582121b8fbe3fa0ce5c3de5dc8b6b953f4331",
+    "v2/ThreadReadParams.json": "db97080f82facc3259dbb9404e9f0df81e360619f4cd73983a9d99d25f5089ee",
+    "v2/ThreadResumeParams.json": "f455f00fb719b5881f925208e7f8984890946787fa1ea1dafe3bc2faf160ff87",
+    "v2/ThreadStartParams.json": "52ff3ecf0a7f48429f07516c6fac3e26aaf3d744da3f9a6f1347ce44539d416a",
+    "v2/ThreadUnarchiveParams.json": "43505599fbc58d4b410da2da0f1bae08ad1ef0d4d7d310cb0d82c07517dd5a89",
+    "v2/TurnStartParams.json": "6a753cd60e1ddf326264e692140498aaa86578a2c5d81c70a8b2c8096db7b78d"
+  }
+}

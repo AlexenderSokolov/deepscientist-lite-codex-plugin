@@ -36,7 +36,7 @@
 
 ### 1. 统一入口
 
-第九个 `$ds-lite` skill 识别新项目或已有 DS Lite 工作区，读取 Mission Board，向用户说明插件为什么介入，然后只路由到一个现有动作 skill。它不自行执行多个阶段，不循环，也不绕过专业 skill 的证据或审批规则。
+第九个 `$ds-lite` skill 识别新项目或已有 DS Lite 工作区，读取 Mission Board，向用户说明插件为什么介入。对于已批准的多 gate 项目，它由前台控制器继续推进相互独立的 ready gate；用户要求单步、只规划或无副作用时才只路由到一个现有动作 skill。它不创建 daemon，也不绕过专业 skill 的证据、预算或审批规则。
 
 ### 2. 行动公约
 

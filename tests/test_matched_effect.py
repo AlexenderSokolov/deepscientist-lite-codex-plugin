@@ -137,6 +137,12 @@ class MatchedEffectTests(unittest.TestCase):
     def test_blind_package_rejects_absolute_path_in_final_message(self) -> None:
         self._assert_sensitive_final_message_rejected(r"Evidence stored at C:\Users\private\result.json.")
 
+    def test_public_slash_separator_is_not_misclassified_as_posix_path(self) -> None:
+        result = matched_effect._reviewable_public_response("Compare the admin / api reserved slugs.")
+        self.assertIn("public_response", result)
+        with self.assertRaisesRegex(matched_effect.MatchedEffectError, "sensitive"):
+            matched_effect._reviewable_public_response("Evidence stored at /home/private/result.json.")
+
     def test_blind_package_rejects_credential_marker_in_final_message(self) -> None:
         self._assert_sensitive_final_message_rejected("Authorization: Bearer sk-private-credential-marker")
 

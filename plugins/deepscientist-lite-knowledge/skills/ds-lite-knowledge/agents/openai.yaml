@@ -1,0 +1,6 @@
+interface:
+  display_name: "DS Lite Knowledge"
+  short_description: "Create review-gated knowledge proposals"
+  default_prompt: "Use $ds-lite-knowledge to create pending proposals from validated source records without publishing them."
+policy:
+  allow_implicit_invocation: true

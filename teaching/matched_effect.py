@@ -55,7 +55,7 @@ SENSITIVE_EXECUTION_KEYS = {
 SENSITIVE_PUBLIC_RESPONSE_PATTERNS = (
     re.compile(r"\b(?:https?|file)://", re.IGNORECASE),
     re.compile(r"(?<![A-Za-z0-9_])[A-Za-z]:[\\/]"),
-    re.compile(r"(?:^|[\s(])/(?!/)[^\s)]*", re.MULTILINE),
+    re.compile(r"(?:^|[\s(])/(?!/)[^\s)]+", re.MULTILINE),
     re.compile(r"\bsecret[-_ ]?marker\b", re.IGNORECASE),
     re.compile(
         r"\b(?:bearer\s+\S+|sk-[A-Za-z0-9_-]{6,}|(?:api[_ -]?key|password|access[_ -]?token|auth[_ -]?token)\s*[:=]\s*\S+)",
@@ -97,6 +97,14 @@ def _validate_review_execution(
         raise MatchedEffectError("blind review execution receipt fields are invalid")
     input_refs = execution.get("input_refs")
     usage = execution.get("usage")
+    usage_total = usage.get("total_tokens") if isinstance(usage, dict) else None
+    usage_valid = (
+        isinstance(usage_total, int) and usage_total > 0
+    ) or (
+        usage_total is None
+        and isinstance(usage, dict)
+        and usage.get("observation") == "not-exposed-by-desktop-task-api"
+    )
     required_inputs = {
         "blind-review/blind-items.json",
         "blind-review/review-schema.json",
@@ -112,9 +120,7 @@ def _validate_review_execution(
         or mapping_ref in input_refs
         or execution.get("mapping_available_to_reviewer") is not False
         or execution.get("output_ref") != scores_ref
-        or not isinstance(usage, dict)
-        or not isinstance(usage.get("total_tokens"), int)
-        or usage["total_tokens"] <= 0
+        or not usage_valid
     ):
         raise MatchedEffectError("blind review mapping isolation or execution gate failed")
     return execution

@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
-$TempRoot = if ($env:TEMP_ROOT) { $env:TEMP_ROOT } else { Join-Path $RepoRoot ".validation-tmp" }
+$TempRoot = if ($env:TEMP_ROOT) { $env:TEMP_ROOT } else { Join-Path $RepoRoot "research\.validation-tmp" }
 $ReceiptId = (Get-Date -Format "yyyyMMddTHHmmssfffffff") + "-" + $PID
 $RunTemp = Join-Path $TempRoot ("validation-" + $ReceiptId)
 try {
@@ -25,10 +25,12 @@ $NatureRuntimeReceipt = Join-Path $RunTemp ("nature-runtime-acceptance-" + $Rece
 & $PythonBin teaching\nature_runtime_acceptance.py --repo-root $RepoRoot --output $NatureRuntimeReceipt
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-& $PythonBin -m unittest discover -s tests -v
+& $PythonBin tests/run_unittest.py
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 & $PythonBin tools\validation\validate_repo.py
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $PythonBin tools\validation\validate_packages.py --repo-root $RepoRoot --package all
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $PythonBin tools\validation\check_cross_system.py . --output $CrossSystemReceipt
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -44,6 +46,27 @@ $CompileTargets = @(
     "plugins/deepscientist-lite/scripts/codex_autoresearch_adapter.py",
     "plugins/deepscientist-lite/scripts/ds_lite_protocol.py",
     "plugins/deepscientist-lite/scripts/ds_lite_state.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_evidence.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_hook.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_handoff.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_iteration.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_loop.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_autoresearch_runner.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_protocol.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_state.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_learning.py",
+    "plugins/deepscientist-lite-core/scripts/ds_lite_quality.py",
+    "plugins/deepscientist-lite-academic/scripts/ds_lite_nature_setup.py",
+    "plugins/deepscientist-lite-academic/scripts/ds_lite_pack_doctor.py",
+    "plugins/deepscientist-lite-academic/scripts/ds_lite_citation_check.py",
+    "plugins/deepscientist-lite-academic/scripts/ds_lite_revision_guard.py",
+    "plugins/deepscientist-lite-web/scripts/ds_lite_extensions.py",
+    "tools/validation/acquire_pinned_codex.py",
+    "plugins/deepscientist-lite-knowledge/scripts/ds_lite_knowledge.py",
+    "plugins/deepscientist-lite-knowledge/scripts/ds_lite_pack_doctor.py",
+    "plugins/deepscientist-lite-empirical/scripts/ds_lite_empirical.py",
+    "plugins/deepscientist-lite-engineering/scripts/ds_lite_engineering.py",
+    "tools/validation/release_receipt.py",
     "plugins/deepscientist_lite_import_shim.py",
     "teaching/lab_runner.py",
     "teaching/pilot_runtime.py",
@@ -60,12 +83,19 @@ $CompileTargets = @(
     "teaching/handoff_protocol.py",
     "teaching/cli_compatibility.py",
     "teaching/fresh_host_probe.py",
+    "teaching/app_server_continuation_acceptance.py",
+    "teaching/memory_diagnostic.py",
+    "teaching/rust_transport_probe.py",
     "teaching/trusted_host_prepare.py",
     "teaching/trusted_hook_run.py",
     "teaching/nature_runtime_acceptance.py",
     "tools/validation/prepare_codex_acceptance.py",
     "tools/validation/audit_codex_acceptance.py",
     "tools/validation/validate_repo.py",
+    "tools/validation/validate_packages.py",
+    "tools/validation/formal_release_gate.py",
+    "tools/validation/academic_live_provider_acceptance.py",
+    "tools/validation/audit_superpowers.py",
     "tools/validation/check_text_compatibility.py",
     "tools/validation/check_cross_system.py",
     "tools/validation/upstream_manager.py",
@@ -88,6 +118,9 @@ $CompileTargets = @(
     "tests/test_handoff_protocol.py",
     "tests/test_cli_compatibility.py",
     "tests/test_fresh_host_probe.py",
+    "tests/test_rust_transport_probe.py",
+    "tests/test_app_server_continuation_acceptance.py",
+    "tests/test_memory_diagnostic.py",
     "tests/test_protocols.py",
     "tests/test_delegation_probe.py",
     "tests/test_explainability_score.py",
@@ -98,7 +131,16 @@ $CompileTargets = @(
     "tests/test_upstream_transfer.py",
     "tests/test_text_compatibility.py",
     "tests/test_cross_system.py",
-    "tests/test_nature_runtime_acceptance.py"
+    "tests/test_nature_runtime_acceptance.py",
+    "tests/test_extension_protocols.py",
+    "tests/test_plugin_packages.py",
+    "tests/test_academic_protocols.py",
+    "tests/test_empirical_pack.py",
+    "tests/test_engineering_pack.py",
+    "tests/test_cross_disciplinary_adoption.py",
+    "tests/test_superpowers_compatibility.py",
+    "tests/test_learning_protocol.py",
+    "tests/test_quality_protocol.py"
 )
 & $PythonBin -m py_compile @CompileTargets
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

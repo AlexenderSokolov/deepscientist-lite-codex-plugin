@@ -27,7 +27,11 @@ ALLOWED_PROVIDER_TYPES = {
     "server_error",
     "service_unavailable",
 }
-HTTP_STATUS = re.compile(r"\b(?:http(?:/[0-9.]+)?\s*)?([1-5][0-9]{2})\b", re.IGNORECASE)
+HTTP_STATUS = re.compile(
+    r"\b(?:http(?:/[0-9.]+)?(?:\s+status)?|status(?:[_ -]?code)?)"
+    r"\s*[:=]?\s*['\"]?([1-5][0-9]{2})\b",
+    re.IGNORECASE,
+)
 ERROR_CODE = re.compile(r"\b(?:error[_ -]?code|code)\s*[:=]\s*['\"]?([A-Za-z0-9_.-]{1,64})", re.IGNORECASE)
 
 
@@ -118,7 +122,17 @@ class TransportDiagnosticReducer:
                     self.provider_codes.append(code)
                     break
 
-        if any(term in lowered for term in ("authentication", "unauthorized", "invalid api key", "invalid_api_key")) or 401 in statuses:
+        if any(
+            term in lowered
+            for term in (
+                "authentication failed",
+                "authentication error",
+                "authentication_error",
+                "unauthorized",
+                "invalid api key",
+                "invalid_api_key",
+            )
+        ) or 401 in statuses:
             self.legacy_categories.add("authentication")
             self.failure_classes.add("auth")
         if 403 in statuses:

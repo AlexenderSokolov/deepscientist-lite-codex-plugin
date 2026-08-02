@@ -1,0 +1,31 @@
+{
+  "schema_version": "ds-lite.work-unit.v1",
+  "work_unit_id": "work-intake",
+  "title": "Initial project planning",
+  "goal": $question_json,
+  "execution_mode": "none",
+  "profile_id": "core-planning",
+  "state": "active",
+  "prerequisites": [],
+  "required_capabilities": [
+    "read"
+  ],
+  "evidence_requirements": [],
+  "evidence_refs": [],
+  "resource_limits": [
+    {
+      "dimension": "actions",
+      "unit": "count",
+      "value": 1
+    }
+  ],
+  "subjects": [
+    {
+      "kind": "artifact",
+      "id": "project-contract",
+      "query_ref": "PROJECT.md"
+    }
+  ],
+  "active_iteration_ref": "",
+  "extensions": {}
+}

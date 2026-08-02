@@ -1,0 +1,21 @@
+{
+  "name": "deepscientist-lite-knowledge",
+  "version": "0.2.0-alpha.1",
+  "description": "Review-gated handoffs from web and paper libraries into durable research knowledge.",
+  "author": {"name": "DeepScientist Lite maintainers"},
+  "homepage": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+  "repository": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+  "license": "Apache-2.0",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "DeepScientist Lite Knowledge",
+    "shortDescription": "Create reviewable knowledge proposals from source records.",
+    "longDescription": "An experimental bridge for Tapestry, ScholarAIO, ResearchKB, and compatible stores. It does not build another library and never writes formal knowledge without a target-native review decision.",
+    "developerName": "DeepScientist Lite maintainers",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": ["Use $ds-lite-knowledge to turn source records into reviewable proposals without publishing them."],
+    "brandColor": "#725B31",
+    "screenshots": []
+  }
+}

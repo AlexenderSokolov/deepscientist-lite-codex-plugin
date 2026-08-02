@@ -1,0 +1,35 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-polishing",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-polishing",
+    "source_skill_sha256": "9485cb680931074cc0671e8c1cb2501b2faefb4a20b5e648d8bffedc3ddbce59"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-polishing",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "latex": [
+      "SKILL.md",
+      "manifest.yaml",
+      "references/latex-layout.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

@@ -1,10 +1,10 @@
 ﻿# DeepScientist Lite：让科研过程接得上、查得清
 
-[English README](README.md) · [用户指南](docs/user-guide.zh.md) · [教学课程](teaching/README.zh.md) · [维护文档](docs/README.md)
+[English README](README.md) · [用户指南](docs/user-guide.zh.md) · [教学课程](teaching/README.zh.md) · [维护文档](docs/README.md) · [感谢名录](ACKNOWLEDGMENTS.md)
 
 研究任务一长，聊天记录很快就不够用了：换一个会话后，不知道上次为什么选这条路线；实验跑过，却找不到当时的命令、指标和日志；一个高分结果看起来不错，但没人确认它有没有偷看测试标签。
 
-DeepScientist Lite 用一组 Codex 技能和普通项目文件解决这些交接问题。它不替你判断科学结论，也不在后台自动做研究；它负责把目标、路线、实验和审查结果留下来，让下一次会话或另一位同学能够接着做。
+DeepScientist Lite 用一组 Codex 技能和普通项目文件解决这些交接问题。它不替你判断科学结论；对已冻结、已授权且可审计的验收任务，它可以由前台自动控制器连续推进、自动续跑和生成进度凭证，但不创建后台 daemon。它负责把目标、路线、实验和审查结果留下来，让下一次会话或另一位同学能够接着做。
 
 > **独立项目声明：** 这是一个非官方第三方插件，与 ResearAI 不存在赞助、认证或背书关系。“DeepScientist”仅用于说明工作流灵感来源，详见 [NOTICE](NOTICE)。
 
@@ -18,7 +18,9 @@ DeepScientist Lite 用一组 Codex 技能和普通项目文件解决这些交接
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace，再安装 `deepscientist-lite`。安装或升级后重启 Codex Desktop，并打开一个新线程，核对实际插件版本和技能数；旧线程不会自动刷新插件缓存。已发布 `0.4.0-beta.2` 是七技能，当前候选 `0.6.0-beta.1` 是 26 技能（9 个 DS Lite 核心 skill + 17 个 nature skill），不能用源码数量反推 cache。
+这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace。默认只安装 `deepscientist-lite`；它在 `0.8.1-beta.1` 候选中固定为 9 个 Core 技能。论文工作流、公开网页取证、知识提案、实证分析和工程数值分析分别由五个可选包提供，按需单独安装。Academic 当前为 `0.8.1-beta.1`，Web、Knowledge、Empirical 与 Engineering 当前为 `0.2.0-alpha.1`。安装或升级后重启 Codex Desktop，并打开一个新任务核对实际插件版本和技能数；不能用源码目录反推正式 cache。
+
+五个可选包不会假设 marketplace 自动安装 Core。首次使用前必须运行包内 doctor，显式提供 Core 根目录；缺失或版本不匹配时会停止。旧 `0.6.0-beta.1` 单体目录仍保留用于历史证据身份，但不再是 marketplace 安装目标。
 
 ### 2. 从一个真实问题开始
 
@@ -33,7 +35,7 @@ $ds-lite-intake 请从这个问题启动一个轻量研究项目：
 接下来可以继续：
 
 ```text
-$ds-lite 接手这个科研或工程工作区，读取 Mission Board，说明为什么插件适用，并只路由到一个下一动作。
+$ds-lite 接手这个科研或工程工作区，读取 Mission Board，说明为什么插件适用。对于已批准的多门项目，它默认生成或读取 autonomy contract，并连续推进所有相互独立的 ready gate；单个 gate 冻结后继续其余 gate。只有我明确要求“只做一步”“只规划”或“不要副作用”时，才只路由一个下一动作。
 
 $ds-lite-scout 检查可用数据、baseline、指标和主要风险，给出有来源的侦察记录。
 
@@ -76,7 +78,8 @@ $ds-lite-coordinate 把两到三个彼此独立的任务写成有界委派计划
 ## 它不会替你做什么
 
 - 不证明论文结论为真，也不保证消除错误引用或“幻觉”。
-- 不启动 daemon、Web/TUI、MCP server、聊天 connector 或本地模型。Nature 的 MCP/API 只通过工作区配置按需启用，不会静默修改全局配置。
+- Core 不启动 daemon、Web/TUI、MCP server、聊天 connector 或本地模型。Academic 的 MCP/API 与 Web 的托管后端都必须按工作区显式授权，不会静默修改全局配置。
+- Web 包只处理公开资料，且默认 fail closed：`fetch`、`search`、`render`、`benchmark` 每次都必须显式传入一个或多个 `--allowed-domain`。初始 URL、重定向和 Firecrawl 搜索结果都会复核域名范围；不支持登录、复用 Cookie、提交表单、上传或自动安装浏览器/托管后端。
 - 不在 Codex 关闭后继续运行任务。
 - 不把 `$ds-lite-iterate` 变成无限自动循环；一次调用只推进一轮并停在 checkpoint。
 - 不把 `$ds-lite-coordinate` 变成队列或后台 worker 服务；没有用户或 OpenScience 明确批准时只生成计划并停止。

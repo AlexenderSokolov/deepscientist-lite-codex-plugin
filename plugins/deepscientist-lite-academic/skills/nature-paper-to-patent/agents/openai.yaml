@@ -1,0 +1,6 @@
+interface:
+  display_name: "Nature Paper To Patent"
+  short_description: "Use the complete vendored nature-paper-to-patent workflow with DS Lite evidence and dependency boundaries."
+  default_prompt: "Use $nature-paper-to-patent for one bounded academic workflow."
+policy:
+  allow_implicit_invocation: true

@@ -9,12 +9,12 @@ from teaching.offline_loop_acceptance import run
 
 
 class OfflineLoopAcceptanceTests(unittest.TestCase):
-    def test_fake_loop_passes_and_external_adapter_is_frozen(self) -> None:
+    def test_fake_loop_passes_and_external_adapter_is_configured_without_provider_execution(self) -> None:
         with tempfile.TemporaryDirectory(prefix="ds-lite-offline-loop-") as directory:
             report = run(Path(directory) / "receipt")
             self.assertEqual(report["status"], "passed")
             self.assertEqual(report["offline_loop_status"], "passed")
-            self.assertEqual(report["external_adapter_status"], "blocked-not-verified")
+            self.assertEqual(report["external_adapter_status"], "configured-not-executed")
             self.assertFalse(report["external_process_spawn_observed"])
             persisted = json.loads((Path(directory) / "receipt" / "offline-loop-acceptance.json").read_text(encoding="utf-8"))
             self.assertFalse(persisted["real_gates_unlocked"])

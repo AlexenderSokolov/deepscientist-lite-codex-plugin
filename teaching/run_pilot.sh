@@ -5,6 +5,9 @@ export PYTHONDONTWRITEBYTECODE=1
 export PYTHONUTF8=1
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TEMP_ROOT="${TEMP_ROOT:-$ROOT/research/.validation-tmp}"
+mkdir -p "$TEMP_ROOT"
+export TEMP="$TEMP_ROOT" TMP="$TEMP_ROOT" PYTHONPYCACHEPREFIX="$TEMP_ROOT/pycache"
 ACTION="${1:-}"
 if [[ -z "$ACTION" ]]; then
   echo "usage: run_pilot.sh prepare|install|preflight|canary|run|resume|score" >&2
@@ -31,6 +34,7 @@ WINDOWS_ROOT="${PILOT_WINDOWS_ROOT:-}"
 WSL_ROOT="${PILOT_WSL_ROOT:-}"
 PILOT_ID="${PILOT_ID:-}"
 AUTHORIZATION_REF="${PILOT_AUTHORIZATION_REF:-}"
+AUTHORIZED_RETRY_CALL="${PILOT_AUTHORIZED_RETRY_CALL:-}"
 CODEX_BIN="${CODEX_BIN:-}"
 WSL_BIN="${WSL_BIN:-wsl.exe}"
 
@@ -73,5 +77,12 @@ if [[ "$ACTION" == "canary" ]]; then
   ARGS+=(--timeout-seconds "${PILOT_TIMEOUT_SECONDS:-180}")
 elif [[ "$ACTION" == "run" || "$ACTION" == "resume" ]]; then
   ARGS+=(--timeout-seconds "${PILOT_TIMEOUT_SECONDS:-900}")
+fi
+if [[ "$ACTION" == "resume" && -n "$AUTHORIZED_RETRY_CALL" ]]; then
+  if [[ -z "$AUTHORIZATION_REF" ]]; then
+    echo "PILOT_AUTHORIZATION_REF is required for an authorized retry" >&2
+    exit 2
+  fi
+  ARGS+=(--authorized-retry-call "$AUTHORIZED_RETRY_CALL" --authorization-ref "$AUTHORIZATION_REF")
 fi
 exec "$PYTHON" "${ARGS[@]}" "$@"

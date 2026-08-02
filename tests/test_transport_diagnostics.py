@@ -64,6 +64,35 @@ class TransportDiagnosticTests(unittest.TestCase):
         self.assertEqual(result["subprocess_exit_cause"], "nonzero-exit")
         self.assertNotIn("FAKE-STDERR-SECRET", str(result))
 
+    def test_benign_auth_metadata_and_three_digit_counters_do_not_invent_auth_or_http(self) -> None:
+        result = self.finalize(
+            "authentication mode configured; cached_input_tokens=428; request sequence 40342\n"
+        )
+        self.assertEqual(result["failure_class"], "child-process")
+        self.assertEqual(result["category"], "process")
+        self.assertEqual(result["http_status_category"], "none")
+        self.assertEqual(result["connection_state"], "unknown")
+
+    def test_unrecognized_structured_error_with_auth_metadata_is_not_auth_failure(self) -> None:
+        reducer = transport_diagnostics.TransportDiagnosticReducer()
+        reducer.consume_structured_error(
+            "authentication metadata was not returned",
+            "turn.failed",
+            provider_code="none",
+            provider_type="unrecognized",
+        )
+        result = reducer.finalize(
+            exit_code=1,
+            timed_out=False,
+            turn_completed=False,
+            turn_failed=True,
+            child_process_state="exited",
+            stdout_pipe_state="closed",
+            stderr_pipe_state="closed",
+        )
+        self.assertNotEqual(result["failure_class"], "auth")
+        self.assertEqual(result["http_status_category"], "none")
+
     def test_network_failure_does_not_invent_response_headers(self) -> None:
         result = self.finalize("connection refused before response header FAKE-STDERR-SECRET\n")
         self.assertEqual(result["failure_class"], "network")

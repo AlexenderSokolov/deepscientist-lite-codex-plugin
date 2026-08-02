@@ -1,5 +1,39 @@
 # Changelog
 
+## Unreleased: 0.8.1-beta.1 foreground autonomy controller
+
+- Added `ds-lite.autonomy-contract.v1`, progress receipts, a dependency-aware
+  foreground gate controller, and bounded three-attempt transient retry.
+- Added `ds-lite.loop-contract.v2` autonomy controls while retaining v1 callers.
+- Enabled the fixed `codex-autoresearch` compatibility adapter to use DS Lite's
+  pinned Codex session/resume contract without persisting upstream raw logs.
+- Extended Hook context and Stop checks so active autonomy contracts cannot end
+  without a terminal summary and current progress receipt.
+
+## Unreleased: 0.8.0-beta.1 core/academic and 0.2.0-alpha.1 optional packs
+
+- Split the marketplace into six packages while keeping the `deepscientist-lite`
+  Core ID and freezing the historical monolith at `0.6.0-beta.1`.
+- Advanced Core and Academic to `0.8.0-beta.1` without adding a Core discoverable skill. Added
+  citation check and batch envelopes, Crossref/OpenAlex/Semantic Scholar/arXiv
+  adapters, terminal-status cache policy, bounded revision constraints, and
+  fresh-context adversarial-review receipts.
+- Added `deepscientist-lite-empirical` and
+  `deepscientist-lite-engineering` `0.2.0-alpha.1` packages. Each has one
+  router, exact Core compatibility, a standard-library validator, and no
+  vendored runtime.
+- Added eight deterministic installation matrices, domain validation wrappers,
+  explicit Academic live-provider authorization entrypoints, upstream commit /
+  license / hash adoption records, and user/maintainer protocol documentation.
+- Web CLI now requires an explicit repeated `--allowed-domain` scope for every
+  fetch/search/render/benchmark run, checks redirects and provider results,
+  writes v2 source records, and classifies provider authorization, policy,
+  network, and render failures without storing credentials.
+- Offline and source validation pass for the new work. Real provider, Hook,
+  delegation, matched effect, formal cache, fresh Desktop, and release gates
+  remain `not-verified`; the full historical unittest run was not used to
+  infer these host gates.
+
 ## Unreleased: 0.6.0-beta.1 candidate
 
 - Added the complete 17-skill `nature-skills` snapshot at commit

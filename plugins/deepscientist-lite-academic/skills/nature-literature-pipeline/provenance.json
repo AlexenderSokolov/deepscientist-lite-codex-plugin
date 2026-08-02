@@ -1,0 +1,49 @@
+{
+  "schema_version": "ds-lite.nature-skill-provenance.v1",
+  "skill": "nature-literature-pipeline",
+  "upstream": {
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+    "license": "Apache-2.0",
+    "source_path": "skills/nature-literature-pipeline",
+    "source_skill_sha256": "10db6158d5596904f55d6e205dc0a6d1b0a1b6f5f8602fb3889020aade5f250e"
+  },
+  "runtime_path": "plugins/deepscientist-lite/skills/nature-literature-pipeline",
+  "preserved_material": [
+    "SKILL.md",
+    "manifest.yaml",
+    "static",
+    "references",
+    "scripts",
+    "templates",
+    "tests"
+  ],
+  "adaptations": [
+    "DS Lite lifecycle protocol",
+    "dependency/onboarding boundary",
+    "relative evidence policy",
+    "redacted failure handling"
+  ],
+  "dependency_signals": {
+    "api": [
+      "SKILL.md",
+      "references/cron-setup.md",
+      "templates/literature-push-template.md"
+    ],
+    "browser": [
+      "references/gap-analysis.md"
+    ],
+    "python": [
+      "README.md",
+      "README_EN.md",
+      "SKILL.md",
+      "manifest.yaml",
+      "references/note-template.md",
+      "references/push-format.md",
+      "references/review-compilation-workflow.md",
+      "references/scoring-system.md",
+      "templates/literature-push-template.md"
+    ]
+  },
+  "nature_shared_internal": true
+}

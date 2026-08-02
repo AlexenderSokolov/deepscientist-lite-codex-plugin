@@ -14,7 +14,8 @@ if ($Output.Contains("<") -or $Output.Contains(">")) {
 }
 if (-not $Output) {
     $runId = (Get-Date -Format "yyyyMMddTHHmmssfffffff") + "-" + $PID
-    $outputRoot = Join-Path $repoRoot ".validation-tmp\nature-runtime-$runId"
+    $baseRoot = if ($env:TEMP_ROOT) { $env:TEMP_ROOT } else { Join-Path $repoRoot "research\.validation-tmp" }
+    $outputRoot = Join-Path $baseRoot "nature-runtime-$runId"
     New-Item -ItemType Directory -Path $outputRoot | Out-Null
     $Output = Join-Path $outputRoot "receipt.json"
 }
