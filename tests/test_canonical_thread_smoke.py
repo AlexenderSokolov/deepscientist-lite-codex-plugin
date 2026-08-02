@@ -1,6 +1,7 @@
 import unittest
 import subprocess
 import sys
+import os
 from pathlib import Path
 
 from teaching.canonical_thread_smoke import _response_observation, app_server_command, rpc_contract, schema_contract
@@ -12,7 +13,12 @@ ROOT = Path(__file__).resolve().parents[1]
 class CanonicalThreadSmokeTests(unittest.TestCase):
     def test_launch_command_uses_default_stdio_transport(self):
         codex = Path("C:/codex.cmd")
-        self.assertEqual(app_server_command(codex), ["cmd.exe", "/d", "/s", "/c", f'"{codex}" app-server'])
+        expected = (
+            ["cmd.exe", "/d", "/s", "/c", f'"{codex}" app-server']
+            if os.name == "nt"
+            else [str(codex), "app-server"]
+        )
+        self.assertEqual(app_server_command(codex), expected)
 
     def test_schema_contract_uses_generated_params_without_guessed_fields(self):
         root = ROOT / "plugins" / "deepscientist-lite-core" / "schemas" / "codex" / "0.128.0"
