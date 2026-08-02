@@ -15,7 +15,7 @@ PHASE2 = ROOT / "research" / ".validation-tmp" / "control-plane-phase2-continuat
 class Phase3EvidenceTests(unittest.TestCase):
     def test_phase3_runners_are_write_once_and_include_all_gates(self) -> None:
         for name in ("run_control_plane_phase3.ps1", "run_control_plane_phase3.sh"):
-            content = (ROOT / name).read_text(encoding="utf-8")
+            content = (ROOT / "tools" / "validation" / "runners" / name).read_text(encoding="utf-8")
             for required in (
                 "phase3_fault_harness.py", "controller_phase3_multigate_smoke.py",
                 "control_plane_phase3_evidence", "phase3-decision.json",
@@ -24,22 +24,22 @@ class Phase3EvidenceTests(unittest.TestCase):
                 self.assertIn(required, content)
 
     def test_phase3_runners_require_explicit_ambient_home_opt_in(self) -> None:
-        powershell = (ROOT / "run_control_plane_phase3.ps1").read_text(encoding="utf-8")
-        bash = (ROOT / "run_control_plane_phase3.sh").read_text(encoding="utf-8")
+        powershell = (ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase3.ps1").read_text(encoding="utf-8")
+        bash = (ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase3.sh").read_text(encoding="utf-8")
         self.assertIn("[switch]$AmbientHome", powershell)
         self.assertIn("--ambient-home", powershell)
         self.assertIn("AMBIENT_HOME", bash)
         self.assertIn("--ambient-home", bash)
 
     def test_phase3_runners_pin_core_validation_to_the_selected_python(self) -> None:
-        powershell = (ROOT / "run_control_plane_phase3.ps1").read_text(encoding="utf-8")
-        bash = (ROOT / "run_control_plane_phase3.sh").read_text(encoding="utf-8")
+        powershell = (ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase3.ps1").read_text(encoding="utf-8")
+        bash = (ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase3.sh").read_text(encoding="utf-8")
         self.assertIn("$env:PYTHON_BIN = $PythonBin", powershell)
-        self.assertIn('PYTHON_BIN="$python_bin" "$repo_root/run_validate_core.sh"', bash)
+        self.assertIn('PYTHON_BIN="$python_bin" "$repo_root/tools/validation/runners/run_validate_core.sh"', bash)
 
     def test_phase3_runners_preserve_worker_imports_and_capture_native_stderr(self) -> None:
-        powershell = (ROOT / "run_control_plane_phase3.ps1").read_text(encoding="utf-8")
-        bash = (ROOT / "run_control_plane_phase3.sh").read_text(encoding="utf-8")
+        powershell = (ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase3.ps1").read_text(encoding="utf-8")
+        bash = (ROOT / "tools" / "validation" / "runners" / "run_control_plane_phase3.sh").read_text(encoding="utf-8")
         self.assertIn('+ ";" + $Root', powershell)
         self.assertIn('$PSNativeCommandUseErrorActionPreference = $false', powershell)
         self.assertIn('$ErrorActionPreference = "Continue"', powershell)

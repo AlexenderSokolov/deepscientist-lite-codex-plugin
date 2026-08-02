@@ -76,16 +76,16 @@ class PluginPackageTests(unittest.TestCase):
     def test_domain_validation_wrappers_exist_for_bash_and_powershell(self) -> None:
         for pack in ("empirical", "engineering"):
             with self.subTest(pack=pack):
-                bash = ROOT / f"run_validate_{pack}.sh"
-                powershell = ROOT / f"run_validate_{pack}.ps1"
+                bash = ROOT / "tools" / "validation" / "runners" / f"run_validate_{pack}.sh"
+                powershell = ROOT / "tools" / "validation" / "runners" / f"run_validate_{pack}.ps1"
                 self.assertTrue(bash.is_file())
                 self.assertTrue(powershell.is_file())
                 self.assertIn(f"--package {pack}", bash.read_text(encoding="utf-8"))
                 self.assertIn(f'"--package", "{pack}"', powershell.read_text(encoding="utf-8"))
 
     def test_formal_release_wrapper_defaults_to_gate_v2(self) -> None:
-        powershell = (ROOT / "run_accept_formal_host.ps1").read_text(encoding="utf-8")
-        bash = (ROOT / "run_accept_formal_host.sh").read_text(encoding="utf-8")
+        powershell = (ROOT / "tools" / "validation" / "runners" / "run_accept_formal_host.ps1").read_text(encoding="utf-8")
+        bash = (ROOT / "tools" / "validation" / "runners" / "run_accept_formal_host.sh").read_text(encoding="utf-8")
         self.assertIn("ds-lite.formal-release-gate.v2", powershell)
         self.assertIn("ds-lite.formal-release-gate.v2", bash)
 

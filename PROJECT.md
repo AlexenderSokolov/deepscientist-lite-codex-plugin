@@ -166,10 +166,10 @@ equivalent for encoding, format, shell syntax, and argv checks.
 - 行动与反思：`python teaching/lab_runner.py --lab action-reflection --mode student --output <path>`
 - 对照 pilot：`python teaching/lab_runner.py --lab matched-pilot --mode student --output <path>`
 - 真实 pilot：`powershell -File teaching/run_pilot.ps1 -Action prepare|install|preflight|canary|run|resume|score`，或 `bash teaching/run_pilot.sh <action>`；关键路径、pilot ID、授权引用和 CLI 必须显式提供。`install` 只建立隔离 skill home，不是 cache 安装；失败/超时/ambiguous 不能用 resume 重试。
-- 控制面 Phase 0.5 复验：显式设置 `CODEX_BIN`、`SOURCE_CODEX_HOME`、`DBOS_DEPENDENCY_ROOT`、`EVIDENCE_ROOT` 与 provider 环境后运行 `bash run_control_plane_phase05.sh`；`EVIDENCE_ROOT` 必须是全新目录，脚本不安装依赖、不覆盖 receipt。
-- 控制面 Phase 1 复验：显式设置 `PYTHON_BIN`（固定 Python 3.13.5）、`DBOS_DEPENDENCY_ROOT`（DBOS 2.29.0）和全新 `EVIDENCE_ROOT` 后运行 `bash run_control_plane_phase1.sh`；Windows 使用 `run_control_plane_phase1.ps1`。入口依次运行 fault matrix、managed/backup probe、阶段测试、Core validation 和 write-once decision，不接真实 Codex。
-- 控制面 Phase 2 continuation 复验：显式提供固定 Python 3.13.5、DBOS 2.29.0、Codex 0.128.0 binary 和全新 evidence root，运行 `run_control_plane_phase2_continuation.ps1`；Bash 使用同名 `.sh`。入口运行 fake fault matrix、Phase 0/0.5 contracts、Phase 1/2 tests、真实 response-drop/controller restart、broker-aware backup、doctor、Core 和 write-once decision。
-- 控制面 Phase 3 复验：显式提供固定 Python 3.13.5、DBOS 2.29.0、Codex 0.128.0 binary 和全新仓库内 evidence root，运行 `run_control_plane_phase3.ps1`；Bash 使用同名 `.sh`。入口即使遇到单个真实宿主失败也会继续 fault matrix、supervised backup、资源、阶段测试和 Core，最终只由 write-once decision assembler 判定 go/no-go。
+- 控制面 Phase 0.5 复验：显式设置 `CODEX_BIN`、`SOURCE_CODEX_HOME`、`DBOS_DEPENDENCY_ROOT`、`EVIDENCE_ROOT` 与 provider 环境后运行 `bash tools/validation/runners/run_control_plane_phase05.sh`；`EVIDENCE_ROOT` 必须是全新目录，脚本不安装依赖、不覆盖 receipt。
+- 控制面 Phase 1 复验：显式设置 `PYTHON_BIN`（固定 Python 3.13.5）、`DBOS_DEPENDENCY_ROOT`（DBOS 2.29.0）和全新 `EVIDENCE_ROOT` 后运行 `bash tools/validation/runners/run_control_plane_phase1.sh`；Windows 使用同目录的 `.ps1`。入口依次运行 fault matrix、managed/backup probe、阶段测试、Core validation 和 write-once decision，不接真实 Codex。
+- 控制面 Phase 2 continuation 复验：显式提供固定 Python 3.13.5、DBOS 2.29.0、Codex 0.128.0 binary 和全新 evidence root，运行 `tools/validation/runners/run_control_plane_phase2_continuation.ps1`；Bash 使用同目录的 `.sh`。入口运行 fake fault matrix、Phase 0/0.5 contracts、Phase 1/2 tests、真实 response-drop/controller restart、broker-aware backup、doctor、Core 和 write-once decision。
+- 控制面 Phase 3 复验：显式提供固定 Python 3.13.5、DBOS 2.29.0、Codex 0.128.0 binary 和全新仓库内 evidence root，运行 `tools/validation/runners/run_control_plane_phase3.ps1`；Bash 使用同目录的 `.sh`。入口即使遇到单个真实宿主失败也会继续 fault matrix、supervised backup、资源、阶段测试和 Core，最终只由 write-once decision assembler 判定 go/no-go。
 
 ### 2026-07-24 wire/CLI fresh gate
 

@@ -799,7 +799,7 @@ codex-autoresearch 的核心是 `codex exec` 停止后在同会话 `resume`，�
 | 长任务与协作 | `handoff-protocol.md`、`delegation-protocol.md`、`external-long-task-protocol.md`、`bounded-loop-protocol.md` | 授权、交接、所有权、恢复与停止。 |
 | 控制面阶段 | `docs/maintainers/ds-lite-control-plane-phase*-status-20260731.zh.md` | 逐阶段 evidence、go/no-go 与下一动作。 |
 | 控制面实现 | `plugins/deepscientist-lite-core/controller/` | domain schema、harness、bridge、broker、backup 与依赖锁。 |
-| 教学与现场验证 | `teaching/`、`run_validate_*.sh`、`run_control_plane_phase*.sh` | 可重复教学、跨系统和阶段性验收入口。 |
+| 教学与现场验证 | `teaching/`、`tools/validation/runners/run_validate_*.sh`、`tools/validation/runners/run_control_plane_phase*.sh` | 可重复教学、跨系统和阶段性验收入口。 |
 | 上游来源 | `upstream-project-registry.json`、`THIRD_PARTY_NOTICES.md`、`docs/maintainers/upstream-*.zh.md` | 固定 commit、许可证、采用边界和审计。 |
 
 验证时应优先使用现有 `run_*.sh` 或 PowerShell 对应脚本，避免把多条命令临时拼接成不可复现的工作流。高成本、集群路径、真实 provider 或需要凭据的控制面验收必须在相应的授权环境中执行；没有该前置条件时，应保留完整命令和预期证据，不应伪造“已通过”。
