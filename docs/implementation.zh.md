@@ -477,7 +477,7 @@ python tools/validation/validate_repo.py
 - TODO 残留和 description 的最低长度。
 - README 导航、文档目录和运行时 references 边界。
 - 临时项目中的 planning→typed evidence→typed review→analysis smoke，以及 Graph v2、Evidence Pack、work unit/review schema 负例、revision、迁移、路径、哈希、并发、锁超时、路线语义和地图同步单元测试。
-- Windows/Ubuntu 与 Python 3.10/当前 3.x 的 GitHub Actions 矩阵。
+- Core 在 Python 3.10 上保持兼容；controller/DBOS 在 GitHub Actions 使用 Python 3.13/当前 3.x 矩阵（DBOS lock 的 websockets 17 要求 Python >=3.11）。
 
 `run_validate.sh` 和 `run_validate.ps1` 是单一验证入口，依次执行 unittest、仓库 smoke 和 Python 语法检查；它们按任务类别留在 `tools/validation/`。
 
@@ -601,7 +601,7 @@ smoke 和 unittest 使用自然中文标题、问题和带空格路径，并检�
 
 - 真实中文与空格路径测试、模板单一来源、Graph v2 和完整写接口。
 - 锁、revision、原子写、语义校验、外部路径别名及 v1 迁移备份。
-- Windows/Ubuntu 的 Python 3.10 与当前 3.x 自动验证。
+- Windows/Ubuntu 的 Core Python 3.10 兼容性与 controller Python 3.13/当前 3.x 自动验证。
 
 ### P1：延期的 action 与 iteration transaction
 
