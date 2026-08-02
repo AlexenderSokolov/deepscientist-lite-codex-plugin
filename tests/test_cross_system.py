@@ -93,7 +93,9 @@ class CrossSystemValidationTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         paths = {path.as_posix() for path in iter_files(root)}
         self.assertFalse(any("research/appserver-continuation-" in path for path in paths))
-        self.assertTrue(any(path.endswith("research/artifacts/handoff-20260728-continuation.json") for path in paths))
+        fixture = root / "tests" / "fixtures" / "cross-system" / "handoff-20260728-continuation.json"
+        self.assertTrue(fixture.is_file())
+        self.assertTrue(any(path.endswith("tests/fixtures/cross-system/handoff-20260728-continuation.json") for path in paths))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,6 @@
+{
+  "schema_version": "ds-lite.test-fixture.v1",
+  "fixture_only": true,
+  "kind": "handoff",
+  "status": "terminal"
+}

@@ -1,6 +1,7 @@
 import queue
 import time
 import unittest
+import tempfile
 from pathlib import Path
 import sys
 
@@ -18,10 +19,10 @@ from teaching.app_server_continuation_fixture import REPO_ROOT
 
 class FormalHookTrustTests(unittest.TestCase):
     def test_fresh_host_model_is_loaded_from_non_sensitive_config(self):
-        root = Path(__file__).resolve().parents[1] / "research" / ".validation-tmp" / "app-model-fixture"
-        root.mkdir(parents=True, exist_ok=True)
-        (root / "config.toml").write_text("model = 'gpt-5.5'\n", encoding="utf-8")
-        self.assertEqual(_configured_model(root), "gpt-5.5")
+        with tempfile.TemporaryDirectory(prefix="ds-lite-model-fixture-") as directory:
+            root = Path(directory)
+            (root / "config.toml").write_text("model = 'gpt-5.5'\n", encoding="utf-8")
+            self.assertEqual(_configured_model(root), "gpt-5.5")
 
     def test_error_diagnostic_keeps_only_category_and_hash(self):
         diagnostic = _error_diagnostic({"message": "Provider request timed out"})

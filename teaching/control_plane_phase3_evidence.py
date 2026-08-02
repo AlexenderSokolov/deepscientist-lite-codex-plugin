@@ -197,17 +197,39 @@ def resource_probe(output: Path) -> dict[str, Any]:
         _wait(ready, 15)
         startup_ms = (time.perf_counter() - started) * 1000
         def observe_process() -> dict[str, float]:
-            script = (
-                f"$p=Get-Process -Id {process.pid}; "
-                "[pscustomobject]@{rss=[int64]$p.WorkingSet64;cpu=[double]$p.CPU} "
-                "| ConvertTo-Json -Compress"
-            )
+            if os.name == "nt":
+                script = (
+                    f"$p=Get-Process -Id {process.pid}; "
+                    "[pscustomobject]@{rss=[int64]$p.WorkingSet64;cpu=[double]$p.CPU} "
+                    "| ConvertTo-Json -Compress"
+                )
+                completed = subprocess.run(
+                    ["powershell.exe", "-NoProfile", "-Command", script],
+                    capture_output=True, text=True, encoding="utf-8", errors="replace",
+                    check=True, timeout=10,
+                )
+                return json.loads(completed.stdout)
+            proc_status = Path(f"/proc/{process.pid}/status")
+            proc_stat = Path(f"/proc/{process.pid}/stat")
+            if proc_status.is_file() and proc_stat.is_file():
+                rss = 0
+                for line in proc_status.read_text(encoding="ascii", errors="replace").splitlines():
+                    if line.startswith("VmRSS:"):
+                        rss = int(line.split()[1]) * 1024
+                        break
+                fields = proc_stat.read_text(encoding="ascii", errors="replace").split()
+                ticks = int(fields[13]) + int(fields[14])
+                return {"rss": rss, "cpu": ticks / os.sysconf("SC_CLK_TCK")}
             completed = subprocess.run(
-                ["powershell.exe", "-NoProfile", "-Command", script],
+                ["ps", "-o", "rss=,time=", "-p", str(process.pid)],
                 capture_output=True, text=True, encoding="utf-8", errors="replace",
                 check=True, timeout=10,
             )
-            return json.loads(completed.stdout)
+            parts = completed.stdout.strip().split()
+            if len(parts) < 2:
+                raise RuntimeError("process-resource-observation-unavailable")
+            hours, minutes, seconds = parts[1].split(":")
+            return {"rss": int(parts[0]) * 1024, "cpu": int(hours) * 3600 + int(minutes) * 60 + float(seconds)}
 
         before = observe_process()
         peak_rss = int(before["rss"])
