@@ -10,6 +10,9 @@ from pathlib import Path
 from teaching.control_plane_phase3_evidence import decide, file_hash, resource_probe, supervised_probe
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
 class Phase3EvidenceTests(unittest.TestCase):
     def test_phase3_runners_are_write_once_and_include_all_gates(self) -> None:
         for name in ("run_control_plane_phase3.ps1", "run_control_plane_phase3.sh"):
