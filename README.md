@@ -89,6 +89,23 @@ $ds-lite-coordinate plan two independent tasks, wait for approval, then collect 
 
 For Chinese project titles on Windows, write longer text into a UTF-8 file and use `--title-file` when calling the state CLI directly.
 
+## What It Does
+
+- **Unified entry `$ds-lite`:** Inspects a research or engineering workspace, reads the Mission Board, and routes to the next action. For approved multi-gate projects, it defaults to the foreground controller to push all ready gates continuously: transient failures (network, rate-limit, timeout) retry per contract; it polls receipts silently after each command; after session interruption, `--resume` restores without re-running completed or frozen gates.
+- **Foreground controller (`ds_lite_autonomy.py`):** A DAG-level bounded autonomy controller that runs in the foreground session. It pushes frozen, authorized gates, generates sanitized progress receipts (`ds-lite.progress-report.v1`), and freezes immediately on non-idempotent operations, duplicate-risk writes, or unauthorized releases. No background daemon.
+- **Bounded loop adapter (`ds_lite_loop.py`):** Runs consecutive bounded iterations as a supervised loop. Each iteration is a complete "execute → receipt → check" cycle with fail-closed external boundaries. Stops on terminal states (completed/blocked/failed/ambiguous).
+- **Stateless Hook system (`ds_lite_hook.py`):** Host-triggered, stateless event Hooks for pre/post tool-use, user prompt submission, and stop events. Collected redacted events feed the learning system and quality gates. Hooks hold no state and create no persistent connections.
+- **Project initialization:** Creates `PROJECT.md`, `STATUS.md`, and `RESEARCH_MAP.md` with an initial Graph.
+- **Mission Board:** `mission` and `render-status` project the Graph into a human-readable task board. `STATUS.md` shows what happened, what is next, and where rollback is possible.
+- **Bounded iteration:** Records one action, verification, reflection, user report, and stop reason per iteration (`ds-lite.iteration.v1`), then stops.
+- **Evidence packing:** Writes experiment contracts before runs (metrics, thresholds, seeds, budgets, failure conditions), then packages logs, metrics, and output hashes before claim review.
+- **State graph:** Maintains an adjacency-list state graph in `research/state/graph.json`.
+- **Delegation:** Records up to three independent subtasks with disjoint path ownership, result refs, and one parent integration owner.
+
+### Graph v2 and Evidence Pack v1
+
+Graph v2 uses atomic writes, revision checks, and project-relative or symbolic external paths. Evidence Pack v1 provides a separate standard-library CLI for contracts, manifests, SHA-256 records, and strict verification. Existing Graph v1 projects are migrated on first write; read the [migration guide](docs/maintainers/graph-v2-migration.md) for projects with absolute paths.
+
 ## What Files Appear in Your Project
 
 ```

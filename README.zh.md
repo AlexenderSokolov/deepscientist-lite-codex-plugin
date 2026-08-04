@@ -89,6 +89,23 @@ $ds-lite-coordinate 规划两个独立任务，等待审批，然后收集并验
 
 中文项目标题在 Windows 上直接调用状态 CLI 时，建议把较长中文写入 UTF-8 文件，再使用 `--title-file` 等参数。
 
+## 它能做什么
+
+- **统一入口 `$ds-lite`：** 接手或恢复科研/工程工作区。它先判断当前目录是不是 DS Lite 项目，读取 Mission Board，然后路由到正确的下一步。对于已批准的多 gate 项目，它默认使用前台控制器连续推进所有就绪 gate：瞬态失败（网络、限流、超时）按合同自动重试；命令结束后静默轮询回执；会话中断后用 `--resume` 恢复，不重跑已完成或已冻结的身份。
+- **前台控制器（`ds_lite_autonomy.py`）：** DAG 级的前台有界自治控制器。它不创建后台进程，而是在当前会话中推进已冻结、已授权的验收 gate，生成经过清理的进度凭证（`ds-lite.progress-report.v1`）。非幂等操作、有重复风险的外部写入和未授权发布会立即冻结。
+- **有界循环适配器（`ds_lite_loop.py`）：** 连续执行多个有界迭代的适配器。每次迭代是一个完整的"执行 → 凭证 → 检查"闭环，外部执行边界 fail-closed。适配器本身不无限循环——达到终态（completed/blocked/failed）即停止。
+- **无状态 Hook 系统（`ds_lite_hook.py`）：** 宿主触发、无状态的事件 Hook。在工具调用前后、用户提示提交和停止时收集脱敏事件，供学习系统和质量门使用。Hook 不持有状态、不创建持久连接。
+- **项目初始化：** 创建 `PROJECT.md`、`STATUS.md` 和 `RESEARCH_MAP.md`，建立初始 Graph。
+- **任务看板：** 通过 `mission` 和 `render-status` 将 Graph 投影为用户可见的 Mission Board，`STATUS.md` 显示发生了什么、下一步是什么、哪里可以回滚。
+- **有界迭代：** 每次迭代记录一次动作、验证、反思、用户汇报和停止理由（`ds-lite.iteration.v1`），然后停止。
+- **证据打包：** 运行前写入实验契约（指标、阈值、seed、预算、失败条件），运行后打包日志、指标和输出哈希，在结论审查前完成 Evidence Pack。
+- **状态图：** 在 `research/state/graph.json` 中维护邻接表形式的状态图。
+- **委派：** 记录最多三个独立子任务，各自拥有独立的路径所有权、结果引用和一个父级整合负责人。
+
+### Graph v2 与 Evidence Pack v1
+
+Graph v2 使用原子写入、版本号检查和项目相对路径（或符号化外部路径）。Evidence Pack v1 提供了独立的纯标准库 CLI，用于契约管理、清单、SHA-256 记录和严格验证。旧的 Graph v1 项目首次写入时自动迁移；如果项目包含绝对路径，请先阅读 [迁移指南](docs/maintainers/graph-v2-migration.md)。
+
 ## 项目里会多出什么文件
 
 ```
