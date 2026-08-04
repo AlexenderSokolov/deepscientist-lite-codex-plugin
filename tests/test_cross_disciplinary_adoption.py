@@ -16,9 +16,10 @@ class CrossDisciplinaryAdoptionTests(unittest.TestCase):
         self.assertEqual(audit_upstream_adoption.validate(), [])
 
     def test_active_registry_pins_audited_upstreams_and_clean_room_decisions(self) -> None:
-        registry = json.loads(
-            (ROOT / "evaluation" / "cross-disciplinary-upstreams.json").read_text(encoding="utf-8")
-        )
+        registry_path = ROOT / "evaluation" / "cross-disciplinary-upstreams.json"
+        if not registry_path.is_file():
+            self.skipTest("evaluation data is private (gitignored)")
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
         self.assertEqual(registry["schema_version"], "ds-lite.upstream-adoption.v1")
         self.assertEqual(registry["observed_on"], "2026-07-27")
         entries = registry["upstreams"]
@@ -48,9 +49,10 @@ class CrossDisciplinaryAdoptionTests(unittest.TestCase):
                     self.assertRegex(audited["sha256"], r"^[0-9a-f]{64}$")
 
     def test_opencli_entry_is_pinned_as_a_public_only_challenger(self) -> None:
-        registry = json.loads(
-            (ROOT / "evaluation" / "cross-disciplinary-upstreams.json").read_text(encoding="utf-8")
-        )
+        registry_path = ROOT / "evaluation" / "cross-disciplinary-upstreams.json"
+        if not registry_path.is_file():
+            self.skipTest("evaluation data is private (gitignored)")
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
         entry = next(item for item in registry["upstreams"] if item["id"] == "opencli")
         self.assertEqual(entry["version"], "1.8.6")
         self.assertEqual(entry["license"], "Apache-2.0")

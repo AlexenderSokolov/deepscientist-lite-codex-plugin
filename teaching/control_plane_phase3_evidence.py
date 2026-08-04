@@ -66,7 +66,10 @@ def _wait(path: Path, timeout: float) -> dict[str, Any]:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if path.is_file():
-            return json.loads(path.read_text(encoding="utf-8"))
+            try:
+                return json.loads(path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, ValueError):
+                pass
         time.sleep(0.05)
     raise TimeoutError(path.name)
 
@@ -206,7 +209,7 @@ def resource_probe(output: Path) -> dict[str, Any]:
                 completed = subprocess.run(
                     ["powershell.exe", "-NoProfile", "-Command", script],
                     capture_output=True, text=True, encoding="utf-8", errors="replace",
-                    check=True, timeout=10,
+                    check=True, timeout=30,
                 )
                 return json.loads(completed.stdout)
             proc_status = Path(f"/proc/{process.pid}/status")

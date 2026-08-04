@@ -34,7 +34,7 @@ class RustTransportProbeTests(unittest.TestCase):
             mock.patch.object(Path, "exists", return_value=False),
             mock.patch.object(Path, "write_text", return_value=0) as write_text,
         ):
-            receipt = run_once(codex_bin=REPO_ROOT / "PROJECT.md", codex_home=REPO_ROOT, workspace=REPO_ROOT, output_path=output)
+            receipt = run_once(codex_bin=Path(__file__), codex_home=REPO_ROOT, workspace=REPO_ROOT, output_path=output)
         self.assertEqual(receipt["status"], "blocked")
         self.assertEqual(receipt["schema_version"], "ds-lite.cli-acceptance.v1")
         self.assertEqual(receipt["identity"], output.parent.name)
@@ -52,7 +52,7 @@ class RustTransportProbeTests(unittest.TestCase):
             mock.patch.object(Path, "exists", return_value=False),
             mock.patch.object(Path, "write_text", return_value=0),
         ):
-            run_once(codex_bin="PROJECT.md", codex_home=".", workspace=".", output_path=output)
+            run_once(codex_bin=Path(__file__), codex_home=".", workspace=".", output_path=output)
         self.assertTrue(Path(popen.call_args.kwargs["cwd"]).is_absolute())
         self.assertTrue(Path(popen.call_args.kwargs["env"]["CODEX_HOME"]).is_absolute())
 
@@ -60,7 +60,7 @@ class RustTransportProbeTests(unittest.TestCase):
         output = REPO_ROOT / "existing-rust-transport-receipt.json"
         with mock.patch.object(Path, "exists", return_value=True):
             with self.assertRaises(RustTransportProbeError):
-                run_once(codex_bin=REPO_ROOT / "PROJECT.md", codex_home=REPO_ROOT, workspace=REPO_ROOT, output_path=output)
+                run_once(codex_bin=Path(__file__), codex_home=REPO_ROOT, workspace=REPO_ROOT, output_path=output)
 
     def test_accepts_terminal_turn_before_nonzero_background_exit(self):
         output = REPO_ROOT / "unwritten-terminal-rust-receipt.json"
@@ -69,7 +69,7 @@ class RustTransportProbeTests(unittest.TestCase):
             mock.patch.object(Path, "exists", return_value=False),
             mock.patch.object(Path, "write_text", return_value=0),
         ):
-            receipt = run_once(codex_bin=REPO_ROOT / "PROJECT.md", codex_home=REPO_ROOT, workspace=REPO_ROOT, output_path=output)
+            receipt = run_once(codex_bin=Path(__file__), codex_home=REPO_ROOT, workspace=REPO_ROOT, output_path=output)
         self.assertEqual(receipt["status"], "passed")
         self.assertTrue(receipt["post_terminal_process_exit_nonzero"])
 

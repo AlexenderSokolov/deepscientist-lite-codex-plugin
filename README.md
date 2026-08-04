@@ -163,10 +163,7 @@ When `graph.json` is committed but `RESEARCH_MAP.md` is not synced, run `render-
 ## Where to Go Next
 
 - To understand Graph, Evidence Pack, and review: read the [User Guide](docs/user-guide.zh.md).
-- To try it yourself: start from the [AI Teaching Area](teaching/README.zh.md).
 - To compare vanilla Codex, single-file memory, and DS Lite: see the [four-case comparison](teaching/matched-control-pilot.zh.md).
-- To upgrade a Graph v1 project: read the [migration guide](docs/maintainers/graph-v2-migration.md).
-- To contribute: read the [implementation notes](docs/implementation.zh.md) and [validation tools](tools/validation/).
 
 Maintainer validation entry:
 ```bash

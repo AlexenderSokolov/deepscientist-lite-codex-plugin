@@ -10,14 +10,20 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 class AutoresearchAuditTests(unittest.TestCase):
     def test_external_adapter_is_documented_as_bounded_and_requires_fixed_identity(self) -> None:
         protocol = (REPO_ROOT / "plugins" / "deepscientist-lite-core" / "references" / "bounded-loop-protocol.md").read_text(encoding="utf-8")
-        audit = (REPO_ROOT / "docs" / "maintainers" / "codex-autoresearch-integration-audit.zh.md").read_text(encoding="utf-8")
+        audit_path = REPO_ROOT / "docs" / "maintainers" / "codex-autoresearch-integration-audit.zh.md"
+        if not audit_path.is_file():
+            self.skipTest("maintainer docs are private (gitignored)")
+        audit = audit_path.read_text(encoding="utf-8")
         combined = protocol + "\n" + audit
         for anchor in ("bounded", "foreground", "three", "fixed"):
             with self.subTest(anchor=anchor):
                 self.assertIn(anchor, combined)
 
     def test_audit_preserves_authorized_vendor_provenance(self) -> None:
-        audit = (REPO_ROOT / "docs" / "maintainers" / "codex-autoresearch-integration-audit.zh.md").read_text(encoding="utf-8")
+        audit_path = REPO_ROOT / "docs" / "maintainers" / "codex-autoresearch-integration-audit.zh.md"
+        if not audit_path.is_file():
+            self.skipTest("maintainer docs are private (gitignored)")
+        audit = audit_path.read_text(encoding="utf-8")
         for anchor in (
             "f2389bffbb4cd7789deb6796bc4ba35bf31f2a90",
             "0.1.5-beta.0",
@@ -32,7 +38,10 @@ class AutoresearchAuditTests(unittest.TestCase):
                 self.assertIn(anchor, audit)
 
     def test_email_is_short_and_does_not_leak_internal_runtime_details(self) -> None:
-        email = (REPO_ROOT / "docs" / "maintainers" / "email-to-codex-autoresearch-author.zh.md").read_text(encoding="utf-8")
+        email_path = REPO_ROOT / "docs" / "maintainers" / "email-to-codex-autoresearch-author.zh.md"
+        if not email_path.is_file():
+            self.skipTest("maintainer docs are private (gitignored)")
+        email = email_path.read_text(encoding="utf-8")
         self.assertIn("MIT", email)
         self.assertIn("自由修改", email)
         self.assertIn("DeepScientist Lite", email)

@@ -149,7 +149,7 @@ Evidence Pack v1 提供了独立的纯标准库 CLI（`ds_lite_evidence.py`）�
 
 ## 十、迭代：有界反思
 
-`$ds-lite-iterate` 一次只推进一轮：执行一个有界动作，验证结果，反思，更新 STATUS，然后停在检查点。它不会变成无限循环。
+`$ds-lite-iterate` 一次只推进一轮：行动、验证、反思、汇报，然后停在检查点。它不会变成无限循环。
 
 每次迭代的记录保存在 `research/iterations/` 下，包含：
 - 做了什么

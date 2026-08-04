@@ -33,6 +33,7 @@ DECISIONS = {
 LEGACY_NOT_OBSERVED = {
     "plugins/deepscientist-lite/scripts/ds_lite_communication_audit.py",
     "tests/test_upstream_adoption.py",
+    "docs/maintainers/upstream-adoption-audit.zh.md",
 }
 ACTIVE_IMPLEMENTATIONS = {
     "plugins/deepscientist-lite-core/scripts/ds_lite_communication_audit.py",

@@ -4,7 +4,7 @@
 
 研究任务一长，聊天记录很快就撑不住了：换一个会话，不知道上次为什么选这条路；实验跑过了，却找不到当时的命令、指标和日志；一个高分结果看起来不错，但没人确认它有没有偷看测试标签。
 
-DeepScientist Lite 用一组 Codex 技能和普通项目文件来解决这些交接问题。它不替你判断科学结论；对于已冻结、已授权且可审计的验收任务，它可以通过前台控制器连续推进、自动续跑和生成进度凭证，但不创建后台守护进程。它负责把目标、路线、实验和审查结果留下来，让下一次会话或另一位同学能够接着做。
+DeepScientist Lite 用一组 Codex 技能和普通项目文件来解决这些交接问题。它不替你判断科学结论；对于已冻结、已授权且可审计的验收任务，它可以通过前台控制器连续推进、自动续跑和生成进度凭证，但不创建后台守护进程。它负责把目标、路线、实验和审查结果留下来，让下一次会话或另一位合作者能够接着做。
 
 > **官方插件声明：** 这是 DeepScientist 的官方 Codex 插件。"DeepScientist" 用于说明上游研究工作流和平台。详见 [NOTICE](NOTICE)。
 
@@ -163,10 +163,7 @@ Graph 不保存工作站绝对根目录。请使用 `external://<alias>/<relativ
 ## 从哪里继续
 
 - 想理解 Graph、Evidence Pack 和 review 的设计：读 [用户指南](docs/user-guide.zh.md)。
-- 想亲手做一遍：从 [AI 示教区域](teaching/README.zh.md) 开始。
 - 想比较普通 Codex、单文件记忆和 DS Lite：看 [四案例对比实验](teaching/matched-control-pilot.zh.md)。
-- 要升级旧 Graph v1 项目：看 [迁移指南](docs/maintainers/graph-v2-migration.md)。
-- 要参与维护：读 [实现说明](docs/implementation.zh.md) 和 [仓库验证](tools/validation/)。
 
 维护者统一验证入口：
 ```bash
