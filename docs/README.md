@@ -1,20 +1,20 @@
-# DeepScientist Lite Documentation
+﻿# DeepScientist Lite Documentation
 
 This folder explains how the plugin is built and maintained. Start with the root README if you only want to use the plugin.
 
-## For Users And Teachers
+## For Users
 
-- [中文用户指南](user-guide.zh.md): a beginner-facing explanation of the nine Core skills, file roles, Mission Board, reflective iterations, Evidence Packs, review boundaries, bounded delegation, path aliases, and session recovery.
-- [OpenScience worker handoff](openscience-worker-handoff.zh.md): how a supervisor system can call DS Lite as a lightweight Codex worker protocol without adding a daemon or MCP server.
-- [设计、实现、现状与演进审视](implementation.zh.md): the primary Chinese design document, covering product intent, architecture, code composition, state protocol, verified status, technical debt, and the improvement roadmap.
-- [Teaching materials](../teaching/README.zh.md): runnable 20/30/45/90-minute courses, guided and one-prompt modes, worksheets, rubric, and reference answers.
+- [用户指南](user-guide.zh.md): explanation of Core skills, file roles, Mission Board, reflective iterations, Evidence Packs, review boundaries, delegation, path aliases, and session recovery.
+- [OpenScience worker handoff](openscience-worker-handoff.zh.md): how a supervisor system can call DS Lite as a lightweight Codex worker protocol.
+- [设计、实现、现状与演进审视](implementation.zh.md): the primary Chinese design document covering product intent, architecture, code composition, state protocol, and the improvement roadmap.
 
-## For Maintainers
+## AI Teaching Area
 
+- [AI 示教区域](../teaching/README.zh.md): Agent-facing instructional materials, recovery scenarios, and reference cases.
 
 ## Runtime References
 
-Core keeps skill-facing protocol references under `plugins/deepscientist-lite-core/references/`; optional packs keep only their own domain references. Evaluation cases and maintainer notes live outside runtime packages.
+Core keeps skill-facing protocol references under `plugins/deepscientist-lite-core/references/`; optional packs keep only their own domain references.
 
 - [external-long-task-protocol.md](../plugins/deepscientist-lite-core/references/external-long-task-protocol.md): ownership, manual tmux capacity handshakes, persistence probes, append-only task records, and recovery rules for work that may outlive a Codex worker or SSH connection.
 - [responsible-exploration-covenant.md](../plugins/deepscientist-lite-core/references/responsible-exploration-covenant.md): the seven runtime actions and shared start/progress/end feedback protocol loaded by all nine Core skills.
