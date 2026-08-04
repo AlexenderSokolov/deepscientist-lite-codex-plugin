@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from pathlib import Path
@@ -19,6 +19,18 @@ PHASE4_WORKFLOW_NAMES = PHASE3_WORKFLOW_NAMES + (
 )
 PHASE5_WORKFLOW_NAMES = PHASE4_WORKFLOW_NAMES + ("run_codex_action_v2",)
 PHASE5_CODEX_VERSION = "0.146.0"
+
+
+def _resolve_codex_version() -> str:
+    """Resolve the Codex version at runtime instead of hardcoding.
+
+    Priority:
+      1. DS_LITE_CODEX_VERSION environment variable
+      2. PHASE5_CODEX_VERSION constant (default)
+    """
+    import os
+    env_version = os.environ.get("DS_LITE_CODEX_VERSION", "").strip()
+    return env_version if env_version else PHASE5_CODEX_VERSION
 
 
 def sqlite_url(path: Path) -> str:
@@ -312,7 +324,7 @@ def _run_codex_action_v2_body(
     from .runtime_pin import verify_runtime_selection
 
     pin = verify_runtime_selection(
-        Path(codex_bin), Path(schema_root), expected_version=PHASE5_CODEX_VERSION,
+        Path(codex_bin), Path(schema_root), expected_version=_resolve_codex_version(),
         expected_platform=codex_platform,
     )
     if not pin["valid"]:

@@ -1,5 +1,6 @@
-import json
+﻿import json
 import hashlib
+import os
 import subprocess
 import sys
 import tempfile
@@ -203,11 +204,11 @@ class LoopRunnerTests(unittest.TestCase):
         binary.write_bytes(b"pinned-binary")
         digest = hashlib.sha256(binary.read_bytes()).hexdigest().upper()
         version = subprocess.CompletedProcess([str(binary), "--version"], 0, "codex-cli 0.144.5\n", "")
-        with patch.object(ds_lite_loop, "EXPECTED_CODEX_SHA256", digest), \
+        with patch.dict(os.environ, {"DS_LITE_CODEX_SHA256": digest}), \
              patch.object(ds_lite_loop.subprocess, "run", return_value=version):
             self.assertEqual(ds_lite_loop._validate_codex_binary(binary), binary.resolve())
         wrong_version = subprocess.CompletedProcess([str(binary), "--version"], 0, "codex-cli 0.128.0\n", "")
-        with patch.object(ds_lite_loop, "EXPECTED_CODEX_SHA256", digest), \
+        with patch.dict(os.environ, {"DS_LITE_CODEX_SHA256": digest}), \
              patch.object(ds_lite_loop.subprocess, "run", return_value=wrong_version):
             with self.assertRaises(ds_lite_loop.LoopError):
                 ds_lite_loop._validate_codex_binary(binary)

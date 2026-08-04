@@ -1,6 +1,6 @@
 {
   "name": "deepscientist-lite",
-  "version": "0.8.1-beta.1",
+  "version": "0.9.0-beta.1",
   "description": "A bounded, recoverable, evidence-aware worker protocol for small and medium research tasks.",
   "author": {
     "name": "DeepScientist Lite maintainers"
@@ -23,7 +23,11 @@
     "longDescription": "DeepScientist Lite Core is the domain-neutral worker protocol. Nine skills preserve goals, routes, experiments, evidence, reviews, iterations, delegation, handoffs, and bounded foreground autonomy contracts in project files. It does not provide a daemon, scheduler, browser service, knowledge base, or academic tool bundle.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
-    "capabilities": ["Interactive", "Read", "Write"],
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
     "defaultPrompt": [
       "$ds-lite inspect this research or engineering project, explain why the core applies, route one bounded action, and stop",
       "$ds-lite-iterate advance one plan-execute-verify-reflect-report cycle and stop at a visible checkpoint",

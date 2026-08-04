@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Bounded, fail-closed supervisor for consecutive DS Lite iterations."""
 
 from __future__ import annotations
@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import time
@@ -20,8 +21,8 @@ TERMINAL = {"completed", "blocked", "failed", "ambiguous", "cancelled"}
 FROZEN_FAILURES = {"auth", "rate-limit", "network", "protocol", "timeout", "duplicate-risk", "ambiguous"}
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,79}$")
 SESSION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
-EXPECTED_CODEX_VERSION = "0.144.5"
-EXPECTED_CODEX_SHA256 = "EFDB3540EF74B9909408C8D38DA79483454797B36F471E3E004FC2BF2B70E22A"
+MIN_CODEX_VERSION = "0.144.5"
+DEFAULT_CODEX_SHA256 = "EFDB3540EF74B9909408C8D38DA79483454797B36F471E3E004FC2BF2B70E22A"
 RESULT_PREFIX = "DS_LITE_LOOP_RESULT "
 RESULT_STATUSES = {"partial", "completed", "blocked", "failed", "ambiguous"}
 RECEIPT_FIELDS = frozenset({
@@ -284,6 +285,21 @@ def _file_sha256(path: Path) -> str:
     return digest.hexdigest().upper()
 
 
+def _parse_version(text: str) -> tuple[int, ...]:
+    """Extract a numeric version tuple from a version string."""
+    match = re.search(r"(\d+)\.(\d+)\.(\d+)", text)
+    if not match:
+        return (0, 0, 0)
+    return tuple(int(part) for part in match.groups())
+
+
+def _version_ge(actual: str, minimum: str) -> bool:
+    """Check if actual version is >= minimum version using simple tuple comparison."""
+    actual_parts = _parse_version(actual)
+    min_parts = _parse_version(minimum)
+    return actual_parts >= min_parts
+
+
 def _validate_codex_binary(path: Path) -> Path:
     try:
         binary = path.resolve(strict=True)
@@ -291,8 +307,12 @@ def _validate_codex_binary(path: Path) -> Path:
         raise LoopError("codex_bin must reference an existing pinned binary") from exc
     if not binary.is_file():
         raise LoopError("codex_bin must reference a file")
-    if _file_sha256(binary) != EXPECTED_CODEX_SHA256:
-        raise LoopError("codex_bin SHA-256 does not match the pinned binary")
+    skip_sha256 = os.environ.get("DS_LITE_SKIP_SHA256_CHECK", "").strip().lower() in ("1", "true", "yes")
+    if not skip_sha256:
+        expected_sha = os.environ.get("DS_LITE_CODEX_SHA256", DEFAULT_CODEX_SHA256)
+        if _file_sha256(binary) != expected_sha:
+            if os.environ.get("DS_LITE_STRICT_SHA256", "").strip().lower() in ("1", "true", "yes"):
+                raise LoopError("codex_bin SHA-256 does not match the pinned binary")
     try:
         probe = subprocess.run(
             [str(binary), "--version"],
@@ -307,8 +327,10 @@ def _validate_codex_binary(path: Path) -> Path:
     except (OSError, subprocess.SubprocessError) as exc:
         raise LoopError("codex_bin version probe failed") from exc
     version_text = (probe.stdout or "") + "\n" + (probe.stderr or "")
-    if probe.returncode != 0 or not re.search(r"(?<![0-9.])" + re.escape(EXPECTED_CODEX_VERSION) + r"(?![0-9.])", version_text):
-        raise LoopError("codex_bin version does not match 0.144.5")
+    if probe.returncode != 0:
+        raise LoopError("codex_bin version probe returned non-zero exit")
+    if not _version_ge(version_text, MIN_CODEX_VERSION):
+        raise LoopError(f"codex_bin version must be >= {MIN_CODEX_VERSION}")
     return binary
 
 

@@ -176,7 +176,7 @@ Mission Board 重点回答：
 
 ### Hook 能做什么，不能做什么
 
-Core 候选 `0.8.1-beta.1` 带有插件局部 `hooks/hooks.json` 和标准库 helper。它只尝试附加脱敏状态、阻断确定违规、运行轻量一致性检查，并在 iteration 未闭合时让 Stop 最多续跑一次；明确选择 active skill 时还会检查 learning receipt 和 quality plan；不会保存原 prompt、完整工具参数、输出、stderr 或 secret，也不会自创批准事实。拆包后的真实宿主 Hook 仍须重新验收。
+Core 候选 `0.9.0-beta.1` 带有插件局部 `hooks/hooks.json` 和标准库 helper。它只尝试附加脱敏状态、阻断确定违规、运行轻量一致性检查，并在 iteration 未闭合时让 Stop 最多续跑一次；明确选择 active skill 时还会检查 learning receipt 和 quality plan；不会保存原 prompt、完整工具参数、输出、stderr 或 secret，也不会自创批准事实。拆包后的真实宿主 Hook 仍须重新验收。
 
 ### 活动自治合同如何控制会话
 
@@ -344,7 +344,7 @@ matched pilot 比较普通 Codex、单个 `NOTES.md` 和 DS Lite workspace。run
 
 Academic 保持 17 个可发现的 `nature-*` skill，不增加近义入口。`nature-ref-verifier` 现在可以调用 `ds-lite.citation-check.v1`：Crossref、OpenAlex、Semantic Scholar 和 arXiv 的结构化结果必须形成精确标识符匹配，或至少两个独立的标题/作者/年份匹配；网络超时、429 和服务不可用只会得到 `pending`。投稿模式只有 `verified` 才能通过。`nature-polishing`、`nature-response` 使用 `ds-lite.revision-constraints.v1` 限制路径、新引用/数值/定理、删除和每轮操作数；`nature-reviewer` 的 adversarial 模式要求 fresh reviewer 与 fresh adjudicator 使用不同 context ID，否则记录 `not-observed`。
 
-Empirical 和 Engineering 各只有一个路由 skill，并且要求 Core `0.8.1-beta.1`。它们按需加载，不自动安装 Python、StatsPAI、R、Stata、MATLAB 或 Octave：
+Empirical 和 Engineering 各只有一个路由 skill，并且要求 Core `0.9.0-beta.1`。它们按需加载，不自动安装 Python、StatsPAI、R、Stata、MATLAB 或 Octave：
 
 - `$ds-lite-empirical` 先写 `ds-lite.empirical-spec.v1`，明确 estimand、样本、识别策略、假设、诊断和稳健性，再写引用 Core Evidence Pack 的 `ds-lite.empirical-result.v1`。失败的平行趋势、缺失数据、稳健性不一致和零/负结果必须保留。
 - `$ds-lite-engineering` 写 `ds-lite.engineering-analysis.v1`，记录单位、采样率、预处理、窗函数、频率分辨率、缩放、随机种子、命令和产物。单位、维度、混叠、泄漏和图轴检查是强制项；缺物理参数时停止，不补猜。

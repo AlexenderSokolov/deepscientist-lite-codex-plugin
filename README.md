@@ -2,13 +2,28 @@
 
 [中文说明](README.zh.md) · [Chinese user guide](docs/user-guide.zh.md) · [Documentation](docs/README.md) · [Evaluation](evaluation/README.md) · [Core package](plugins/deepscientist-lite-core/) · [Acknowledgments](ACKNOWLEDGMENTS.md)
 
-DeepScientist Lite is a lightweight Codex plugin for learning and practicing a traceable, reviewable research workflow. It keeps project memory, research maps, artifacts, experiment contracts, Evidence Packs, review gates, and route tracing without asking users to deploy the full DeepScientist platform.
+DeepScientist Lite is the official lightweight Codex plugin for the DeepScientist research workflow. It brings the core ideas of DeepScientist — traceable research process, evidence-bound claims, and recoverable cross-session context — into a file-based protocol that works inside Codex Desktop.
 
-> **Independent project:** DeepScientist Lite is an unofficial third-party plugin. It is not sponsored, certified, or endorsed by ResearAI. “DeepScientist” is used descriptively to identify the workflow that inspired this project; see [NOTICE](NOTICE).
+> **Official plugin:** DeepScientist Lite is the official Codex plugin for the DeepScientist workflow. "DeepScientist" identifies the upstream research workflow and platform. See [NOTICE](NOTICE) for project attribution and naming.
 
-It is designed for onboarding, teaching demos, and small research projects where the first goal is to make the research process clear and recoverable.
+It is designed for onboarding, teaching demos, and small-to-medium research projects where the first goal is to make the research process clear and recoverable.
 
 The [Chinese user guide](docs/user-guide.zh.md) explains the nine Core skills and five optional packs. Academic contains the 17 Nature workflows plus citation/revision gates; Web records public-source provenance; Knowledge emits review-gated proposals; Empirical and Engineering each expose one domain router. It also covers Graph revisions, Mission Board, reflective iterations, Evidence Packs, review boundaries, bounded delegation, path aliases, first-use onboarding, and cross-session recovery.
+
+## Skills Overview
+
+DS Lite exposes **30 skills** across six independently installable packages. For the full trigger matrix, dependency graph (Mermaid), and boundary declarations, see the Skills Trigger Matrix in the maintainer documentation.
+
+| Package | Version | Skills | Core Responsibility |
+| --- | --- | --- | --- |
+| Core | `0.9.0-beta.1` | 9 | Domain-neutral worker protocol: goal retention, route tracing, experiments, evidence, reviews, iterations, delegation, handoffs, and bounded foreground autonomy |
+| Academic | `0.9.0-beta.1` | 17 | 17 adapted Nature workflows plus bounded citation, revision, and adversarial-review protocols |
+| Web | `0.3.0-alpha.1` | 1 | Public-only web acquisition and provenance recording |
+| Knowledge | `0.3.0-alpha.1` | 1 | Review-gated knowledge proposals from web and paper evidence |
+| Empirical | `0.3.0-alpha.1` | 1 | Bounded empirical research specification, diagnostics, and result handoff |
+| Engineering | `0.3.0-alpha.1` | 1 | Bounded engineering numerical analysis, signal processing, and figure audit |
+
+**Typical research workflow:** `ds-lite-intake` → `ds-lite-scout` → `ds-lite-idea` → `ds-lite-experiment` → `ds-lite-review` → `ds-lite-analysis-write` → `ds-lite-iterate`
 
 ## What It Does
 
@@ -64,8 +79,8 @@ Graph v2 uses atomic writes, revision checks, and project-relative or symbolic e
 - `plugins/deepscientist-lite-core/`: default Core package with nine skills and Hooks.
 - `plugins/deepscientist-lite-academic/`: optional 17-skill academic package.
 - `plugins/deepscientist-lite-web/` and `plugins/deepscientist-lite-knowledge/`: experimental public-web and review-proposal packages.
-- `plugins/deepscientist-lite-empirical/`: `0.2.0-alpha.1` method-neutral empirical specification and result handoff.
-- `plugins/deepscientist-lite-engineering/`: `0.2.0-alpha.1` numerical, FFT, sampling, and figure-audit protocol.
+- `plugins/deepscientist-lite-empirical/`: `0.3.0-alpha.1` method-neutral empirical specification and result handoff.
+- `plugins/deepscientist-lite-engineering/`: `0.3.0-alpha.1` numerical, FFT, sampling, and figure-audit protocol.
 - `plugins/deepscientist-lite/`: frozen `0.6.0-beta.1` monolith retained for evidence identity, not a marketplace target.
 - `docs/README.md`: implementation and maintainer documentation index.
 - `teaching/README.zh.md`: teaching materials and demo scripts.

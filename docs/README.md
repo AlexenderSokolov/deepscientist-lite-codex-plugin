@@ -4,7 +4,7 @@ This folder explains how the plugin is built and maintained. Start with the root
 
 ## For Users And Teachers
 
-- [中文用户指南](user-guide.zh.md): a beginner-facing explanation of the nine unreleased-source skills, file roles, Mission Board, reflective iterations, Evidence Packs, review boundaries, bounded delegation, path aliases, and session recovery.
+- [中文用户指南](user-guide.zh.md): a beginner-facing explanation of the nine Core skills, file roles, Mission Board, reflective iterations, Evidence Packs, review boundaries, bounded delegation, path aliases, and session recovery.
 - [OpenScience worker handoff](openscience-worker-handoff.zh.md): how a supervisor system can call DS Lite as a lightweight Codex worker protocol without adding a daemon or MCP server.
 - [设计、实现、现状与演进审视](implementation.zh.md): the primary Chinese design document, covering product intent, architecture, code composition, state protocol, verified status, technical debt, and the improvement roadmap.
 - [Teaching materials](../teaching/README.zh.md): runnable 20/30/45/90-minute courses, guided and one-prompt modes, worksheets, rubric, and reference answers.
@@ -12,6 +12,11 @@ This folder explains how the plugin is built and maintained. Start with the root
 ## For Maintainers
 
 - [Known issues](maintainers/known-issues.md): installation and runtime caveats.
+- [Skills trigger matrix](maintainers/skill-trigger-matrix-20260804.zh.md): full trigger conditions, Mermaid dependency graph, boundary declarations, and overlap analysis for all 30 skills.
+- [Skills audit and aggregation](maintainers/skills-audit-and-aggregation-20260804.zh.md): functional overlap audit and aggregation refactoring plan for all skills.
+- [External projects annotation](maintainers/external-projects-annotation-20260804.zh.md): external MCP tools, plugins, and referenced projects used in conversation `019fcaa5`.
+- [Next phase development memo](maintainers/next-phase-development-memo-20260804.zh.md): next phase plan covering skills integration, plugin simplification, and innovation exploration.
+- [Public/private file boundary audit](maintainers/public-private-file-boundary-audit-20260804.zh.md): audit of which files should be public vs private.
 - [Action, reflection, and responsibility architecture](maintainers/action-reflection-philosophy.zh.md): how the philosophy is translated into one bounded action, public reflection, Hook limits, feedback, and OpenScience supervision.
 - [Graph v2 migration](maintainers/graph-v2-migration.md): safe v1 upgrade, backups, external aliases, and revision conflicts.
 - [v0.2 Windows/WSL audit](maintainers/v0.2-audit.zh.md): local platform evidence, current limitations, self-reflection, and future directions.

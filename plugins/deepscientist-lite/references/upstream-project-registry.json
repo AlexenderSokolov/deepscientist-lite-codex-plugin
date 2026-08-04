@@ -1,11 +1,16 @@
 {
-  "schema_version": "ds-lite.upstream-project-registry.v1",
+  "schema_version": "ds-lite.upstream-project-registry.v2",
   "check_interval_days": 7,
+  "version_resolution": {
+    "description": "Each project's pinned_commit is the default. Override at runtime via DS_LITE_UPSTREAM_COMMIT_<ID> environment variable (uppercase, hyphens to underscores). latest_checked_commit records the most recent commit observed by upstream_manager.py.",
+    "env_prefix": "DS_LITE_UPSTREAM_COMMIT_"
+  },
   "projects": [
     {
       "id": "nature-skills",
       "repository": "https://github.com/Yuan1z0825/nature-skills",
       "pinned_commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
+      "latest_checked_commit": "91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b",
       "version": "skill-tree-at-commit",
       "license": "Apache-2.0",
       "authorization": "upstream-license",
@@ -18,6 +23,7 @@
       "id": "codex-autoresearch",
       "repository": "https://github.com/congwa/codex-autoresearch",
       "pinned_commit": "f2389bffbb4cd7789deb6796bc4ba35bf31f2a90",
+      "latest_checked_commit": "f2389bffbb4cd7789deb6796bc4ba35bf31f2a90",
       "version": "0.1.5-beta.0",
       "license": "MIT (package declaration)",
       "authorization": "author-confirmed-free-use",
@@ -30,6 +36,7 @@
       "id": "deepscientist-v2",
       "repository": "https://github.com/WENGSYX/DeepScientist_V2",
       "pinned_commit": "49ffdcda6ce159505f6119b1e26d79c8503a8286",
+      "latest_checked_commit": "49ffdcda6ce159505f6119b1e26d79c8503a8286",
       "version": "v2.1.8",
       "license": "AGPL-3.0-only",
       "authorization": "reference-only",
@@ -42,6 +49,7 @@
       "id": "deepscientist",
       "repository": "https://github.com/ResearAI/DeepScientist",
       "pinned_commit": "",
+      "latest_checked_commit": "",
       "version": "workflow provenance",
       "license": "see upstream repository",
       "authorization": "reference-only",
