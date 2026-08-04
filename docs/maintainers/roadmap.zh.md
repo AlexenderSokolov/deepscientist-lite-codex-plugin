@@ -10,7 +10,7 @@
 
 `0.6.0-beta.1` 单体身份已经冻结，不再增加能力。该段是历史候选记录；当前 marketplace 已拆为六个独立包，版本和兼容矩阵以 `PROJECT.md` 的 0.8 release candidate 边界为准。旧单体目录在兼容期保留，但不再作为 marketplace 目标；任何批量清理由用户另行执行。
 
-Core 只拥有九个科研 worker 技能、Graph v2、Evidence Pack v1、iteration、delegation、handoff 和 Hook。Academic 拥有 17 个 Nature 技能；Web 只处理公开资料并记录 `ds-lite.capability.v1` / `ds-lite.source-record.v1`；Knowledge 只生成待审 `ds-lite.knowledge-proposal.v1`，不复制 Tapestry、ScholarAIO 或 ResearchKB 的正式存储职责。所有可选包必须显式检查 Core `0.8.1-beta.1`，不依赖 marketplace 传递安装。
+Core 只拥有九个科研 worker 技能、Graph v2、Evidence Pack v1、iteration、delegation、handoff 和 Hook。Academic 拥有 17 个 Nature 技能；Web 只处理公开资料并记录 `ds-lite.capability.v1` / `ds-lite.source-record.v1`；Knowledge 只生成待审 `ds-lite.knowledge-proposal.v1`，不复制 Tapestry、ScholarAIO 或 ResearchKB 的正式存储职责。所有可选包必须显式检查 Core `0.9.0-beta.1`，不依赖 marketplace 传递安装。
 
 早期四包候选的源码结构、尺寸、技能边界、版本兼容、路由冲突和固定安装矩阵由 `tools/validation/validate_packages.py` 检查。当前实现已扩展为六包和八种矩阵；它们都不是正式安装证据。拆包后的真实 Hook、真实 delegation、4-case × 3-arm matched effect、formal cache、fresh Desktop 与 release receipt 均须重新产生，不继承 `0.6.0-beta.1` 结果。
 
@@ -42,8 +42,8 @@ Lite 不增加 daemon、后台 scheduler、队列、MCP、Web/TUI、connector、
 ## 2026-07-24 跨学科扩展候选
 
 当前实现将上一节的“四包候选”更新为六包发布边界：Academic 升到
-`0.8.1-beta.1`，新增 Empirical 与 Engineering `0.2.0-alpha.1`。两者
-各只有一个 router skill，要求精确 Core `0.8.1-beta.1`，不携带运行时、
+`0.9.0-beta.1`，新增 Empirical 与 Engineering `0.3.0-alpha.1`。两者
+各只有一个 router skill，要求精确 Core `0.9.0-beta.1`，不携带运行时、
 数据库或上游快照。Web/Knowledge 的按需加载和 Tapestry/ScholarAIO 伴生
 边界不变。
 

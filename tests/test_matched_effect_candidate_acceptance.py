@@ -23,7 +23,7 @@ class MatchedEffectCandidateAcceptanceTests(unittest.TestCase):
         tree_digest = acceptance.tree_digest(core)
         pilot = root / "pilot"
         write(pilot / "source-snapshot" / "SOURCE_IDENTITY.json", {
-            "tree_digest": tree_digest, "plugin_version": "0.8.1-beta.1", "skill_count": 9,
+            "tree_digest": tree_digest, "plugin_version": "0.9.0-beta.1", "skill_count": 9,
         })
         write(pilot / "source-snapshot" / "plugins" / "deepscientist-lite-core" / "skill.json", {"stable": True})
         write(pilot / "source-snapshot" / "plugins" / "deepscientist-lite-core" / "THIRD.json", {"notice": True})

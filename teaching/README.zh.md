@@ -1,4 +1,4 @@
-﻿# DeepScientist Lite 教学课程
+# DeepScientist Lite 教学课程
 
 本目录在拆包兼容期保留旧路径。确定性 runner、fixture 和评分器已由 `evaluation/README.md` 统一索引；少量供 Agent 按需读取的“输入—决策—产物—失败—回退”案例放进各插件 `references/`。这里的历史课程不再承担运行时功能说明。
 

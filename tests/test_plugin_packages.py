@@ -14,7 +14,7 @@ PLUGINS = ROOT / "plugins"
 EXPECTED = {
     "deepscientist-lite-core": {
         "name": "deepscientist-lite",
-        "version": "0.8.1-beta.1",
+        "version": "0.9.0-beta.1",
         "skills": {
             "ds-lite",
             "ds-lite-analysis-write",
@@ -29,27 +29,27 @@ EXPECTED = {
     },
     "deepscientist-lite-academic": {
         "name": "deepscientist-lite-academic",
-        "version": "0.8.1-beta.1",
-        "skill_count": 17,
+        "version": "0.9.0-beta.1",
+        "skill_count": 20,
     },
     "deepscientist-lite-web": {
         "name": "deepscientist-lite-web",
-        "version": "0.2.0-alpha.1",
+        "version": "0.3.0-alpha.1",
         "skills": {"ds-lite-web"},
     },
     "deepscientist-lite-knowledge": {
         "name": "deepscientist-lite-knowledge",
-        "version": "0.2.0-alpha.1",
+        "version": "0.3.0-alpha.1",
         "skills": {"ds-lite-knowledge"},
     },
     "deepscientist-lite-empirical": {
         "name": "deepscientist-lite-empirical",
-        "version": "0.2.0-alpha.1",
+        "version": "0.3.0-alpha.1",
         "skills": {"ds-lite-empirical"},
     },
     "deepscientist-lite-engineering": {
         "name": "deepscientist-lite-engineering",
-        "version": "0.2.0-alpha.1",
+        "version": "0.3.0-alpha.1",
         "skills": {"ds-lite-engineering"},
     },
 }
@@ -196,7 +196,7 @@ class PluginPackageTests(unittest.TestCase):
                 )
                 self.assertEqual(compatibility["schema_version"], "ds-lite.pack-compatibility.v1")
                 self.assertEqual(compatibility["requires"]["plugin"], "deepscientist-lite")
-                self.assertEqual(compatibility["requires"]["version"], "0.8.1-beta.1")
+                self.assertEqual(compatibility["requires"]["version"], "0.9.0-beta.1")
                 self.assertEqual(compatibility["missing_core"], "blocked")
 
     def test_all_optional_pack_doctors_fail_closed_then_accept_matching_core(self) -> None:

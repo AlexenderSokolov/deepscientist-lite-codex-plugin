@@ -1,4 +1,4 @@
-﻿# Statistical reporting checklist
+# Statistical reporting checklist
 
 Use this file when drafting or auditing a Statistical analysis, Methods, Results, or Supplementary Methods section.
 

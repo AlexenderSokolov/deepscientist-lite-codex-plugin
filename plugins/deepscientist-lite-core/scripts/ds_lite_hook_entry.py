@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Cross-platform entry point for DS Lite hooks.
 
 Resolves the Python interpreter at runtime instead of hardcoding "python".

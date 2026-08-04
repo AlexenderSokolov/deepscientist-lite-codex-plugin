@@ -1,4 +1,4 @@
-﻿# Figure statistics and legend alignment
+# Figure statistics and legend alignment
 
 Use this file when checking figure panels, legends, star labels, error bars, source data, or statistical annotations.
 

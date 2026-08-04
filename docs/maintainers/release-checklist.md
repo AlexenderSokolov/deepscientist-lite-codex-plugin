@@ -1,4 +1,4 @@
-﻿# Release Checklist
+# Release Checklist
 
 ## Beta release
 

@@ -1,0 +1,6 @@
+﻿interface:
+  display_name: "Nature Literature"
+  short_description: "Complete literature workflow: multi-source search, citation verification, and reference management."
+  default_prompt: "Use $nature-literature for literature search, citation management, or reference verification."
+policy:
+  allow_implicit_invocation: true

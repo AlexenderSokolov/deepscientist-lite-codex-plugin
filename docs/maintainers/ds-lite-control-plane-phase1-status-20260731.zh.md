@@ -21,7 +21,7 @@ Phase 1：混合控制器基础完成。最新 write-once decision 为 **go（�
 - 正式 Phase 1 evidence root：`research/.validation-tmp/control-plane-phase1-20260731-03/`。
 - `fault-matrix.json`：固定 seed `20260731`，K1、K2、K3、K8、K9 各 100/100，0 failure；K1-K3 为真实 DBOS SQLite，K8-K9 为 fake-host/filesystem，source digest 起止一致。
 - `managed-probe-02.json`：Python 3.13.5/DBOS 2.29.0，重复提交仍为单一 `action_id=workflow_id`、单 workflow row；状态保持 terminal，三件套备份恢复及双库 integrity check 通过。
-- `phase-tests-02.json`：58 tests、0 failures；`core-validation.json`：Core `0.8.1-beta.1` package validation passed。
+- `phase-tests-02.json`：58 tests、0 failures；`core-validation.json`：Core `0.9.0-beta.1` package validation passed。
 - 最终 decision：`phase1-decision.json`，SHA-256 `4fbb142f5cc7b46b5619f93705dede9642004b4208bcf7cec6d1db313e76af2b`；五个 deterministic checks 均为 true。
 - `control-plane-phase1-20260731-01/02/` 及 `-03` 中较早的 `managed-probe.json` 是保留的 blocked/中止尝试，记录 terminal outbox 回退和 verifier 补强过程；不得覆盖或作为最终正向证据。
 

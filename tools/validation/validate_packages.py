@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -14,7 +14,7 @@ PACKAGES: dict[str, dict[str, Any]] = {
     "core": {
         "directory": "deepscientist-lite-core",
         "name": "deepscientist-lite",
-        "version": "0.8.1-beta.1",
+        "version": "0.9.0-beta.1",
         "skills": {
             "ds-lite",
             "ds-lite-analysis-write",
@@ -30,26 +30,26 @@ PACKAGES: dict[str, dict[str, Any]] = {
     "academic": {
         "directory": "deepscientist-lite-academic",
         "name": "deepscientist-lite-academic",
-        "version": "0.8.1-beta.1",
+        "version": "0.9.0-beta.1",
         "skill_count": 20,
         "skill_prefix": "nature-",
     },
     "web": {
         "directory": "deepscientist-lite-web",
         "name": "deepscientist-lite-web",
-        "version": "0.2.0-alpha.1",
+        "version": "0.3.0-alpha.1",
         "skills": {"ds-lite-web"},
     },
     "knowledge": {
         "directory": "deepscientist-lite-knowledge",
         "name": "deepscientist-lite-knowledge",
-        "version": "0.2.0-alpha.1",
+        "version": "0.3.0-alpha.1",
         "skills": {"ds-lite-knowledge"},
     },
     "empirical": {
         "directory": "deepscientist-lite-empirical",
         "name": "deepscientist-lite-empirical",
-        "version": "0.2.0-alpha.1",
+        "version": "0.3.0-alpha.1",
         "skills": {"ds-lite-empirical"},
         "max_files": 150,
         "max_bytes": 5 * 1024 * 1024,
@@ -57,7 +57,7 @@ PACKAGES: dict[str, dict[str, Any]] = {
     "engineering": {
         "directory": "deepscientist-lite-engineering",
         "name": "deepscientist-lite-engineering",
-        "version": "0.2.0-alpha.1",
+        "version": "0.3.0-alpha.1",
         "skills": {"ds-lite-engineering"},
         "max_files": 150,
         "max_bytes": 5 * 1024 * 1024,
@@ -167,7 +167,7 @@ def validate_package(repo_root: Path, key: str) -> dict[str, Any]:
         if required.get("plugin") != "deepscientist-lite":
             issues.append("core-requirement-mismatch")
         required_version = required.get("version", "")
-        if not (required_version == "0.8.1-beta.1" or required_version.startswith(">=")):
+        if not (required_version == "0.9.0-beta.1" or required_version.startswith(">=")):
             issues.append("core-requirement-mismatch")
             issues.append("core-requirement-mismatch")
         if compatibility.get("missing_core") != "blocked":

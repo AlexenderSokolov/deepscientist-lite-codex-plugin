@@ -1,0 +1,6 @@
+﻿interface:
+  display_name: "Nature Review"
+  short_description: "Adversarial review simulation and structured revision response workflows."
+  default_prompt: "Use $nature-review for reviewer simulation or revision response drafting."
+policy:
+  allow_implicit_invocation: true

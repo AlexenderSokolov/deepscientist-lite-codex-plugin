@@ -1,4 +1,4 @@
-﻿# DeepScientist Lite：让科研过程接得住、查得清
+# DeepScientist Lite：让科研过程接得住、查得清
 
 [English README](README.md) · [用户指南](docs/user-guide.zh.md) · [教学课程](teaching/README.zh.md) · [维护文档](docs/README.md) · [感谢名录](ACKNOWLEDGMENTS.md)
 

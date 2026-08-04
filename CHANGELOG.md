@@ -12,7 +12,7 @@
 - Fixed BOM test to properly prune temp artifact directories
 - Created teaching area AGENT restructure: AGENT_GUIDE.md, agent_recovery_scenarios/
 - Created test_flexibility.py (15 tests), test_encoding.py (8 tests), test_hook_triggers.py (13 tests)
-- Bumped versions: Core/Academic 0.8.1-beta.1 -> 0.9.0-beta.1, Web/Knowledge/Empirical/Engineering 0.2.0-alpha.1 -> 0.3.0-alpha.1
+- Bumped versions: Core/Academic 0.9.0-beta.1 -> 0.9.0-beta.1, Web/Knowledge/Empirical/Engineering 0.3.0-alpha.1 -> 0.3.0-alpha.1
 - Updated compatibility.json to use semver ranges (>=) instead of exact pins
 - All 28 v6 mechanism tests pass, all 17 compatibility tests pass
 
@@ -32,7 +32,7 @@
 - Added External projects annotation for conversation `019fcaa5`.
 - Added Public/private file boundary audit.
 
-## Unreleased: 0.8.1-beta.1 foreground autonomy controller
+## Unreleased: 0.9.0-beta.1 foreground autonomy controller
 
 - Added `ds-lite.autonomy-contract.v1`, progress receipts, a dependency-aware
   foreground gate controller, and bounded three-attempt transient retry.
@@ -50,7 +50,7 @@
 - Extended Hook context and Stop checks so active autonomy contracts cannot end
   without a terminal summary and current progress receipt.
 
-## Unreleased: 0.8.0-beta.1 core/academic and 0.2.0-alpha.1 optional packs
+## Unreleased: 0.8.0-beta.1 core/academic and 0.3.0-alpha.1 optional packs
 
 - Split the marketplace into six packages while keeping the `deepscientist-lite`
   Core ID and freezing the historical monolith at `0.6.0-beta.1`.
@@ -59,7 +59,7 @@
   adapters, terminal-status cache policy, bounded revision constraints, and
   fresh-context adversarial-review receipts.
 - Added `deepscientist-lite-empirical` and
-  `deepscientist-lite-engineering` `0.2.0-alpha.1` packages. Each has one
+  `deepscientist-lite-engineering` `0.3.0-alpha.1` packages. Each has one
   router, exact Core compatibility, a standard-library validator, and no
   vendored runtime.
 - Added eight deterministic installation matrices, domain validation wrappers,

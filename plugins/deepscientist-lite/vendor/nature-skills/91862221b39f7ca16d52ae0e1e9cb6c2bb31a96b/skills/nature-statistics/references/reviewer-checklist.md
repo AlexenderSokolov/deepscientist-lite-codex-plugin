@@ -1,4 +1,4 @@
-﻿# Reviewer checklist for statistical reporting
+# Reviewer checklist for statistical reporting
 
 Use this file before final delivery. It converts the audit into reviewer-facing risk and concrete author actions.
 

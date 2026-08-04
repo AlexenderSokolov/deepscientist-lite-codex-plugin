@@ -1,4 +1,4 @@
-﻿# Common statistical failure modes
+# Common statistical failure modes
 
 Use this file to identify reviewer-risk patterns. Do not accuse the authors; state the risk and the fix.
 

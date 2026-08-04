@@ -1,4 +1,4 @@
-﻿---
+---
 name: nature-review
 description: Complete review workflow: simulate Nature-style reviewer assessment from referee perspective, and draft/audit/revise Nature-style revision correspondence packages. Routes to reviewer or response based on user intent.
 ---

@@ -10,7 +10,7 @@ Phase 0/0.5：证据解除完成，最新结论为 **go（仅允许建立独立 
 - 工作树包含既有的大量修改和未跟踪文件；不得 reset、clean、覆盖或删除。
 - 实际可执行 `codex --version` 为 `0.128.0`；现有 Core 代码和部分验收工具固定 `0.144.5`。
 - 已保存 `0.128.0` 生成 schema，`SHA256SUMS` 摘要为 `9e22b7c4174cdaa87fc3240bce6bfecf8855f263eddfed3e97e49cb165527afb`。
-- marketplace 指向 `plugins/deepscientist-lite-core/`；隔离 host 已真实安装 `0.8.1-beta.1`，并在启用隔离 `plugin_hooks` feature 后观察四类 Hook。
+- marketplace 指向 `plugins/deepscientist-lite-core/`；隔离 host 已真实安装 `0.9.0-beta.1`，并在启用隔离 `plugin_hooks` feature 后观察四类 Hook。
 - Core Hook 的 stdout 投影包含严格 `hookSpecificOutput`、Stop block 非空 `reason` 与同 turn 单次修复；真实宿主收据已观察 block/allow 序列。
 - Stop Hook 不执行持续 controller；旧 `app_server_continuation` 已降级为永不 passed 的 legacy harness，不再发送第二个 `turn/start`。
 - DBOS `2.29.0` 已锁定在仓库临时验证目录；controller、domain bridge、K1–K6 harness、SQLite recovery 和资源 receipt 均已存在并复核。

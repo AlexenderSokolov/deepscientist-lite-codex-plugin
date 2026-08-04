@@ -5,7 +5,7 @@ description: Specify, run, or audit a bounded engineering analysis in Python, MA
 
 # DS Lite Engineering
 
-Use this pack only with DeepScientist Lite Core `0.8.1-beta.1`. Run `python <engineering-plugin>/scripts/ds_lite_engineering.py doctor --core-root <core-plugin>` before acting. Missing or incompatible Core is `blocked`.
+Use this pack only with DeepScientist Lite Core `0.9.0-beta.1`. Run `python <engineering-plugin>/scripts/ds_lite_engineering.py doctor --core-root <core-plugin>` before acting. Missing or incompatible Core is `blocked`.
 
 ## Route
 

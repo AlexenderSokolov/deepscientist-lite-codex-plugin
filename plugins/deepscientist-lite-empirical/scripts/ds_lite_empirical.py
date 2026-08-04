@@ -12,7 +12,7 @@ from typing import Any
 
 SPEC_SCHEMA = "ds-lite.empirical-spec.v1"
 RESULT_SCHEMA = "ds-lite.empirical-result.v1"
-CORE = {"plugin": "deepscientist-lite", "version": "0.8.1-beta.1"}
+CORE = {"plugin": "deepscientist-lite", "version": "0.9.0-beta.1"}
 BACKEND_STATUSES = {"available", "unavailable", "not-observed"}
 RESULT_STATUSES = {"completed", "partial", "blocked"}
 CHECK_STATUSES = {"passed", "failed", "warning", "not-observed"}

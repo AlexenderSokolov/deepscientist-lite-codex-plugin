@@ -1,4 +1,4 @@
-﻿# DeepScientist Lite Documentation
+# DeepScientist Lite Documentation
 
 This folder explains how the plugin is built and maintained. Start with the root README if you only want to use the plugin.
 

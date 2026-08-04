@@ -1,4 +1,4 @@
-﻿# Source basis for `nature-statistics`
+# Source basis for `nature-statistics`
 
 This file keeps the skill conservative. It is a local summary of sources the agent should use to justify reporting checks; it is not a replacement for the target journal's current author instructions.
 

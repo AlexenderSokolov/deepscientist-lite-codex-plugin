@@ -95,12 +95,12 @@ DS Lite 将这些问题改写为项目文件中的协议。它假设对中小型
 
 | 包 | 当前版本/状态 | 主要职责 | 明确不承担的职责 |
 | --- | --- | --- | --- |
-| `deepscientist-lite-core` | `0.8.1-beta.1`，**[W]** | 九个核心 skills、项目状态、证据、评审、迭代、交接、委派与有界前台自治协议。 | 不提供 daemon、浏览器、知识库、调度服务。 |
-| `deepscientist-lite-academic` | `0.8.1-beta.1`，**[W]** | 17 个选择性适配的 Nature 学术搜索、写作、审稿、数据、图表、引用和投稿 workflow。 | 不静默注册 MCP、凭据或全局工具。 |
-| `deepscientist-lite-web` | `0.2.0-alpha.1`，**[W]** | 公共网页采集、后端能力记录与来源 provenance。 | 不登录、不提交表单、不上传、不过度声称后端已执行。 |
-| `deepscientist-lite-knowledge` | `0.2.0-alpha.1`，**[W]** | 将经过审查的来源记录转为待发布的知识提案。 | 不拥有论文库，不直接写入正式知识库。 |
-| `deepscientist-lite-empirical` | `0.2.0-alpha.1`，**[W]** | 经验研究中的 estimand、样本、识别、诊断、稳健性和负结果交接。 | 不另建数据库或第二套状态机。 |
-| `deepscientist-lite-engineering` | `0.2.0-alpha.1`，**[W]** | 数值、信号、仿真和研究图的审计性分析。 | 不替代领域方法学或自动认定图形正确。 |
+| `deepscientist-lite-core` | `0.9.0-beta.1`，**[W]** | 九个核心 skills、项目状态、证据、评审、迭代、交接、委派与有界前台自治协议。 | 不提供 daemon、浏览器、知识库、调度服务。 |
+| `deepscientist-lite-academic` | `0.9.0-beta.1`，**[W]** | 17 个选择性适配的 Nature 学术搜索、写作、审稿、数据、图表、引用和投稿 workflow。 | 不静默注册 MCP、凭据或全局工具。 |
+| `deepscientist-lite-web` | `0.3.0-alpha.1`，**[W]** | 公共网页采集、后端能力记录与来源 provenance。 | 不登录、不提交表单、不上传、不过度声称后端已执行。 |
+| `deepscientist-lite-knowledge` | `0.3.0-alpha.1`，**[W]** | 将经过审查的来源记录转为待发布的知识提案。 | 不拥有论文库，不直接写入正式知识库。 |
+| `deepscientist-lite-empirical` | `0.3.0-alpha.1`，**[W]** | 经验研究中的 estimand、样本、识别、诊断、稳健性和负结果交接。 | 不另建数据库或第二套状态机。 |
+| `deepscientist-lite-engineering` | `0.3.0-alpha.1`，**[W]** | 数值、信号、仿真和研究图的审计性分析。 | 不替代领域方法学或自动认定图形正确。 |
 
 早期单体包 `plugins/deepscientist-lite/` 仍保留在仓库，记录了 `0.6.0-beta.1` 的过渡形态、vendor 快照和兼容材料。它不应与 marketplace 指向的 Core 包混作同一个发布事实。早期文档中提到的 `0.4.0-beta.2` 也应该被理解为当时的已发布基线，不是当前工作区所有功能的版本标签。
 
@@ -316,7 +316,7 @@ Academic 包包含 17 个选择性适配的 `nature-*` skills，覆盖学术搜�
 
 ### 6.2 Web：公共只读采集与 provenance 优先
 
-Web 包是 `0.2.0-alpha.1` 的公共只读采集层。它记录后端 capability、允许域名、页数、字节、时间、调用、token 和费用预算，以及每条来源的媒体类型、获取时间、内容哈希、后端、转换链、相对 artifact ref 与 failure layer。可选后端包括 Playwright CLI、Firecrawl、Tapestry 和 agent-browser，但配置了某后端不等于该后端已经被调用或在当前机器可用。
+Web 包是 `0.3.0-alpha.1` 的公共只读采集层。它记录后端 capability、允许域名、页数、字节、时间、调用、token 和费用预算，以及每条来源的媒体类型、获取时间、内容哈希、后端、转换链、相对 artifact ref 与 failure layer。可选后端包括 Playwright CLI、Firecrawl、Tapestry 和 agent-browser，但配置了某后端不等于该后端已经被调用或在当前机器可用。
 
 v1 明确拒绝认证浏览、cookie 复用、表单提交和文件上传。重定向时还要重新检查域名与私网地址。这个限制是安全和可复现性的共同需求：一旦系统碰到登录态、个人化搜索结果或隐式上传，简单的“抓取记录”已经不足以说明行为、权限和数据去向。
 
@@ -664,7 +664,7 @@ codex-autoresearch 的核心是 `codex exec` 停止后在同会话 `resume`，�
 
 **技能遵守仍依赖模型。** Skill 是可读指令协议，不是编译器。模型可能漏读一个文件、错误选择入口或在复杂任务里偏离流程。Hook 能检查部分确定违规，真实 host 加载又有独立验收边界。因此核心价值应被描述为“把正确行为变得可见、可检查、可恢复”，而不是“保证智能体永远遵守”。
 
-**版本与拆包正在过渡。** 早期单体 `0.4/0.5/0.6` 文档、当前 Core `0.8.1-beta.1`、多个 `0.2.0-alpha.1` 扩展和未提交工作区会让贡献者困惑。文档必须持续标明 package、版本、发布性和证据源，避免一个功能在不同层的状态被拼接成虚假的整体版本。
+**版本与拆包正在过渡。** 早期单体 `0.4/0.5/0.6` 文档、当前 Core `0.9.0-beta.1`、多个 `0.3.0-alpha.1` 扩展和未提交工作区会让贡献者困惑。文档必须持续标明 package、版本、发布性和证据源，避免一个功能在不同层的状态被拼接成虚假的整体版本。
 
 **控制面仍未跨过最关键的真实环境门。** 当前 domain/DBOS/SQLite/fencing、Phase 2 response loss 调和、Phase 3 K10/K11 都很有价值，却不能替代真实 multi-gate provider terminal 与单次工具副作用证据。这是发布风险，而不是文档措辞问题。
 

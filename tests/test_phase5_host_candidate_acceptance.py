@@ -95,12 +95,12 @@ class Phase5HostCandidateAcceptanceTests(unittest.TestCase):
             root = Path(directory)
             candidate = self.candidate(root)
             packages = {name: version for name, version in (
-                ("deepscientist-lite", "0.8.1-beta.1"),
-                ("deepscientist-lite-academic", "0.8.1-beta.1"),
-                ("deepscientist-lite-web", "0.2.0-alpha.1"),
-                ("deepscientist-lite-knowledge", "0.2.0-alpha.1"),
-                ("deepscientist-lite-empirical", "0.2.0-alpha.1"),
-                ("deepscientist-lite-engineering", "0.2.0-alpha.1"),
+                ("deepscientist-lite", "0.9.0-beta.1"),
+                ("deepscientist-lite-academic", "0.9.0-beta.1"),
+                ("deepscientist-lite-web", "0.3.0-alpha.1"),
+                ("deepscientist-lite-knowledge", "0.3.0-alpha.1"),
+                ("deepscientist-lite-empirical", "0.3.0-alpha.1"),
+                ("deepscientist-lite-engineering", "0.3.0-alpha.1"),
             )}
             cache = write(root / "cache.json", {
                 "schema_version": "ds-lite.formal-cache-acceptance.v1", "status": "passed",

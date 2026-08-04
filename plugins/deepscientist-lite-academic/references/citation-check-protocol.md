@@ -1,6 +1,6 @@
 # Citation check protocol
 
-Academic `0.8.1-beta.1` defines `ds-lite.citation-check.v1` and `ds-lite.citation-check-batch.v1`. The four first-class providers are Crossref, OpenAlex, Semantic Scholar, and arXiv. Each produces exactly one of `matched`, `not-found`, `unavailable`, `not-applicable`, or `conflict`.
+Academic `0.9.0-beta.1` defines `ds-lite.citation-check.v1` and `ds-lite.citation-check-batch.v1`. The four first-class providers are Crossref, OpenAlex, Semantic Scholar, and arXiv. Each produces exactly one of `matched`, `not-found`, `unavailable`, `not-applicable`, or `conflict`.
 
 The aggregate status is `verified`, `conflict`, `not-found`, or `pending`. An exact DOI/arXiv identifier match verifies a record; without one, verification needs two independent providers agreeing on title, authors, and year. HTTP 429, timeout, authentication, network, or malformed response is `unavailable`, so the aggregate remains `pending` unless stronger evidence resolves it. Submission mode allows only `verified`.
 

@@ -1,4 +1,4 @@
-﻿---
+---
 name: nature-literature
 description: Complete literature workflow: multi-source search, citation verification, strict independent other-citation audits, article-level citation metric tables, influential citer profiling, citation file management, reference management, and reference verification. Routes to search, citation, or ref-verifier based on user intent.
 ---

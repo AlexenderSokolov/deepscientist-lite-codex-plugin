@@ -12,7 +12,7 @@
   "interface": {
     "displayName": "DeepScientist Lite Academic",
     "shortDescription": "Add opt-in academic workflows to DS Lite Core.",
-    "longDescription": "The optional academic pack contains 17 adapted Nature workflows plus bounded citation, revision, and adversarial-review protocols. It requires DS Lite Core 0.8.1-beta.1, keeps external dependencies workspace-local, and does not silently register MCP servers or credentials.",
+    "longDescription": "The optional academic pack contains 17 adapted Nature workflows plus bounded citation, revision, and adversarial-review protocols. It requires DS Lite Core 0.9.0-beta.1, keeps external dependencies workspace-local, and does not silently register MCP servers or credentials.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
     "capabilities": [

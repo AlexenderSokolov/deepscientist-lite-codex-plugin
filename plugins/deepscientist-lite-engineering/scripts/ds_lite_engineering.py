@@ -12,7 +12,7 @@ from typing import Any
 
 
 SCHEMA = "ds-lite.engineering-analysis.v1"
-CORE = {"plugin": "deepscientist-lite", "version": "0.8.1-beta.1"}
+CORE = {"plugin": "deepscientist-lite", "version": "0.9.0-beta.1"}
 BACKEND_STATUSES = {"available", "unavailable", "not-observed"}
 CHECK_STATUSES = {"passed", "failed", "warning", "not-observed"}
 REQUIRED_CHECKS = {"units", "dimensions", "aliasing", "leakage", "figure_axes"}

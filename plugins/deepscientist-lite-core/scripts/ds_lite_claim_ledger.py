@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Claim Ledger — binds claims to evidence at creation time for DS Lite v6.
 
 Each claim is bound to its selector, digest, transformation chain, dependence

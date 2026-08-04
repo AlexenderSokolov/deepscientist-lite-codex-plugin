@@ -239,7 +239,7 @@ trusted.
 - 状态内核模块化属于 v0.2 之后的内部重构，必须保持 Graph v2 与 CLI 兼容。
 - Review 是独立流程和 artifact，不宣称独立模型或物理隔离。
 - v0.3 不加入 MCP、subagents、HPC/云调度或完整树搜索；评分循环只作为 Graph 分支教学。
-- 已发布 v0.4 不加入 daemon、MCP、Web/TUI、hooks 或长期后台调度；当前 `0.8.1-beta.1` Core 增加插件局部、无状态的 Hook helper。Codex stable `0.146.0` 已实际从 `hooks/hooks.json` 自动发现 Hook；源码保留明确指针，确定性发布包投影会移除官方 validator 尚不接受的冗余 `hooks` manifest 字段并保留 Hook 配置。真实同 turn Stop 修复仍必须由独立 receipt 证明。OpenScience 可作为上层主管调用 DS Lite worker，但 DS Lite 只提供文件化任务板、证据门和单轮迭代协议。
+- 已发布 v0.4 不加入 daemon、MCP、Web/TUI、hooks 或长期后台调度；当前 `0.9.0-beta.1` Core 增加插件局部、无状态的 Hook helper。Codex stable `0.146.0` 已实际从 `hooks/hooks.json` 自动发现 Hook；源码保留明确指针，确定性发布包投影会移除官方 validator 尚不接受的冗余 `hooks` manifest 字段并保留 Hook 配置。真实同 turn Stop 修复仍必须由独立 receipt 证明。OpenScience 可作为上层主管调用 DS Lite worker，但 DS Lite 只提供文件化任务板、证据门和单轮迭代协议。
 - 外部长任务管护采用“稳定外部 owner 管进程，DS Lite 管文件化交接和证据”的责任模型。进程丢失的根因应先按生命周期归属错误排查；对话、Codex worker、tmux、实验进程和工件是五种独立状态。Lite 不拥有进程生命周期，只要求 Codex 登记、检查、备份、修复和恢复 `external-task-*` 记录，不能把临时 shell 内创建的 tmux 当作持久执行证明。
 - tmux 容量申请必须先由 Codex 写成 `external-tmux-plan-*`，再由用户从独立稳定 shell 手动创建固定 socket、顶层 session 和计划内 pane；Codex 只验证、连接和使用已授权槽位。“子会话”不是 tmux 协议对象，用户这样表述时只解释为 pane-scoped Codex CLI child worker，其进程存活与 provider 对话可恢复性必须分别验证。
 - 教学 runner 只负责确定性准备和协议故障，不冒充 Codex skill 或领域审查；课程默认保留所有输出，不覆盖已有目录。
@@ -323,15 +323,15 @@ temporary path without changing the repository checkout.
   medium tasks. OpenScience remains responsible for global decomposition,
   resource scheduling, long-lived processes, and primary user interaction.
 - The marketplace now targets six independent candidates. Core keeps the
-  `deepscientist-lite` ID and nine skills at `0.8.1-beta.1`; Academic carries
-  17 Nature skills at `0.8.1-beta.1`; Web, Knowledge, Empirical, and Engineering
-  are `0.2.0-alpha.1` with one skill each.
+  `deepscientist-lite` ID and nine skills at `0.9.0-beta.1`; Academic carries
+  17 Nature skills at `0.9.0-beta.1`; Web, Knowledge, Empirical, and Engineering
+  are `0.3.0-alpha.1` with one skill each.
 - Core retains `ds-lite.graph.v2`, `ds-lite.evidence.v1`, work units,
   iteration, delegation, handoff, and Hooks. It has no vendor tree, MCP,
   daemon, database, academic bundle, or web backend and is constrained to 10
   MiB, 300 files, and nine discoverable skills.
 - Optional packages publish `ds-lite.pack-compatibility.v1` and fail closed
-  unless they observe Core `0.8.1-beta.1`. Marketplace dependency propagation
+  unless they observe Core `0.9.0-beta.1`. Marketplace dependency propagation
   is never assumed.
 - Web v1 is public-only. `ds-lite.capability.v1` records observed backend
   support; `ds-lite.source-record.v2` is the write-side envelope while v1
@@ -362,8 +362,8 @@ temporary path without changing the repository checkout.
 
 - The current marketplace architecture supersedes this earlier four-package
   candidate with six independently installable packages: Core
-  `0.8.1-beta.1`, Academic `0.8.1-beta.1`, Web and Knowledge
-  `0.2.0-alpha.1`, plus Empirical and Engineering `0.2.0-alpha.1`. Core
+  `0.9.0-beta.1`, Academic `0.9.0-beta.1`, Web and Knowledge
+  `0.3.0-alpha.1`, plus Empirical and Engineering `0.3.0-alpha.1`. Core
   remains frozen; no Core Socratic mode is implemented before the real host
   gates close.
 - Academic still exposes exactly 17 Nature skills. Its new protocols are
@@ -392,8 +392,8 @@ temporary path without changing the repository checkout.
 
 ## 0.8 release candidate boundaries (2026-07-24)
 
-- Active marketplace packages target Core and Academic `0.8.1-beta.1`, and Web,
-  Knowledge, Empirical, and Engineering `0.2.0-alpha.1`. The frozen
+- Active marketplace packages target Core and Academic `0.9.0-beta.1`, and Web,
+  Knowledge, Empirical, and Engineering `0.3.0-alpha.1`. The frozen
   `plugins/deepscientist-lite/` directory remains historical evidence only.
 - Core now owns learning-receipt and quality-plan/result contracts. Learning is
   enforced at first side effect only when the host identifies an active skill;
@@ -412,7 +412,7 @@ temporary path without changing the repository checkout.
   or release gates. Each requires an independent receipt.
 - Package validation covers the independent `core+web` and `core+knowledge`
   combinations in addition to the domain and all-six matrices. Optional packs
-  fail closed when Core `0.8.1-beta.1` is absent or mismatched.
+  fail closed when Core `0.9.0-beta.1` is absent or mismatched.
 - The historical communication upstream matrix remains a fixed snapshot audit;
   two missing legacy local artifacts are reported as `not-observed`, while the
   active communication audit and Hook implementations are checked under
@@ -468,7 +468,7 @@ temporary path without changing the repository checkout.
 
 ## 0.8.1 foreground autonomy boundary (2026-07-27)
 
-- Active Core and Academic candidates are `0.8.1-beta.1`; optional package
+- Active Core and Academic candidates are `0.9.0-beta.1`; optional package
   compatibility records fail closed unless they observe that exact Core version.
 - `ds-lite.autonomy-contract.v1` is the release-scale foreground controller. It
   freezes goals and a gate DAG, records only sanitized progress/summary receipts,

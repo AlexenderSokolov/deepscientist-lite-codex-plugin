@@ -238,7 +238,7 @@ class PilotRuntimeBehaviorTests(unittest.TestCase):
 
     def test_current_candidate_requires_stable_codex_but_legacy_receipts_remain_readable(self) -> None:
         current = self.execution()
-        current["source"]["plugin_version"] = "0.8.1-beta.1"
+        current["source"]["plugin_version"] = "0.9.0-beta.1"
         current["cli"]["version"] = "0.146.0"
         self.assertEqual(pilot_runtime.validate_execution(current), current)
 

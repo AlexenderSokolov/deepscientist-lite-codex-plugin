@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Tests for DS Lite v6 mechanisms: Signal Ledger, Frontier, Claim Ledger, Factor Card v2."""
 
 import json

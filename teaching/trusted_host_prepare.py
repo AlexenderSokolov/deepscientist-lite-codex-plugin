@@ -83,7 +83,7 @@ def _candidate_identity(repo_root: Path) -> dict[str, Any]:
         relative = path.relative_to(plugin_root).as_posix().encode("utf-8")
         content = path.read_bytes()
         digest.update(relative + b"\0" + hashlib.sha256(content).digest())
-    if manifest.get("name") != "deepscientist-lite" or manifest.get("version") != "0.8.1-beta.1":
+    if manifest.get("name") != "deepscientist-lite" or manifest.get("version") != "0.9.0-beta.1":
         raise PreparationError("split Core manifest does not match the formal candidate")
     return {
         "plugin": manifest["name"],

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Bounded, fail-closed supervisor for consecutive DS Lite iterations."""
 
 from __future__ import annotations

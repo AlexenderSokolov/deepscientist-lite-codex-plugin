@@ -126,7 +126,7 @@ class TrustedHostPrepareTests(unittest.TestCase):
         repo_root = Path(__file__).resolve().parents[1]
         identity = trusted_host_prepare._candidate_identity(repo_root)
         self.assertEqual(identity["plugin"], "deepscientist-lite")
-        self.assertEqual(identity["version"], "0.8.1-beta.1")
+        self.assertEqual(identity["version"], "0.9.0-beta.1")
         self.assertEqual(identity["skill_count"], 9)
         self.assertEqual(
             identity["hook_events"],
@@ -143,7 +143,7 @@ class TrustedHostPrepareTests(unittest.TestCase):
             (core / "skills" / "example").mkdir(parents=True)
             (core / "scripts").mkdir()
             (core / ".codex-plugin" / "plugin.json").write_text(
-                json.dumps({"name": "deepscientist-lite", "version": "0.8.1-beta.1"}),
+                json.dumps({"name": "deepscientist-lite", "version": "0.9.0-beta.1"}),
                 encoding="utf-8",
             )
             (core / "hooks" / "hooks.json").write_text(

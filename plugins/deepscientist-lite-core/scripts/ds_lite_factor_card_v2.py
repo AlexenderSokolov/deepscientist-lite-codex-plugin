@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Factor Card v2 — upgraded creative comparison for DS Lite v6.
 
 Extends v1 with lineage, differentiation axes, recent work, falsification

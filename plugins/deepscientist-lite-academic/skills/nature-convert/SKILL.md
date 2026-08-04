@@ -1,4 +1,4 @@
-﻿---
+---
 name: nature-convert
 description: Convert scientific papers to other formats: paper to presentation slides, or paper to patent application. Routes to paper2ppt or paper-to-patent based on user intent.
 ---

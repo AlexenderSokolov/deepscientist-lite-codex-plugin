@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Discovery Frontier — deterministic projection of candidate routes for DS Lite v6.
 
 The Frontier is a read-only projection derived from the Research Signal Ledger

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Research Signal Ledger — append-only signal store for DS Lite v6.
 
 A signal is an observation with a source, scope, dependencies, and expiry.

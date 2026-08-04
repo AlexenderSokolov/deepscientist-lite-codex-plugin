@@ -12,8 +12,8 @@ from typing import Any
 
 
 SCHEMA = "ds-lite.academic-provider-acceptance.v1"
-CORE = {"name": "deepscientist-lite", "version": "0.8.1-beta.1"}
-ACADEMIC = {"name": "deepscientist-lite-academic", "version": "0.8.1-beta.1"}
+CORE = {"name": "deepscientist-lite", "version": "0.9.0-beta.1"}
+ACADEMIC = {"name": "deepscientist-lite-academic", "version": "0.9.0-beta.1"}
 ALL_PROVIDERS = ("crossref", "openalex", "semantic-scholar", "arxiv")
 TRANSIENT_FAILURES = {"timeout", "rate-limit", "network"}
 

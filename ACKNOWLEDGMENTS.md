@@ -1,4 +1,4 @@
-﻿# Acknowledgments
+# Acknowledgments
 
 DeepScientist Lite is the official Codex plugin for the DeepScientist research workflow.
 The projects below were read for design comparison, test ideas, or optional interoperability.

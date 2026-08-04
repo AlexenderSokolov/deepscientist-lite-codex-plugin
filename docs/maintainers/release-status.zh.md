@@ -1,4 +1,4 @@
-﻿# Product Positioning And Long-Term Memory
+# Product Positioning And Long-Term Memory
 
 ## 2026-07-24 候选整合状态
 
@@ -25,7 +25,7 @@ validator、PowerShell 5.1 语法检查、`py_compile` 和 `git diff --check`。
 shellcheck 在当前执行面不可用，均记录为 `not-observed`。证据：
 `.validation-tmp/validation-20260724T0120359466120-21292/cross-system-validation-20260724T0120359466120-21292.json`。
 
-> 当前 0.8 候选以六包 marketplace 结构为准：Core/Academic `0.8.1-beta.1`，Web/Knowledge/Empirical/Engineering `0.2.0-alpha.1`。下文早期 `0.6.0-beta.1` 记录保留为历史证据，不代表当前安装边界。
+> 当前 0.8 候选以六包 marketplace 结构为准：Core/Academic `0.9.0-beta.1`，Web/Knowledge/Empirical/Engineering `0.3.0-alpha.1`。下文早期 `0.6.0-beta.1` 记录保留为历史证据，不代表当前安装边界。
 
 ## 2026-07-25 本轮源码进展
 

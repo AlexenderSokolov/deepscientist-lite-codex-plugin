@@ -1,4 +1,4 @@
-﻿# Package Layout
+# Package Layout
 
 This repository is a Codex marketplace repository.
 

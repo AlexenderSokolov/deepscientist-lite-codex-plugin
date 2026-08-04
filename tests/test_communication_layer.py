@@ -95,7 +95,7 @@ class CommunicationLayerTests(unittest.TestCase):
         manifest = json.loads((PLUGIN_ROOT / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["hooks"], "./hooks/hooks.json")
         self.assertNotIn("mcpServers", manifest)
-        self.assertEqual(manifest["version"], "0.8.1-beta.1")
+        self.assertEqual(manifest["version"], "0.9.0-beta.1")
 
 
 if __name__ == "__main__":

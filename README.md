@@ -1,4 +1,4 @@
-﻿# DeepScientist Lite Codex Plugin
+# DeepScientist Lite Codex Plugin
 
 [中文说明](README.zh.md) · [Chinese user guide](docs/user-guide.zh.md) · [Documentation](docs/README.md) · [Evaluation](evaluation/README.md) · [Core package](plugins/deepscientist-lite-core/) · [Acknowledgments](ACKNOWLEDGMENTS.md)
 
