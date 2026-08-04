@@ -25,4 +25,6 @@ PROJECT.md
 # Private evaluation data
 evaluation/
 
+
+# Temporary validation artifacts
 tmp_validate.json
