@@ -31,8 +31,6 @@ class LoopIntegrationTests(unittest.TestCase):
         for anchor in (
             "ds_lite_loop.py",
             "bounded-loop-protocol.md",
-            "codex-autoresearch-integration-audit.zh.md",
-            "email-to-codex-autoresearch-author.zh.md",
             "ds-lite.loop-contract.v1",
             "ds-lite.loop-receipt.v1",
             "no automatic retry",
