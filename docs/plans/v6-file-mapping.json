@@ -1,0 +1,21 @@
+{
+  "schema_version": "ds-lite.file-mapping.v1",
+  "created_at": "2026-08-04T10:00:00Z",
+  "mappings": [
+    {"target": "docs/adr/ADR-v6-research-kernel-and-control-boundary.md", "existing": null, "action": "create", "purpose": "Record 35 fixed design decisions and Phase 3 status"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_assessment.py", "existing": null, "action": "create", "purpose": "Task Assessment / Answerability Gate"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_contract_v2.py", "existing": null, "action": "create", "purpose": "Experiment Contract v2 with embedded Task Assessment"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_claim_ledger.py", "existing": "plugins/deepscientist-lite-core/scripts/ds_lite_claim_ledger.py", "action": "modify", "purpose": "Add Chain of Evidence validation"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_handoff.py", "existing": "plugins/deepscientist-lite-core/scripts/ds_lite_handoff.py", "action": "modify", "purpose": "Add formal Mission/Handoff six-stage schema"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_quality.py", "existing": "plugins/deepscientist-lite-core/scripts/ds_lite_quality.py", "action": "modify", "purpose": "Add Quality Contract and Review Package"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_catalog.py", "existing": null, "action": "create", "purpose": "Catalog and Context Compiler"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_experience_ledger.py", "existing": null, "action": "create", "purpose": "Experience Ledger for Incident/Lesson/Guard/Skill proposal"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_skill_admission.py", "existing": null, "action": "create", "purpose": "Skill Admission Registry and Gate"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_causal_router.py", "existing": null, "action": "create", "purpose": "Causal Router for four causal task modes"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_openscience_bridge.py", "existing": null, "action": "create", "purpose": "OpenScience file/CLI bridge for Mission/Return interop"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_signal_ledger.py", "existing": "plugins/deepscientist-lite-core/scripts/ds_lite_signal_ledger.py", "action": "keep", "purpose": "Research Signal Ledger (already implemented)"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_frontier.py", "existing": "plugins/deepscientist-lite-core/scripts/ds_lite_frontier.py", "action": "keep", "purpose": "Discovery Frontier (already implemented)"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_factor_card_v2.py", "existing": "plugins/deepscientist-lite-core/scripts/ds_lite_factor_card_v2.py", "action": "keep", "purpose": "Factor Card v2 (already implemented)"},
+    {"target": "plugins/deepscientist-lite-core/scripts/ds_lite_evidence.py", "existing": "plugins/deepscientist-lite-core/scripts/ds_lite_evidence.py", "action": "keep", "purpose": "Evidence Pack and Typed Digest (already implemented)"}
+  ]
+}
