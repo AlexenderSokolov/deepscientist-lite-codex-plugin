@@ -1,6 +1,28 @@
-# Changelog
+﻿# Changelog
+
+## 2026-08-04: Skills aggregation, public/private boundary, and documentation polish
+
+- Added three aggregated Academic skills: `nature-literature` (search + citation + ref-verifier),
+  `nature-review` (reviewer + response), and `nature-convert` (paper2ppt + paper-to-patent).
+  Original skills remain as sub-routes; functionality is preserved.
+- Audited public/private file boundaries. Marked `docs/maintainers/`, `PROJECT.md`,
+  and `evaluation/` as private in `.gitignore`.
+- Updated README.md, README.zh.md, NOTICE, ACKNOWLEDGMENTS.md, PACKAGE.md, and
+  docs/README.md to reflect official DeepScientist plugin positioning.
+- Added Skills trigger matrix and dependency graph documentation.
+- Added Skills functional overlap audit and aggregation refactoring plan.
+- Added External projects annotation for conversation `019fcaa5`.
+- Added Public/private file boundary audit.
 
 ## Unreleased: 0.8.1-beta.1 foreground autonomy controller
+
+- Added `ds-lite.autonomy-contract.v1`, progress receipts, a dependency-aware
+  foreground gate controller, and bounded three-attempt transient retry.
+- Added `ds-lite.loop-contract.v2` autonomy controls while retaining v1 callers.
+- Enabled the fixed `codex-autoresearch` compatibility adapter to use DS Lite's
+  pinned Codex session/resume contract without persisting upstream raw logs.
+- Extended Hook context and Stop checks so active autonomy contracts cannot end
+  without a terminal summary and current progress receipt.
 
 - Added `ds-lite.autonomy-contract.v1`, progress receipts, a dependency-aware
   foreground gate controller, and bounded three-attempt transient retry.
@@ -181,3 +203,4 @@
 - Added argv-only trusted-host preparation and Hook runner CLIs.
 - Added text encoding, line-ending, NUL, replacement-character, JSON/TOML and
   shell-boundary checks; real provider and release gates remain fail-closed.
+

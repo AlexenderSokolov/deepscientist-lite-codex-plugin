@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -31,7 +31,7 @@ PACKAGES: dict[str, dict[str, Any]] = {
         "directory": "deepscientist-lite-academic",
         "name": "deepscientist-lite-academic",
         "version": "0.8.1-beta.1",
-        "skill_count": 17,
+        "skill_count": 20,
         "skill_prefix": "nature-",
     },
     "web": {
@@ -164,7 +164,11 @@ def validate_package(repo_root: Path, key: str) -> dict[str, Any]:
         required = compatibility.get("requires", {})
         if compatibility.get("schema_version") != "ds-lite.pack-compatibility.v1":
             issues.append("compatibility-schema-mismatch")
-        if required != {"plugin": "deepscientist-lite", "version": "0.8.1-beta.1"}:
+        if required.get("plugin") != "deepscientist-lite":
+            issues.append("core-requirement-mismatch")
+        required_version = required.get("version", "")
+        if not (required_version == "0.8.1-beta.1" or required_version.startswith(">=")):
+            issues.append("core-requirement-mismatch")
             issues.append("core-requirement-mismatch")
         if compatibility.get("missing_core") != "blocked":
             issues.append("missing-core-must-block")

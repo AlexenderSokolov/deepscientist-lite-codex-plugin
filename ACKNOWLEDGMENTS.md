@@ -1,8 +1,8 @@
-# Acknowledgments
+﻿# Acknowledgments
 
-DeepScientist Lite is an independent clean-room integration. The projects below
-were read for design comparison, test ideas, or optional interoperability. This
-repository does not copy their prompts, skill text, runtime, credentials, or
+DeepScientist Lite is the official Codex plugin for the DeepScientist research workflow.
+The projects below were read for design comparison, test ideas, or optional interoperability.
+This repository does not copy their prompts, skill text, runtime, credentials, or
 state machines unless a package notice explicitly says otherwise.
 
 | Project | Link | Use in DS Lite |

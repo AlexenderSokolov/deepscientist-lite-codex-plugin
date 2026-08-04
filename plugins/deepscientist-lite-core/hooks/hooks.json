@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${PLUGIN_ROOT}/scripts/ds_lite_hook.py\" user-prompt-submit"
+            "command": "python \"${PLUGIN_ROOT}/scripts/ds_lite_hook_entry.py\" user-prompt-submit"
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${PLUGIN_ROOT}/scripts/ds_lite_hook.py\" pre-tool-use"
+            "command": "python \"${PLUGIN_ROOT}/scripts/ds_lite_hook_entry.py\" pre-tool-use"
           }
         ]
       }
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${PLUGIN_ROOT}/scripts/ds_lite_hook.py\" post-tool-use"
+            "command": "python \"${PLUGIN_ROOT}/scripts/ds_lite_hook_entry.py\" post-tool-use"
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${PLUGIN_ROOT}/scripts/ds_lite_hook.py\" stop"
+            "command": "python \"${PLUGIN_ROOT}/scripts/ds_lite_hook_entry.py\" stop"
           }
         ]
       }

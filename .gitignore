@@ -1,4 +1,4 @@
-__pycache__/
+﻿__pycache__/
 *.pyc
 .pytest_cache/
 
@@ -15,3 +15,14 @@ System.Management.Automation.Internal.Host.InternalHost/
 
 .DS_Store
 Thumbs.db
+
+# Private maintainer documents — internal only, not for public release
+docs/maintainers/
+
+# Private project documents — local project context
+PROJECT.md
+
+# Private evaluation data
+evaluation/
+
+tmp_validate.json

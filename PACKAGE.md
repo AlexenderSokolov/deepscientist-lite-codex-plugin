@@ -42,3 +42,27 @@ Each optional package publishes `compatibility.json` and fails closed unless it 
 Core remains lightweight: no MCP server, daemon, Web/TUI, connector, local model bundle, academic snapshot, or web backend is declared in its manifest. Optional packages do not acquire global state or bypass Core approval and stopping rules.
 
 Run the package-specific wrappers under `tools/validation/runners/` (`run_validate_core.*`, `run_validate_academic.*`, `run_validate_web.*`, `run_validate_knowledge.*`, `run_validate_empirical.*`, and `run_validate_engineering.*`). `tools/validation/validate_packages.py --package all` checks eight install matrices, route collisions, compatibility contracts, package digests, and Core/domain size limits. It deliberately reports real Hook, delegation, matched effect, formal cache, fresh Desktop, and release gates as `not-verified`.
+
+## Skills Aggregation Plan
+
+The Academic package currently exposes 17 skills. The following aggregation is planned to reduce entry-point count while preserving all functionality:
+
+| Original skills | Aggregated skill | Strategy |
+| --- | --- | --- |
+| `nature-academic-search` + `nature-citation` + `nature-ref-verifier` | `nature-literature` | Router with search, citation, and ref-verifier sub-routes |
+| `nature-reader` + `nature-downloader` | `nature-reader` | Downloader as reader's pre-step |
+| `nature-writing` + `nature-polishing` | `nature-writing` | Router with drafting and polishing sub-routes |
+| `nature-reviewer` + `nature-response` | `nature-review` | Router with reviewer and response sub-routes |
+| `nature-paper2ppt` + `nature-paper-to-patent` | `nature-convert` | Router with paper2ppt and paper-to-patent sub-routes |
+
+After aggregation, the Academic package will expose approximately 11 skills instead of 17. The original skills remain available as sub-routes within the aggregated entry points.
+
+## Public/Private File Boundary
+
+The following files are marked as private and excluded from public release:
+
+- `docs/maintainers/`: internal maintainer documentation, not for public release.
+- `PROJECT.md`: local project context, not for public release.
+- `evaluation/`: private evaluation data.
+
+These are configured in `.gitignore` to prevent accidental publication.
