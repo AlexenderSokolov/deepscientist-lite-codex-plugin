@@ -211,6 +211,4 @@ Academic 包保留 17 个独立的 `nature-*` skill，不增加近义入口。
 ## 十七、从哪里继续学习
 
 - 想了解 Graph 和协议设计细节：读 [实现说明](implementation.zh.md)。
-- 想亲手做一遍：从 [AI 示教区域](../teaching/README.zh.md) 开始。
 - 想比较普通 Codex 和 DS Lite：看 [四案例对比实验](../teaching/matched-control-pilot.zh.md)。
-- 要升级旧 Graph v1 项目：看 [迁移指南](maintainers/graph-v2-migration.md)。
