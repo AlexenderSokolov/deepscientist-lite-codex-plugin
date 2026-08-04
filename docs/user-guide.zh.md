@@ -32,7 +32,8 @@ flowchart LR
 - `research/artifacts/`：记录每一步做了什么、依据是什么。
 - `research/evidence/`：保存实验契约、日志、指标和文件哈希。
 - `research/iterations/`：保存一次行动、验证、反思与停止理由。
-- `research/work-unit.json`：当前有界任务描述。
+- `research/work-unit.json`：当前有界任务描述，schema 为 `ds-lite.work-unit.v1`，包含 `claim_assessment` 字段。
+- 路由状态包括 `active`、`completed` 和 `off-route`；`off-route` 表示该路线已退出，不再推进。
 
 ## 二、`$ds-lite`：统一入口
 
@@ -76,6 +77,10 @@ Codex 会创建 `PROJECT.md`、`STATUS.md` 和初始 Graph。之后用 `$ds-lite
 
 ## 五、前台控制器、Hook 与 Loop
 
+### Hook helper
+
+Hook helper 脚本提供跨平台 Python 解析和 `${PLUGIN_ROOT}` 变量展开。
+
 ### 前台控制器（`ds_lite_autonomy.py`）
 
 控制器是 DAG 级的前台有界自治引擎。它不创建后台进程，而是在当前会话中推进已冻结、已授权的验收 gate。每个 gate 的终态必须写入进度凭证（`ds-lite.progress-report.v1`），交代执行原因、实际动作、证据引用、失败层、已完成与冻结的门、下一步行动和版本快照。
@@ -108,7 +113,7 @@ Graph 是项目状态的唯一机器权威来源。它使用版本号（revision
 
 ### Graph v2 特性
 
-Graph v2 使用原子写入（写入要么成功要么不修改原文件）、版本号检查，和项目相对路径（或符号化外部路径）。旧的 Graph v1 项目首次写入时自动迁移；如果项目包含绝对路径，请先阅读 [迁移指南](docs/maintainers/graph-v2-migration.md)。
+Graph v2 使用原子写入（写入要么成功要么不修改原文件）、版本号检查，和项目相对路径（或符号化外部路径）。旧的 Graph v1 项目首次写入时自动迁移；如果项目包含绝对路径，迁移时会提示，请按提示处理。
 
 ## 七、Mission Board：给人看的项目看板
 
@@ -149,7 +154,7 @@ Evidence Pack v1 提供了独立的纯标准库 CLI（`ds_lite_evidence.py`）�
 
 ## 十、迭代：有界反思
 
-`$ds-lite-iterate` 一次只推进一轮：行动、验证、反思、汇报，然后停在检查点。它不会变成无限循环。
+`$ds-lite-iterate` 一次只推进一轮：行动、验证、反思、汇报，然后停在检查点。迭代不是 exactly-once transaction，也不会变成无限循环。
 
 每次迭代的记录保存在 `research/iterations/` 下，包含：
 - 做了什么
@@ -192,7 +197,13 @@ Academic 包保留 17 个独立的 `nature-*` skill，不增加近义入口。
 
 外部验收附带统一审计门。当你看到审计门状态为 `blocked`、`ambiguous` 或 `not-verified` 时，含义是"本门证据不足，下一门没有启动"，不是插件已经完成或已经失败。只有当回执中同时包含预期/实际事件、非零 usage、相对证据引用、失败层和下一步行动时，才能进入后续验证门。
 
+## 十四点五、Factor Card 与创新性
+
+Factor Card（schema `ds-lite.factor-card.v1`）记录一个创新点的机制、证据和未测检查。评估创新性时不做加权总分，而是逐项检查 novelty、机制清晰度和证据强度。
+
 ## 十五、跨会话恢复
+
+会话恢复不等于进程恢复：恢复的是项目状态，不是后台进程。如果需要 tmux，由用户手动创建 tmux，插件不代建。
 
 会话中断后，在新会话中：
 

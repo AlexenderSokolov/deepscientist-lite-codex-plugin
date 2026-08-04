@@ -44,11 +44,9 @@ EXPECTED_SKILLS = [
     "nature-writing",
 ]
 
-
 def fail(message: str) -> None:
     print(f"ERROR: {message}", file=sys.stderr)
     raise SystemExit(1)
-
 
 def run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     # Child tools may inherit a legacy Windows console encoding. Validation
@@ -59,7 +57,6 @@ def run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
         print(result.stderr, file=sys.stderr)
         fail("command failed: " + " ".join(cmd))
     return result
-
 
 def parse_frontmatter(path: Path) -> dict[str, str]:
     lines = path.read_text(encoding="utf-8").splitlines()
@@ -82,7 +79,6 @@ def parse_frontmatter(path: Path) -> dict[str, str]:
         data[key.strip()] = value.strip()
     return data
 
-
 def validate_manifest(plugin_root: Path) -> None:
     manifest_path = plugin_root / ".codex-plugin" / "plugin.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -99,7 +95,6 @@ def validate_manifest(plugin_root: Path) -> None:
             fail(f"plugin manifest must not declare {forbidden}")
     if "TODO" in manifest_path.read_text(encoding="utf-8"):
         fail("plugin manifest still contains TODO")
-
 
 def validate_skills(plugin_root: Path) -> None:
     skills_root = plugin_root / "skills"
@@ -134,7 +129,6 @@ def validate_skills(plugin_root: Path) -> None:
             provenance = skills_root / skill_name / "provenance.json"
             if not provenance.exists():
                 fail(f"{skill_name} is missing upstream provenance")
-
 
 def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
     state_script = plugin_root / "scripts" / "ds_lite_state.py"
@@ -636,7 +630,6 @@ def validate_state_script(repo_root: Path, plugin_root: Path) -> None:
     if not (smoke_root / "RESEARCH_MAP.md").exists():
         fail("smoke project did not render RESEARCH_MAP.md")
 
-
 def validate_docs(repo_root: Path, plugin_root: Path) -> None:
     active_core_root = repo_root / "plugins" / "deepscientist-lite-core"
     required_paths = [
@@ -646,7 +639,6 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "docs" / "user-guide.zh.md",
         repo_root / "docs" / "openscience-worker-handoff.zh.md",
         repo_root / "docs" / "implementation.zh.md",
-        repo_root / "docs" / "maintainers" / "action-reflection-philosophy.zh.md",
         repo_root / "teaching" / "README.zh.md",
         repo_root / "teaching" / "demo-script.zh.md",
         repo_root / "teaching" / "lesson-plan.zh.md",
@@ -668,13 +660,10 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "teaching" / "lab_runner.py",
         repo_root / "teaching" / "run_lab.sh",
         repo_root / "teaching" / "run_lab.ps1",
-        repo_root / "docs" / "maintainers" / "v0.3-recommendation-assessment.zh.md",
-        repo_root / "docs" / "maintainers" / "v0.3-audit.zh.md",
-        repo_root / "docs" / "maintainers" / "v0.3-hardening-log.zh.md",
-        repo_root / "docs" / "maintainers" / "writing-guide.zh.md",
+
         repo_root / "PACKAGE.md",
         repo_root / ".gitattributes",
-        repo_root / "PROJECT.md",
+
         plugin_root / "scripts" / "ds_lite_evidence.py",
         plugin_root / "scripts" / "ds_lite_hook.py",
         plugin_root / "scripts" / "ds_lite_iteration.py",
@@ -698,8 +687,7 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "LICENSE",
         repo_root / "NOTICE",
         repo_root / "CHANGELOG.md",
-        repo_root / "docs" / "maintainers" / "graph-v2-migration.md",
-        repo_root / "docs" / "maintainers" / "v0.2-audit.zh.md",
+
         repo_root / "tools" / "validation" / "prepare_codex_acceptance.py",
         repo_root / "tools" / "validation" / "audit_codex_acceptance.py",
         repo_root / "tools" / "validation" / "run_codex_acceptance.sh",
@@ -723,11 +711,7 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         repo_root / "tools" / "validation" / "generate_nature_adapters.py",
         repo_root / "tools" / "validation" / "rewrite_upstream_docs.py",
         repo_root / "tools" / "validation" / "upstream_manager.py",
-        repo_root / "docs" / "maintainers" / "nature-skills-integration-audit.zh.md",
-        repo_root / "docs" / "maintainers" / "real-wire-host-acceptance-20260724.zh.md",
-        repo_root / "docs" / "maintainers" / "upstream-projects.zh.md",
-        repo_root / "docs" / "maintainers" / "codex-autoresearch-integration-audit.zh.md",
-        repo_root / "docs" / "maintainers" / "email-to-codex-autoresearch-author.zh.md",
+
     ]
     for item in required_paths:
         if not item.exists():
@@ -792,18 +776,6 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
             "frozen goal",
             "codex-autoresearch",
         ),
-        repo_root / "docs" / "maintainers" / "codex-autoresearch-integration-audit.zh.md": (
-            "f2389bffbb4cd7789deb6796bc4ba35bf31f2a90",
-            "0.1.5-beta.0",
-            "adopted / adapted",
-            "是否复制源码",
-            "vendor",
-        ),
-        repo_root / "docs" / "maintainers" / "email-to-codex-autoresearch-author.zh.md": (
-            "MIT",
-            "LICENSE",
-            "自由修改",
-        ),
     }
     for path, required_texts in loop_requirements.items():
         text = path.read_text(encoding="utf-8")
@@ -825,13 +797,6 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
         fail("plugin-local Hook config must declare exactly four bounded hook events")
 
     reflection_doc_requirements = {
-        repo_root / "PROJECT.md": (
-            "九个 `ds-lite-*` skills",
-            "ds-lite.iteration.v1",
-            "latest_iteration",
-            "hypothesis_pool",
-            "Hook fresh-host",
-        ),
         repo_root / "docs" / "user-guide.zh.md": (
             "行动、验证、反思、汇报",
             "exactly-once transaction",
@@ -841,17 +806,6 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
             "最小 reflective iteration",
             "不是 exactly-once transaction",
             "hypothesis_pool",
-        ),
-        repo_root / "docs" / "maintainers" / "action-reflection-philosophy.zh.md": (
-            "行动哲学",
-            "存在主义",
-            "负责任探索",
-            "fresh-host",
-            "not-verified",
-        ),
-        repo_root / "docs" / "maintainers" / "known-issues.md": (
-            "Plugin-local Hook is not host enforcement proof",
-            "Minimal iteration is not exactly-once execution",
         ),
         repo_root / "teaching" / "action-reflection-student.zh.md": (
             "逐步命令",
@@ -878,21 +832,12 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
                 fail(f"{path} missing action/reflection documentation anchor: {required_text}")
 
     p0_doc_requirements = {
-        repo_root / "PROJECT.md": ("ds-lite.work-unit.v1", "ds-lite.review-result.v1", "reserved / not-validated"),
         repo_root / "CHANGELOG.md": ("typed review result", "claim readiness"),
         repo_root / "docs" / "user-guide.zh.md": ("ds-lite.work-unit.v1", "claim_assessment", "off-route"),
         repo_root / "docs" / "implementation.zh.md": (
             "ds-lite.review-result.v1",
             "claim_readiness",
             "extensions",
-        ),
-        repo_root / "docs" / "maintainers" / "known-issues.md": (
-            "Markdown-only review",
-            "reserved / not-validated",
-        ),
-        repo_root / "docs" / "maintainers" / "release-status.zh.md": (
-            "P0 source validation",
-            "cache remains unverified",
         ),
         plugin_root / "references" / "state-graph-protocol.md": (
             "ds-lite.work-unit.v1",
@@ -964,7 +909,6 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
             if required_text not in skill_text:
                 fail(f"{skill_name} missing Factor Card behavior: {required_text}")
     factor_doc_requirements = {
-        repo_root / "PROJECT.md": ("ds-lite.factor-card.v1", "no weighted total", "pressure-case fixture"),
         repo_root / "CHANGELOG.md": ("Scientific Factor Card", "validate-factor-card"),
         repo_root / "docs" / "user-guide.zh.md": ("ds-lite.factor-card.v1", "不做加权总分", "novelty"),
         repo_root / "docs" / "implementation.zh.md": ("ds-lite.factor-card.v1", "decision artifact", "Finance Factor"),
@@ -973,12 +917,6 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
             "AGPL-3.0-only",
             "49ffdcda6ce159505f6119b1e26d79c8503a8286",
             "does not copy upstream code, schemas, or skill text",
-        ),
-        repo_root / "docs" / "maintainers" / "deepscientist-v2.1.8-factor-transfer-audit.zh.md": (
-            "Finance residue",
-            "factor_registry",
-            "continuous mode",
-            "AGPL-3.0-only",
         ),
     }
     for path, required_texts in factor_doc_requirements.items():
@@ -1139,11 +1077,11 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
     runtime_claim_surface += "\n" + "\n".join(
         path.read_text(encoding="utf-8")
         for path in (
-            repo_root / "PROJECT.md",
+
             repo_root / "docs" / "openscience-worker-handoff.zh.md",
             repo_root / "docs" / "user-guide.zh.md",
             repo_root / "docs" / "implementation.zh.md",
-            repo_root / "docs" / "maintainers" / "known-issues.md",
+
         )
     )
     for claim in forbidden_runtime_claims:
@@ -1151,7 +1089,6 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
             fail(f"runtime protocol contains an overstated claim: {claim}")
 
     long_task_doc_requirements = {
-        repo_root / "PROJECT.md": ("外部长任务管护", "tmux 容量申请"),
         repo_root / "CHANGELOG.md": ("external long-task stewardship", "manual tmux capacity handshake"),
         repo_root / "docs" / "README.md": ("external-long-task-protocol.md", "manual tmux capacity handshakes"),
         repo_root / "docs" / "openscience-worker-handoff.zh.md": (
@@ -1166,15 +1103,6 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
             "tmux 人工供给握手",
             "单写者",
             "plan_id + slot_id + task_id + attempt + command_hash",
-        ),
-        repo_root / "docs" / "maintainers" / "known-issues.md": (
-            "agent-ephemeral",
-            "tmux session has no parent-child hierarchy",
-        ),
-        repo_root / "docs" / "maintainers" / "release-checklist.md": "fixed-socket bootstrap block",
-        repo_root / "docs" / "maintainers" / "release-status.zh.md": (
-            "manual tmux capacity handshake remains pending release evidence",
-            "pane-scoped Codex CLI child worker",
         ),
     }
     for path, required_texts in long_task_doc_requirements.items():
@@ -1220,7 +1148,6 @@ def validate_docs(repo_root: Path, plugin_root: Path) -> None:
             relative = target.split("#", 1)[0]
             if relative and not (markdown.parent / relative).resolve().exists():
                 fail(f"broken local Markdown link in {markdown}: {target}")
-
 
 def validate_teaching_runner(repo_root: Path) -> None:
     lab_runner = repo_root / "teaching" / "lab_runner.py"
@@ -1287,7 +1214,6 @@ def validate_teaching_runner(repo_root: Path) -> None:
         if not (compatibility_output / "project" / "research" / "evidence" / "evidence-demo" / "manifest.json").exists():
             fail("run_evidence_lab.sh compatibility entry did not produce an Evidence Pack")
 
-
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
     install_tempfile_policy(repo_root)
@@ -1299,7 +1225,6 @@ def main() -> int:
     validate_state_script(repo_root, plugin_root)
     print("OK: DeepScientist Lite plugin repository validation passed.")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

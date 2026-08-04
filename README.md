@@ -164,6 +164,8 @@ When `graph.json` is committed but `RESEARCH_MAP.md` is not synced, run `render-
 
 - To understand Graph, Evidence Pack, and review: read the [User Guide](docs/user-guide.zh.md).
 - To compare vanilla Codex, single-file memory, and DS Lite: see the [four-case comparison](teaching/matched-control-pilot.zh.md).
+- To walk through a guided example: start from the [AI tutorial area](teaching/README.zh.md).
+- To browse the plugin source: see [`plugins/deepscientist-lite/`](plugins/deepscientist-lite/).
 
 
 
