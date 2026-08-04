@@ -1,4 +1,4 @@
-"""Import helpers for the hyphenated plugin source directory used by tests."""
+﻿"""Import helpers for the hyphenated plugin source directory used by tests."""
 from __future__ import annotations
 
 import importlib.util
@@ -32,3 +32,31 @@ if _AUTORESEARCH_SPEC is None or _AUTORESEARCH_SPEC.loader is None:
     raise ImportError("cannot load ds_lite_autoresearch_runner")
 ds_lite_autoresearch_runner = importlib.util.module_from_spec(_AUTORESEARCH_SPEC)
 _AUTORESEARCH_SPEC.loader.exec_module(ds_lite_autoresearch_runner)
+
+_SIGNAL_LEDGER_PATH = Path(__file__).parent / "deepscientist-lite-core" / "scripts" / "ds_lite_signal_ledger.py"
+_SIGNAL_LEDGER_SPEC = importlib.util.spec_from_file_location("ds_lite_signal_ledger", _SIGNAL_LEDGER_PATH)
+if _SIGNAL_LEDGER_SPEC is None or _SIGNAL_LEDGER_SPEC.loader is None:
+    raise ImportError("cannot load ds_lite_signal_ledger")
+ds_lite_signal_ledger = importlib.util.module_from_spec(_SIGNAL_LEDGER_SPEC)
+_SIGNAL_LEDGER_SPEC.loader.exec_module(ds_lite_signal_ledger)
+
+_FRONTIER_PATH = Path(__file__).parent / "deepscientist-lite-core" / "scripts" / "ds_lite_frontier.py"
+_FRONTIER_SPEC = importlib.util.spec_from_file_location("ds_lite_frontier", _FRONTIER_PATH)
+if _FRONTIER_SPEC is None or _FRONTIER_SPEC.loader is None:
+    raise ImportError("cannot load ds_lite_frontier")
+ds_lite_frontier = importlib.util.module_from_spec(_FRONTIER_SPEC)
+_FRONTIER_SPEC.loader.exec_module(ds_lite_frontier)
+
+_CLAIM_LEDGER_PATH = Path(__file__).parent / "deepscientist-lite-core" / "scripts" / "ds_lite_claim_ledger.py"
+_CLAIM_LEDGER_SPEC = importlib.util.spec_from_file_location("ds_lite_claim_ledger", _CLAIM_LEDGER_PATH)
+if _CLAIM_LEDGER_SPEC is None or _CLAIM_LEDGER_SPEC.loader is None:
+    raise ImportError("cannot load ds_lite_claim_ledger")
+ds_lite_claim_ledger = importlib.util.module_from_spec(_CLAIM_LEDGER_SPEC)
+_CLAIM_LEDGER_SPEC.loader.exec_module(ds_lite_claim_ledger)
+
+_FACTOR_CARD_V2_PATH = Path(__file__).parent / "deepscientist-lite-core" / "scripts" / "ds_lite_factor_card_v2.py"
+_FACTOR_CARD_V2_SPEC = importlib.util.spec_from_file_location("ds_lite_factor_card_v2", _FACTOR_CARD_V2_PATH)
+if _FACTOR_CARD_V2_SPEC is None or _FACTOR_CARD_V2_SPEC.loader is None:
+    raise ImportError("cannot load ds_lite_factor_card_v2")
+ds_lite_factor_card_v2 = importlib.util.module_from_spec(_FACTOR_CARD_V2_SPEC)
+_FACTOR_CARD_V2_SPEC.loader.exec_module(ds_lite_factor_card_v2)
