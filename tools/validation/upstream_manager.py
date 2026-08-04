@@ -30,7 +30,7 @@ def load_registry(repo_root: Path) -> dict:
         value = json.loads(registry_path(repo_root).read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise UpstreamError("upstream project registry is invalid") from exc
-    if value.get("schema_version") != "ds-lite.upstream-project-registry.v1":
+    if value.get("schema_version") not in ("ds-lite.upstream-project-registry.v1", "ds-lite.upstream-project-registry.v2"):
         raise UpstreamError("unsupported upstream project registry schema")
     projects = value.get("projects")
     if not isinstance(projects, list) or not projects:
