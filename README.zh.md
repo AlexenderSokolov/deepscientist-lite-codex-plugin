@@ -14,12 +14,12 @@ DS Lite 共暴露 **30 个 skills**，分布在六个独立可安装的包中。
 
 | 包 | 版本 | Skills 数 | 核心职责 |
 | --- | --- | --- | --- |
-| Core | `0.8.1-beta.1` | 9 | 域中性工作协议：目标保持、路线追踪、实验、证据、审查、迭代、委托、交接和有界前台自治 |
-| Academic | `0.8.1-beta.1` | 17 | 17 个适配的 Nature 工作流加上有界引用、修订和对抗性审查协议 |
-| Web | `0.2.0-alpha.1` | 1 | 公开网页采集和来源 provenance 记录 |
-| Knowledge | `0.2.0-alpha.1` | 1 | 从 web/paper 证据生成 review-gated 知识提案 |
-| Empirical | `0.2.0-alpha.1` | 1 | 有界实证研究规格、诊断和结果交接 |
-| Engineering | `0.2.0-alpha.1` | 1 | 有界工程数值分析、信号处理和图形审计 |
+| Core | `0.9.0-beta.1` | 9 | 域中性工作协议：目标保持、路线追踪、实验、证据、审查、迭代、委托、交接和有界前台自治 |
+| Academic | `0.9.0-beta.1` | 17 | 17 个适配的 Nature 工作流加上有界引用、修订和对抗性审查协议 |
+| Web | `0.3.0-alpha.1` | 1 | 公开网页采集和来源 provenance 记录 |
+| Knowledge | `0.3.0-alpha.1` | 1 | 从 web/paper 证据生成 review-gated 知识提案 |
+| Empirical | `0.3.0-alpha.1` | 1 | 有界实证研究规格、诊断和结果交接 |
+| Engineering | `0.3.0-alpha.1` | 1 | 有界工程数值分析、信号处理和图形审计 |
 
 **典型研究工作流：** `ds-lite-intake` → `ds-lite-scout` → `ds-lite-idea` → `ds-lite-experiment` → `ds-lite-review` → `ds-lite-analysis-write` → `ds-lite-iterate`
 
@@ -33,7 +33,7 @@ DS Lite 共暴露 **30 个 skills**，分布在六个独立可安装的包中。
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace。默认只安装 `deepscientist-lite`；它在 `0.8.1-beta.1` 候选中固定为 9 个 Core 技能。论文工作流、公开网页取证、知识提案、实证分析和工程数值分析分别由五个可选包提供，按需单独安装。Academic 当前为 `0.8.1-beta.1`，Web、Knowledge、Empirical 与 Engineering 当前为 `0.2.0-alpha.1`。安装或升级后重启 Codex Desktop，并打开一个新任务核对实际插件版本和技能数；不能用源码目录反推正式 cache。
+这条命令只添加插件来源。随后请在 Codex 的 `/plugins` 中选择这个 marketplace。默认只安装 `deepscientist-lite`；它在 `0.9.0-beta.1` 候选中固定为 9 个 Core 技能。论文工作流、公开网页取证、知识提案、实证分析和工程数值分析分别由五个可选包提供，按需单独安装。Academic 当前为 `0.9.0-beta.1`，Web、Knowledge、Empirical 与 Engineering 当前为 `0.3.0-alpha.1`。安装或升级后重启 Codex Desktop，并打开一个新任务核对实际插件版本和技能数；不能用源码目录反推正式 cache。
 
 五个可选包不会假设 marketplace 自动安装 Core。首次使用前必须运行包内 doctor，显式提供 Core 根目录；缺失或版本不匹配时会停止。旧 `0.6.0-beta.1` 单体目录仍保留用于历史证据身份，但不再是 marketplace 安装目标。
 

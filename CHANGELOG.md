@@ -1,4 +1,22 @@
-﻿# Changelog
+# Changelog
+
+## 2026-08-04: v6 mechanisms, compatibility fixes, and teaching area restructure
+
+- Implemented five missing v6 mechanisms:
+  - M04 Memory Layers (ds_lite_memory_layers.py): Five-layer M0-M4 with per-layer write permissions
+  - M05 Memory Card v2 (ds_lite_memory_card_v2.py): Reviewed project-level memory cards
+  - M09 Task Router (ds_lite_task_router.py): Routes task kinds to minimal sufficient Skill combinations
+  - M13 Operator Levels (ds_lite_operator_levels.py): O0-O7 grading with per-level authorization
+  - M22 Method Fidelity Manifest (ds_lite_method_fidelity.py): Records original method, adaptations, and code identity
+- Fixed cross-platform compatibility: dynamic Python interpreter resolution via DS_LITE_PYTHON env var
+- Fixed BOM test to properly prune temp artifact directories
+- Created teaching area AGENT restructure: AGENT_GUIDE.md, agent_recovery_scenarios/
+- Created test_flexibility.py (15 tests), test_encoding.py (8 tests), test_hook_triggers.py (13 tests)
+- Bumped versions: Core/Academic 0.8.1-beta.1 -> 0.9.0-beta.1, Web/Knowledge/Empirical/Engineering 0.2.0-alpha.1 -> 0.3.0-alpha.1
+- Updated compatibility.json to use semver ranges (>=) instead of exact pins
+- All 28 v6 mechanism tests pass, all 17 compatibility tests pass
+
+
 
 ## 2026-08-04: Skills aggregation, public/private boundary, and documentation polish
 

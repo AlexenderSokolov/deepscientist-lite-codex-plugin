@@ -16,12 +16,12 @@ DS Lite exposes **30 skills** across six independently installable packages. For
 
 | Package | Version | Skills | Core Responsibility |
 | --- | --- | --- | --- |
-| Core | `0.8.1-beta.1` | 9 | Domain-neutral worker protocol: goal retention, route tracing, experiments, evidence, reviews, iterations, delegation, handoffs, and bounded foreground autonomy |
-| Academic | `0.8.1-beta.1` | 17 | 17 adapted Nature workflows plus bounded citation, revision, and adversarial-review protocols |
-| Web | `0.2.0-alpha.1` | 1 | Public-only web acquisition and provenance recording |
-| Knowledge | `0.2.0-alpha.1` | 1 | Review-gated knowledge proposals from web and paper evidence |
-| Empirical | `0.2.0-alpha.1` | 1 | Bounded empirical research specification, diagnostics, and result handoff |
-| Engineering | `0.2.0-alpha.1` | 1 | Bounded engineering numerical analysis, signal processing, and figure audit |
+| Core | `0.9.0-beta.1` | 9 | Domain-neutral worker protocol: goal retention, route tracing, experiments, evidence, reviews, iterations, delegation, handoffs, and bounded foreground autonomy |
+| Academic | `0.9.0-beta.1` | 17 | 17 adapted Nature workflows plus bounded citation, revision, and adversarial-review protocols |
+| Web | `0.3.0-alpha.1` | 1 | Public-only web acquisition and provenance recording |
+| Knowledge | `0.3.0-alpha.1` | 1 | Review-gated knowledge proposals from web and paper evidence |
+| Empirical | `0.3.0-alpha.1` | 1 | Bounded empirical research specification, diagnostics, and result handoff |
+| Engineering | `0.3.0-alpha.1` | 1 | Bounded engineering numerical analysis, signal processing, and figure audit |
 
 **Typical research workflow:** `ds-lite-intake` → `ds-lite-scout` → `ds-lite-idea` → `ds-lite-experiment` → `ds-lite-review` → `ds-lite-analysis-write` → `ds-lite-iterate`
 
@@ -79,8 +79,8 @@ Graph v2 uses atomic writes, revision checks, and project-relative or symbolic e
 - `plugins/deepscientist-lite-core/`: default Core package with nine skills and Hooks.
 - `plugins/deepscientist-lite-academic/`: optional 17-skill academic package.
 - `plugins/deepscientist-lite-web/` and `plugins/deepscientist-lite-knowledge/`: experimental public-web and review-proposal packages.
-- `plugins/deepscientist-lite-empirical/`: `0.2.0-alpha.1` method-neutral empirical specification and result handoff.
-- `plugins/deepscientist-lite-engineering/`: `0.2.0-alpha.1` numerical, FFT, sampling, and figure-audit protocol.
+- `plugins/deepscientist-lite-empirical/`: `0.3.0-alpha.1` method-neutral empirical specification and result handoff.
+- `plugins/deepscientist-lite-engineering/`: `0.3.0-alpha.1` numerical, FFT, sampling, and figure-audit protocol.
 - `plugins/deepscientist-lite/`: frozen `0.6.0-beta.1` monolith retained for evidence identity, not a marketplace target.
 - `docs/README.md`: implementation and maintainer documentation index.
 - `teaching/README.zh.md`: teaching materials and demo scripts.

@@ -124,3 +124,37 @@ if _V6_EVALUATION_SPEC is None or _V6_EVALUATION_SPEC.loader is None:
     raise ImportError("cannot load ds_lite_v6_evaluation")
 ds_lite_v6_evaluation = importlib.util.module_from_spec(_V6_EVALUATION_SPEC)
 _V6_EVALUATION_SPEC.loader.exec_module(ds_lite_v6_evaluation)
+_MEMORY_LAYERS_PATH = Path(__file__).parent / "deepscientist-lite-core" / "scripts" / "ds_lite_memory_layers.py"
+_MEMORY_LAYERS_SPEC = importlib.util.spec_from_file_location("ds_lite_memory_layers", _MEMORY_LAYERS_PATH)
+if _MEMORY_LAYERS_SPEC is None or _MEMORY_LAYERS_SPEC.loader is None:
+    raise ImportError("cannot load ds_lite_memory_layers")
+ds_lite_memory_layers = importlib.util.module_from_spec(_MEMORY_LAYERS_SPEC)
+_MEMORY_LAYERS_SPEC.loader.exec_module(ds_lite_memory_layers)
+
+_MEMORY_CARD_V2_PATH = Path(__file__).parent / "deepscientist-lite-core" / "scripts" / "ds_lite_memory_card_v2.py"
+_MEMORY_CARD_V2_SPEC = importlib.util.spec_from_file_location("ds_lite_memory_card_v2", _MEMORY_CARD_V2_PATH)
+if _MEMORY_CARD_V2_SPEC is None or _MEMORY_CARD_V2_SPEC.loader is None:
+    raise ImportError("cannot load ds_lite_memory_card_v2")
+ds_lite_memory_card_v2 = importlib.util.module_from_spec(_MEMORY_CARD_V2_SPEC)
+_MEMORY_CARD_V2_SPEC.loader.exec_module(ds_lite_memory_card_v2)
+
+_TASK_ROUTER_PATH = Path(__file__).parent / "deepscientist-lite-core" / "scripts" / "ds_lite_task_router.py"
+_TASK_ROUTER_SPEC = importlib.util.spec_from_file_location("ds_lite_task_router", _TASK_ROUTER_PATH)
+if _TASK_ROUTER_SPEC is None or _TASK_ROUTER_SPEC.loader is None:
+    raise ImportError("cannot load ds_lite_task_router")
+ds_lite_task_router = importlib.util.module_from_spec(_TASK_ROUTER_SPEC)
+_TASK_ROUTER_SPEC.loader.exec_module(ds_lite_task_router)
+
+_OPERATOR_LEVELS_PATH = Path(__file__).parent / "deepscientist-lite-core" / "scripts" / "ds_lite_operator_levels.py"
+_OPERATOR_LEVELS_SPEC = importlib.util.spec_from_file_location("ds_lite_operator_levels", _OPERATOR_LEVELS_PATH)
+if _OPERATOR_LEVELS_SPEC is None or _OPERATOR_LEVELS_SPEC.loader is None:
+    raise ImportError("cannot load ds_lite_operator_levels")
+ds_lite_operator_levels = importlib.util.module_from_spec(_OPERATOR_LEVELS_SPEC)
+_OPERATOR_LEVELS_SPEC.loader.exec_module(ds_lite_operator_levels)
+
+_METHOD_FIDELITY_PATH = Path(__file__).parent / "deepscientist-lite-core" / "scripts" / "ds_lite_method_fidelity.py"
+_METHOD_FIDELITY_SPEC = importlib.util.spec_from_file_location("ds_lite_method_fidelity", _METHOD_FIDELITY_PATH)
+if _METHOD_FIDELITY_SPEC is None or _METHOD_FIDELITY_SPEC.loader is None:
+    raise ImportError("cannot load ds_lite_method_fidelity")
+ds_lite_method_fidelity = importlib.util.module_from_spec(_METHOD_FIDELITY_SPEC)
+_METHOD_FIDELITY_SPEC.loader.exec_module(ds_lite_method_fidelity)

@@ -5,15 +5,15 @@ This repository is a Codex marketplace repository.
 ## Runtime Plugin Packages
 
 - `.agents/plugins/marketplace.json`: one marketplace exposing six independently installable packages.
-- `plugins/deepscientist-lite-core/`: `deepscientist-lite` `0.8.1-beta.1`; nine Core skills, Graph/Evidence/iteration/delegation/handoff scripts, templates, learning/quality gates, Hooks, and the bounded foreground autonomy controller. The package has no vendor snapshot, MCP server, daemon, database, or browser runtime.
-- `plugins/deepscientist-lite-academic/`: `0.8.1-beta.1`; the 17 adapted Nature skills plus citation, revision, and adversarial-review protocols. It checks for the matching Core and owns no Hook.
-- `plugins/deepscientist-lite-web/`: `0.2.0-alpha.1`; public-only capability and v1/v2 source-record protocols plus bounded HTTP provenance recording. Playwright, Firecrawl, Tapestry, and agent-browser remain optional external backends.
-- `plugins/deepscientist-lite-knowledge/`: `0.2.0-alpha.1`; review-gated Tapestry and ScholarAIO handoffs. It does not own either upstream store or write formal ResearchKB knowledge directly.
-- `plugins/deepscientist-lite-empirical/`: `0.2.0-alpha.1`; one method-neutral router for empirical specs, diagnostics, robustness, and Core Evidence Pack results.
-- `plugins/deepscientist-lite-engineering/`: `0.2.0-alpha.1`; one router for numerical, FFT, sampling, simulation, units, and figure checks.
+- `plugins/deepscientist-lite-core/`: `deepscientist-lite` `0.9.0-beta.1`; nine Core skills, Graph/Evidence/iteration/delegation/handoff scripts, templates, learning/quality gates, Hooks, and the bounded foreground autonomy controller. The package has no vendor snapshot, MCP server, daemon, database, or browser runtime.
+- `plugins/deepscientist-lite-academic/`: `0.9.0-beta.1`; the 17 adapted Nature skills plus citation, revision, and adversarial-review protocols. It checks for the matching Core and owns no Hook.
+- `plugins/deepscientist-lite-web/`: `0.3.0-alpha.1`; public-only capability and v1/v2 source-record protocols plus bounded HTTP provenance recording. Playwright, Firecrawl, Tapestry, and agent-browser remain optional external backends.
+- `plugins/deepscientist-lite-knowledge/`: `0.3.0-alpha.1`; review-gated Tapestry and ScholarAIO handoffs. It does not own either upstream store or write formal ResearchKB knowledge directly.
+- `plugins/deepscientist-lite-empirical/`: `0.3.0-alpha.1`; one method-neutral router for empirical specs, diagnostics, robustness, and Core Evidence Pack results.
+- `plugins/deepscientist-lite-engineering/`: `0.3.0-alpha.1`; one router for numerical, FFT, sampling, simulation, units, and figure checks.
 - `plugins/deepscientist-lite/`: frozen `0.6.0-beta.1` monolith retained only for evidence identity and compatibility during the transition. It is no longer the marketplace target.
 
-Each optional package publishes `compatibility.json` and fails closed unless it observes `deepscientist-lite` `0.8.1-beta.1`. Marketplace dependency propagation is not assumed.
+Each optional package publishes `compatibility.json` and fails closed unless it observes `deepscientist-lite` `0.9.0-beta.1`. Marketplace dependency propagation is not assumed.
 
 ## Core Runtime Files
 
