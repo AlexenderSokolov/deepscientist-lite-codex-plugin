@@ -13,7 +13,7 @@
 - **设计建议**：本文推荐的目标实现；在代码和 harness 完成前不能对外声称具备。
 - **待真实验收**：必须在指定 Codex 版本、真实 Hook 信任流程、真实 app-server、真实进程重启或网络故障中观察到。
 
-原始事故和验收背景见：[DS Lite 0.8.1 autonomy/hook/resume 事故交接](maintainers/ds-lite-0.8.1-autonomy-hook-resume-acceptance-incident-handoff-20260730.zh.md)。
+原始事故和验收背景见 maintainers 文档（DS Lite 0.8.1 autonomy/hook/resume 事故交接）。
 
 ---
 

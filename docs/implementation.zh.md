@@ -133,7 +133,7 @@ tools/validation/                       # 仓库检查工具
 - [Marketplace 索引](../.agents/plugins/marketplace.json)
 - [插件 manifest](../plugins/deepscientist-lite/.codex-plugin/plugin.json)
 - [状态图脚本](../plugins/deepscientist-lite/scripts/ds_lite_state.py)
-- [行动、反思与责任架构](maintainers/action-reflection-philosophy.zh.md)
+行动、反思与责任架构（见 maintainers 文档）
 - [状态图协议](../plugins/deepscientist-lite/references/state-graph-protocol.md)
 - [教学区](../teaching/README.zh.md)
 - [仓库验证器](../tools/validation/validate_repo.py)
@@ -313,7 +313,7 @@ Mission 的 `evidence_detail` 给出 work unit/profile、validated/negative evid
 
 卡片的核心约束是“评价必须回到证据，但评价本身不是证据”。非空 score 需要项目相对或 `external://` ref；没有来源对照时 novelty 必须未知。`validate-factor-card` 只检查结构、路径、enum、敏感字段、ID/因子冲突和证据引用存在形式，不判断科学主张为真，也不参与 Mission evidence promotion。
 
-该方法只独立实现了 DeepScientist V2 v2.1.8（tag commit `49ffdcda6ce159505f6119b1e26d79c8503a8286`）研究流程中可跨领域成立的高层不变量：未测量值保持未知；candidate promotion 绑定真实 checks、evidence refs 和 decision reason；pending/submit 不冒充 verified；失败检查继续定义搜索边界；机制假设先于最小 probe，并优先单轴 ablation。审计固定的 `wq-alpha-research/SKILL.md` blob 为 `6f58083e8f0a951a0773d94f5b0812484febc8c3`。上游仓库声明 `AGPL-3.0-only`，Lite 不复制其代码、schema 或 skill 正文。Finance Factor 是 pressure fixture，不是默认 profile；金融 stage/status、表达式、市场、股票池、WQ/Qlib 指标、阈值、registry、continuous mode 和 external submission 均未进入插件。逐项证据见[迁移审计](maintainers/deepscientist-v2.1.8-factor-transfer-audit.zh.md)。
+该方法只独立实现了 DeepScientist V2 v2.1.8（tag commit `49ffdcda6ce159505f6119b1e26d79c8503a8286`）研究流程中可跨领域成立的高层不变量：未测量值保持未知；candidate promotion 绑定真实 checks、evidence refs 和 decision reason；pending/submit 不冒充 verified；失败检查继续定义搜索边界；机制假设先于最小 probe，并优先单轴 ablation。审计固定的 `wq-alpha-research/SKILL.md` blob 为 `6f58083e8f0a951a0773d94f5b0812484febc8c3`。上游仓库声明 `AGPL-3.0-only`，Lite 不复制其代码、schema 或 skill 正文。Finance Factor 是 pressure fixture，不是默认 profile；金融 stage/status、表达式、市场、股票池、WQ/Qlib 指标、阈值、registry、continuous mode 和 external submission 均未进入插件。逐项证据见迁移审计（maintainers 文档）。
 
 ### Bounded Delegation
 
