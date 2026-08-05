@@ -104,7 +104,7 @@ $ds-lite-coordinate 规划两个独立任务，等待审批，然后收集并验
 
 ### Graph v2 与 Evidence Pack v1
 
-Graph v2 使用原子写入、版本号检查和项目相对路径（或符号化外部路径）。Evidence Pack v1 提供了独立的纯标准库 CLI，用于契约管理、清单、SHA-256 记录和严格验证。旧的 Graph v1 项目首次写入时自动迁移；如果项目包含绝对路径，请先阅读 [迁移指南](docs/maintainers/graph-v2-migration.md)。
+Graph v2 使用原子写入、版本号检查和项目相对路径（或符号化外部路径）。Evidence Pack v1 提供了独立的纯标准库 CLI，用于契约管理、清单、SHA-256 记录和严格验证。旧的 Graph v1 项目首次写入时自动迁移；如果项目包含绝对路径，迁移时会提示，请按提示处理。
 
 ## 项目里会多出什么文件
 

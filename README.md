@@ -104,7 +104,7 @@ For Chinese project titles on Windows, write longer text into a UTF-8 file and u
 
 ### Graph v2 and Evidence Pack v1
 
-Graph v2 uses atomic writes, revision checks, and project-relative or symbolic external paths. Evidence Pack v1 provides a separate standard-library CLI for contracts, manifests, SHA-256 records, and strict verification. Existing Graph v1 projects are migrated on first write; read the [migration guide](docs/maintainers/graph-v2-migration.md) for projects with absolute paths.
+Graph v2 uses atomic writes, revision checks, and project-relative or symbolic external paths. Evidence Pack v1 provides a separate standard-library CLI for contracts, manifests, SHA-256 records, and strict verification. Existing Graph v1 projects are migrated on first write; projects with absolute paths are flagged on migration; follow the on-screen prompt.
 
 ## What Files Appear in Your Project
 
