@@ -6,7 +6,7 @@ Long research sessions overwhelm chat history. Switch to a new thread and you lo
 
 DeepScientist Lite solves these handoff problems with a set of Codex skills and ordinary project files. It does not judge scientific conclusions. For frozen, authorized, and auditable gates, it can push forward continuously via a foreground controller, auto-resume, and generate progress receipts without starting a background daemon. Its job is to leave behind goals, routes, experiments, and review results so the next session or the next person can pick up where things stopped.
 
-> **Official plugin:** DeepScientist Lite is the official Codex plugin for the DeepScientist workflow. "DeepScientist" identifies the upstream research workflow and platform. See [NOTICE](NOTICE) for project attribution and naming.
+
 
 ## Package Overview
 
