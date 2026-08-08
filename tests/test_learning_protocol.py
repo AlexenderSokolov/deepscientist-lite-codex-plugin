@@ -30,7 +30,7 @@ class LearningProtocolTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         payload = json.loads(result.stdout)
-        self.assertEqual(payload["schema_version"], "ds-lite.learning-receipt.v1")
+        self.assertEqual(payload["schema_version"], "ds-lite.learning-receipt.v2")
         receipt = self.root / payload["receipt_ref"]
         summary = self.root / payload["summary_ref"]
         self.assertTrue(receipt.is_file())
@@ -40,7 +40,7 @@ class LearningProtocolTests(unittest.TestCase):
         self.assertEqual(data["skill"], "ds-lite")
         self.assertTrue(data["tutorial_refs"])
 
-    def test_matching_learning_is_reused_and_version_change_is_stale(self) -> None:
+    def test_matching_learning_is_reused_and_observed_package_version_does_not_invalidate(self) -> None:
         first = self.run_cli("learn", "--root", str(self.root), "--skill", "ds-lite", "--summary", "Applicability: recovery. Rules: read state. Pitfalls: claiming completion. Checklist: verify receipt. Human: approve next step.")
         self.assertEqual(first.returncode, 0, first.stderr)
         second = self.run_cli("ensure", "--root", str(self.root), "--skill", "ds-lite")
@@ -48,11 +48,22 @@ class LearningProtocolTests(unittest.TestCase):
         self.assertEqual(json.loads(second.stdout)["status"], "current")
         receipt = self.root / json.loads(first.stdout)["receipt_ref"]
         data = json.loads(receipt.read_text(encoding="utf-8"))
-        data["package_version"] = "0.7.0-beta.1"
+        data["observed_package_version"] = "0.7.0-beta.1"
+        receipt.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        still_current = self.run_cli("ensure", "--root", str(self.root), "--skill", "ds-lite")
+        self.assertEqual(still_current.returncode, 0, still_current.stderr)
+        self.assertEqual(json.loads(still_current.stdout)["status"], "current")
+
+    def test_legacy_v1_receipt_is_readable_but_requires_v2_refresh(self) -> None:
+        first = self.run_cli("learn", "--root", str(self.root), "--skill", "ds-lite", "--summary", "Applicability: recovery. Rules: read state. Pitfalls: claiming completion. Checklist: verify receipt. Human: approve next step.")
+        receipt = self.root / json.loads(first.stdout)["receipt_ref"]
+        data = json.loads(receipt.read_text(encoding="utf-8"))
+        data["schema_version"] = "ds-lite.learning-receipt.v1"
+        data["package_version"] = data.pop("observed_package_version")
         receipt.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
         stale = self.run_cli("ensure", "--root", str(self.root), "--skill", "ds-lite")
         self.assertNotEqual(stale.returncode, 0)
-        self.assertIn("stale", stale.stdout.lower() + stale.stderr.lower())
+        self.assertIn("v2 refresh", stale.stdout.lower() + stale.stderr.lower())
 
     def test_tutorial_catalog_is_bounded_and_hash_verified(self) -> None:
         result = self.run_cli("catalog")

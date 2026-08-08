@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased: v0.10.0-beta.3 audit remediation
+
+- Added `release/package-set.json` and a checked synchronization path for all seven active package identities, Core compatibility, and the nine installation matrices.
+- Closed Claim Ledger and autonomy v2 contract gaps: new claims start as `draft`, typed reviews provide relative provenance, gate effects are authorization-bound, and Hook terminal summaries are contract-bound.
+- Moved active Control Plane references to its canonical controller/schema package while retaining the Core trees as a checked compatibility projection.
+- Added the Academic registry v2 workflow profile and shared preflight contract for all 17 skills; descriptions are generated from valid frontmatter metadata.
+- Added `validate_all.py` and active-package validation. This remains a candidate change: no tag, GitHub Release, publish, or fresh-runtime release claim has been made.
+
 ## 2026-08-08: v0.10.0-beta.2 — router removal and direct deployment
 
 - Removed three router aggregation skills (nature-literature, nature-review, nature-convert) from the Academic package.

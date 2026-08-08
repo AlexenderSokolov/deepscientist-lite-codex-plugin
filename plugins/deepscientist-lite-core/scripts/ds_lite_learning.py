@@ -15,10 +15,10 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 
-SCHEMA = "ds-lite.learning-receipt.v1"
+SCHEMA = "ds-lite.learning-receipt.v2"
+LEGACY_SCHEMA = "ds-lite.learning-receipt.v1"
 CATALOG_SCHEMA = "ds-lite.learning-catalog.v1"
 PACKAGE = "deepscientist-lite"
-PACKAGE_VERSION = "0.8.0-beta.1"
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 SENSITIVE = re.compile(r"(?i)(password|token|secret|api[_-]?key|authorization|cookie|credential)")
@@ -41,6 +41,17 @@ def _catalog_path() -> Path:
     return _package_root() / "references" / "learning" / "tutorial-catalog.json"
 
 
+def _observed_package_version() -> str:
+    try:
+        manifest = json.loads((_package_root() / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise LearningError(f"Core manifest unavailable: {exc}") from exc
+    version = manifest.get("version")
+    if not isinstance(version, str) or not version:
+        raise LearningError("Core manifest version is invalid")
+    return version
+
+
 def _load_catalog() -> tuple[dict[str, Any], str]:
     path = _catalog_path()
     try:
@@ -50,8 +61,8 @@ def _load_catalog() -> tuple[dict[str, Any], str]:
         raise LearningError(f"learning catalog unavailable: {exc}") from exc
     if not isinstance(data, dict) or data.get("schema_version") != CATALOG_SCHEMA:
         raise LearningError("learning catalog schema is unsupported")
-    if data.get("package") != PACKAGE or data.get("package_version") != PACKAGE_VERSION:
-        raise LearningError("learning catalog package version is unsupported")
+    if data.get("package") != PACKAGE:
+        raise LearningError("learning catalog package identity is unsupported")
     tutorials = data.get("tutorials")
     if not isinstance(tutorials, list) or not 1 <= len(tutorials) <= 10:
         raise LearningError("tutorial catalog must contain one to ten tutorials")
@@ -132,7 +143,7 @@ def _receipt(root: Path, skill: str, summary: str, catalog: dict[str, Any], cata
         "schema_version": SCHEMA,
         "receipt_id": f"learning-{skill}-{uuid.uuid4().hex[:12]}",
         "package": PACKAGE,
-        "package_version": PACKAGE_VERSION,
+        "observed_package_version": _observed_package_version(),
         "skill": skill,
         "catalog_sha256": catalog_hash,
         "tutorial_refs": _tutorial_refs(catalog, skill),
@@ -146,11 +157,15 @@ def _receipt(root: Path, skill: str, summary: str, catalog: dict[str, Any], cata
 
 
 def validate_receipt(root: Path, payload: Any) -> dict[str, Any]:
-    required = {"schema_version", "receipt_id", "package", "package_version", "skill", "catalog_sha256", "tutorial_refs", "summary_ref", "summary_sha256", "learned_at", "refresh_reason", "status", "extensions"}
-    if not isinstance(payload, dict) or set(payload) != required:
-        raise LearningError("learning receipt fields do not match ds-lite.learning-receipt.v1")
-    if payload["schema_version"] != SCHEMA or payload["package"] != PACKAGE or payload["package_version"] != PACKAGE_VERSION:
-        raise LearningError("learning receipt is stale")
+    v2_required = {"schema_version", "receipt_id", "package", "observed_package_version", "skill", "catalog_sha256", "tutorial_refs", "summary_ref", "summary_sha256", "learned_at", "refresh_reason", "status", "extensions"}
+    v1_required = {"schema_version", "receipt_id", "package", "package_version", "skill", "catalog_sha256", "tutorial_refs", "summary_ref", "summary_sha256", "learned_at", "refresh_reason", "status", "extensions"}
+    if not isinstance(payload, dict) or payload.get("schema_version") not in {SCHEMA, LEGACY_SCHEMA}:
+        raise LearningError("learning receipt schema is unsupported")
+    required = v2_required if payload["schema_version"] == SCHEMA else v1_required
+    if set(payload) != required or payload["package"] != PACKAGE:
+        raise LearningError("learning receipt fields are invalid")
+    if payload["schema_version"] == SCHEMA and (not isinstance(payload["observed_package_version"], str) or not payload["observed_package_version"]):
+        raise LearningError("learning receipt observed package version is invalid")
     if not isinstance(payload["skill"], str) or not ID_RE.fullmatch(payload["skill"]):
         raise LearningError("learning receipt skill is invalid")
     if not SHA_RE.fullmatch(str(payload["catalog_sha256"])) or not SHA_RE.fullmatch(str(payload["summary_sha256"])):
@@ -186,7 +201,7 @@ def learn(root: Path, skill: str, summary: str, reason: str = "") -> dict[str, A
     if receipt_path.exists():
         try:
             current = validate_receipt(root, json.loads(receipt_path.read_text(encoding="utf-8")))
-            if current["catalog_sha256"] == catalog_hash and current["tutorial_refs"] == _tutorial_refs(catalog, skill):
+            if current["schema_version"] == SCHEMA and current["catalog_sha256"] == catalog_hash and current["tutorial_refs"] == _tutorial_refs(catalog, skill):
                 return {"schema_version": SCHEMA, "status": "current", "reused": True, "receipt_ref": receipt_path.relative_to(root).as_posix(), "summary_ref": summary_ref}
         except (OSError, UnicodeError, json.JSONDecodeError, LearningError):
             pass
@@ -203,6 +218,8 @@ def ensure(root: Path, skill: str) -> dict[str, Any]:
         raise LearningError("learning receipt is missing")
     catalog, catalog_hash = _load_catalog()
     payload = validate_receipt(root, json.loads(receipt_path.read_text(encoding="utf-8")))
+    if payload["schema_version"] != SCHEMA:
+        raise LearningError("learning receipt requires v2 refresh")
     if payload["catalog_sha256"] != catalog_hash or payload["tutorial_refs"] != _tutorial_refs(catalog, skill):
         raise LearningError("learning receipt is stale")
     return {"schema_version": SCHEMA, "status": "current", "reused": True, "receipt_ref": receipt_path.relative_to(root).as_posix(), "summary_ref": payload["summary_ref"]}

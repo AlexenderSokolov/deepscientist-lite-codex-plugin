@@ -1,10 +1,11 @@
 param(
     [Parameter(Mandatory=$true)][string]$EvidenceRoot,
     [Parameter(Mandatory=$true)][string]$DbosDependencyRoot,
-    [string]$PythonBin = "C:\ProgramData\anaconda3\python.exe"
+    [string]$PythonBin = ""
 )
 $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+$PythonBin = & (Join-Path $PSScriptRoot "resolve_python.ps1") -ExplicitPython $PythonBin
 $EvidenceRoot = [IO.Path]::GetFullPath((Join-Path $Root $EvidenceRoot))
 $RepoRoot = [IO.Path]::GetFullPath($Root) + [IO.Path]::DirectorySeparatorChar
 if (-not $EvidenceRoot.StartsWith($RepoRoot, [StringComparison]::OrdinalIgnoreCase)) {
@@ -21,7 +22,7 @@ New-Item -ItemType Directory -Path $EvidenceRoot | Out-Null
 $env:PYTHONDONTWRITEBYTECODE = "1"
 $env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller") + $(if ($env:PYTHONPATH) { ";" + $env:PYTHONPATH } else { "" })
 
-& $PythonBin (Join-Path $Root "plugins\deepscientist-lite-core\controller\phase1_fault_harness.py") `
+& $PythonBin (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller\phase1_fault_harness.py") `
     --dependency-root $DbosDependencyRoot --python-bin $PythonBin `
     --workdir (Join-Path $EvidenceRoot "fault-work") --output (Join-Path $EvidenceRoot "fault-matrix.json") `
     --seed 20260731 --trials 100

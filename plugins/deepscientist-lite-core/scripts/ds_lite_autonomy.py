@@ -128,7 +128,7 @@ def validate_contract(value: Any) -> dict[str, Any]:
     if any(dep not in ids for gate in gates for dep in gate["depends_on"]):
         raise AutonomyError("gate dependency is unknown")
     release = value["release"]
-    if not isinstance(release, dict) or set(release) != {"authorized", "required_gates"} or release["authorized"] is not True:
+    if not isinstance(release, dict) or set(release) != {"authorized", "required_gates"} or not isinstance(release["authorized"], bool):
         raise AutonomyError("release authorization is invalid")
     if sorted(release["required_gates"]) != sorted(ids):
         raise AutonomyError("release must require every declared gate")
@@ -520,8 +520,10 @@ def run(root: Path, contract_path: Path | dict[str, Any], output: Path, *, resum
         "awaiting_user_action_gates": sorted(gate_id for gate_id, value in gate_results.items() if value.get("status") == "awaiting_user_action"),
         "gates": gate_results,
         "goal_digest": _digest_goals(contract["goals"]),
-        "release_authorized": True,
-        "next_action": "release" if not pending and not blocked and len(completed) == len(gates) else ("awaiting-user-action" if any(value.get("status") == "awaiting_user_action" for value in gate_results.values()) else "resume-independent-gate"),
+        "release_authorized": contract["release"]["authorized"],
+        "next_action": (
+            "release" if contract["release"]["authorized"] else "formal-release-gate"
+        ) if not pending and not blocked and len(completed) == len(gates) else ("awaiting-user-action" if any(value.get("status") == "awaiting_user_action" for value in gate_results.values()) else "resume-independent-gate"),
         "raw_output_persisted": False,
     }
     summary_path = output / "summary.json"

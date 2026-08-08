@@ -638,8 +638,39 @@ def _autonomy_stop_gaps(root: Path) -> list[str]:
         return ["autonomy controller summary schema is invalid"]
     if payload.get("status") != "completed":
         return [f"autonomy controller is not terminal: {payload.get('status', 'unknown')}"]
-    if schema == "ds-lite.autonomy-summary.v2" and payload.get("terminal_policy") == "release" and payload.get("release_authorized") is not True:
+    if schema == "ds-lite.autonomy-summary.v2":
+        return _autonomy_v2_summary_gaps(contract, payload)
+    return []
+
+
+def _autonomy_v2_summary_gaps(contract_path: Path, summary: dict[str, Any]) -> list[str]:
+    """Reject a terminal v2 projection unless it is bound to its policy contract."""
+    try:
+        from ds_lite_autonomy_v2 import AutonomyV2Error, _digest, validate_contract
+
+        contract = validate_contract(json.loads(contract_path.read_text(encoding="utf-8")))
+    except (ImportError, OSError, UnicodeError, json.JSONDecodeError, AutonomyV2Error):
+        return ["autonomy v2 contract is unreadable or invalid"]
+
+    expected = {
+        "work_unit_ref": contract["work_unit_ref"],
+        "goal_digest": _digest(sorted(contract["goals"])),
+        "gate_ids": sorted(gate["id"] for gate in contract["gates"]),
+        "authorization_ref": contract["authorization"]["ref"],
+        "authorization_digest": _digest(contract["authorization"]),
+        "terminal_policy": contract["terminal_policy"],
+    }
+    for field, value in expected.items():
+        if summary.get(field) != value:
+            return [f"autonomy v2 summary {field} does not match contract"]
+    if summary.get("goals") != contract["goals"]:
+        return ["autonomy v2 summary goals do not match contract"]
+    if summary.get("terminal_policy") == "release" and summary.get("release_authorized") is not True:
         return ["autonomy v2 release formal gate is not authorized"]
+    if summary.get("release_authorized") is not (
+        contract["terminal_policy"] == "release" and contract["authorization"]["release_gate"]
+    ):
+        return ["autonomy v2 summary release authorization does not match contract"]
     return []
 
 

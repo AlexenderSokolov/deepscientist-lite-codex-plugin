@@ -444,17 +444,10 @@ class RealAcceptanceTests(unittest.TestCase):
             REPO_ROOT / "tools" / "validation" / "run_validate.ps1",
             REPO_ROOT / "tools" / "validation" / "run_validate.sh",
         ):
-            content = validator.read_text(encoding="utf-8")
-            for required in (
-                "teaching/wire_probe.py",
-                "teaching/real_acceptance.py",
-                "teaching/matched_effect.py",
-                "teaching/host_acceptance.py",
-                "tests/test_real_acceptance.py",
-                "tests/test_matched_effect.py",
-                "tests/test_host_acceptance.py",
-            ):
-                self.assertIn(required, content)
+            self.assertIn("validate_all.py", validator.read_text(encoding="utf-8"))
+        unified = (REPO_ROOT / "tools" / "validation" / "validate_all.py").read_text(encoding="utf-8")
+        self.assertIn('root / "teaching"', unified)
+        self.assertIn('root / "tests"', unified)
 
 
 if __name__ == "__main__":

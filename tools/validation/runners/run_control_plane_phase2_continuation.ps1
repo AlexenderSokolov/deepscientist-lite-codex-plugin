@@ -2,12 +2,13 @@ param(
     [Parameter(Mandatory=$true)][string]$EvidenceRoot,
     [Parameter(Mandatory=$true)][string]$DbosDependencyRoot,
     [Parameter(Mandatory=$true)][string]$CodexBin,
-    [string]$PythonBin = "C:\ProgramData\anaconda3\python.exe",
+    [string]$PythonBin = "",
     [string]$PreviousDecision = "research\.validation-tmp\control-plane-phase2-20260731-03\phase2-decision-02.json",
     [string]$PreviousSmoke = "research\.validation-tmp\control-plane-phase2-20260731-02\canonical-thread-smoke.json"
 )
 $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+$PythonBin = & (Join-Path $PSScriptRoot "resolve_python.ps1") -ExplicitPython $PythonBin
 $EvidenceRoot = [IO.Path]::GetFullPath((Join-Path $Root $EvidenceRoot))
 $RepoRoot = [IO.Path]::GetFullPath($Root) + [IO.Path]::DirectorySeparatorChar
 if (-not $EvidenceRoot.StartsWith($RepoRoot, [StringComparison]::OrdinalIgnoreCase)) { throw "EvidenceRoot must stay inside repository" }
@@ -22,7 +23,7 @@ New-Item -ItemType Directory -Path $EvidenceRoot | Out-Null
 $env:PYTHONDONTWRITEBYTECODE = "1"
 $env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller") + $(if ($env:PYTHONPATH) { ";" + $env:PYTHONPATH } else { "" })
 
-& $PythonBin (Join-Path $Root "plugins\deepscientist-lite-core\controller\phase2_fault_harness.py") --workdir (Join-Path $EvidenceRoot "fault-work") --output (Join-Path $EvidenceRoot "fault-matrix.json") --seed 20260731 --trials 100
+& $PythonBin (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller\phase2_fault_harness.py") --workdir (Join-Path $EvidenceRoot "fault-work") --output (Join-Path $EvidenceRoot "fault-matrix.json") --seed 20260731 --trials 100
 $faultExit = $LASTEXITCODE
 $ErrorActionPreference = "Continue"
 & $PythonBin -m unittest tests.test_control_plane_phase2 tests.test_control_plane_phase2_app_server tests.test_control_plane_phase2_broker tests.test_control_plane_phase2_runner tests.test_control_plane_phase2_fault_harness tests.test_control_plane_phase2_evidence tests.test_control_plane_phase1 tests.test_control_plane_phase1_cli tests.test_control_plane_spike -v *> (Join-Path $EvidenceRoot "phase-tests.txt")
@@ -30,7 +31,7 @@ $phaseExit = $LASTEXITCODE
 $ErrorActionPreference = "Stop"
 & $PythonBin -m teaching.control_plane_phase_tests --output (Join-Path $EvidenceRoot "phase0-phase05-tests.json")
 $contractExit = $LASTEXITCODE
-& $PythonBin teaching\controller_broker_smoke.py --codex-bin $CodexBin --schema-root (Join-Path $Root "plugins\deepscientist-lite-core\schemas\codex\0.128.0") --workspace $Root --runtime (Join-Path $EvidenceRoot "real-runtime") --output (Join-Path $EvidenceRoot "real-fault-broker-smoke.json") --journal-summary (Join-Path $EvidenceRoot "broker-journal-summary.json")
+& $PythonBin teaching\controller_broker_smoke.py --codex-bin $CodexBin --schema-root (Join-Path $Root "plugins\deepscientist-lite-control-plane\schemas\codex\0.128.0") --workspace $Root --runtime (Join-Path $EvidenceRoot "real-runtime") --output (Join-Path $EvidenceRoot "real-fault-broker-smoke.json") --journal-summary (Join-Path $EvidenceRoot "broker-journal-summary.json")
 $realExit = $LASTEXITCODE
 & $PythonBin -m teaching.control_plane_phase2_evidence managed --project (Join-Path $EvidenceRoot "managed-project") --backup (Join-Path $EvidenceRoot "managed-backup") --restore (Join-Path $EvidenceRoot "managed-restore") --output (Join-Path $EvidenceRoot "managed-probe.json")
 $managedExit = $LASTEXITCODE

@@ -1,6 +1,6 @@
 ---
 name: nature-proposal-writer
-description: Use the complete nature-proposal-writer workflow, preserving its upstream routing and supporting materials. | Proposal-first scientific writing pipeline. Three modes (compose/revise/hybrid) with four-layer QA pipeline. Enforces evidence-before-prose, argument-before-sections, and contracts-before-paragraphs. license; MIT metadata; hermes; tags; [research, writing, proposal, revision, qa, multi-agent] related_skills; [brainstorming, professor, avoid-ai-writing, docx]
+description: Use the complete nature-proposal-writer workflow, preserving its upstream routing and supporting materials. Proposal-first scientific writing pipeline. Three modes (compose/revise/hybrid) with four-layer QA pipeline. Enforces evidence-before-prose, argument-before-sections, and contracts-before-paragraphs.
 ---
 
 # DS Lite Integration Boundary

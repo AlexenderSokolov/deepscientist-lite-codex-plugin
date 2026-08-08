@@ -12,13 +12,13 @@ DeepScientist Lite solves these handoff problems with a set of Codex skills and 
 
 ```mermaid
 graph LR
-    subgraph "Core · 0.10.0-beta.2 · 9 skills"
+    subgraph "Core · 0.10.0-beta.3 · 9 skills"
         A["Goal retention — Route tracing — Experiment logging — Evidence packing — Review — Iteration — Delegation — Handoff"]
     end
-    subgraph "Academic · 0.10.0-beta.2 · 17 skills"
+    subgraph "Academic · 0.10.0-beta.3 · 17 skills"
         B["Literature search · Citation verification · Paper reading · Writing · Polishing · Review simulation · Response letters · Submission"]
     end
-    subgraph "Optional packs · 0.3.0-alpha.1 · 1 skill each"
+    subgraph "Optional packs · 0.10.0-beta.3 · 1 skill each"
         C["Web acquisition"]
         D["Knowledge proposals"]
         E["Empirical research"]
@@ -30,13 +30,13 @@ graph LR
 
 | Package | Version | Skills | What it does |
 | --- | --- | --- | --- |
-| Core | `0.10.0-beta.2` | 9 | Domain-neutral worker protocol: goal retention, route tracing, experiments, evidence, reviews, iterations, delegation, handoffs |
-| Academic | `0.10.0-beta.2` | 17 | Nature-grade paper workflow; 17 skills deployed directly without routing aggregation |
-| Control Plane | `0.10.0-beta.2` | optional | DBOS/controller extension; missing dependency does not block Core |
-| Web | `0.3.0-alpha.1` | 1 | Public web acquisition and provenance recording |
-| Knowledge | `0.3.0-alpha.1` | 1 | Review-gated knowledge proposals |
-| Empirical | `0.3.0-alpha.1` | 1 | Bounded empirical research specs and result handoff |
-| Engineering | `0.3.0-alpha.1` | 1 | Bounded engineering numerical analysis and figure audit |
+| Core | `0.10.0-beta.3` | 9 | Domain-neutral worker protocol: goal retention, route tracing, experiments, evidence, reviews, iterations, delegation, handoffs |
+| Academic | `0.10.0-beta.3` | 17 | Nature-grade paper workflow; 17 skills deployed directly without routing aggregation |
+| Control Plane | `0.10.0-beta.3` | optional | DBOS/controller extension; missing dependency does not block Core |
+| Web | `0.10.0-beta.3` | 1 | Public web acquisition and provenance recording |
+| Knowledge | `0.10.0-beta.3` | 1 | Review-gated knowledge proposals |
+| Empirical | `0.10.0-beta.3` | 1 | Bounded empirical research specs and result handoff |
+| Engineering | `0.10.0-beta.3` | 1 | Bounded engineering numerical analysis and figure audit |
 
 **Typical research workflow:**
 
@@ -62,7 +62,7 @@ Requires Codex and Python 3.10 or newer. Runtime scripts use only the Python sta
 codex plugin marketplace add AlexenderSokolov/deepscientist-lite-codex-plugin
 ```
 
-This command adds a plugin source. Open `/plugins`, select this marketplace, and install `deepscientist-lite` Core by default (9 skills). Install Academic, Web, Knowledge, Empirical, or Engineering separately when needed. After installing or upgrading, restart Codex Desktop and use a fresh task to verify actual versions and skill counts.
+This command adds a plugin source. Open `/plugins`, select this marketplace, and install `deepscientist-lite` Core by default (9 skills). Install Academic, Web, Knowledge, Empirical, Engineering, or the optional Control Plane separately when needed. After installing or upgrading, restart Codex Desktop and use a fresh task to verify actual versions and skill counts.
 
 Each optional package requires running its built-in doctor on first use, pointing to the Core root. It stops if Core is missing or version-mismatched.
 

@@ -44,7 +44,7 @@ class Phase3EvidenceTests(unittest.TestCase):
         self.assertIn('+ ";" + $Root', powershell)
         self.assertIn('$PSNativeCommandUseErrorActionPreference = $false', powershell)
         self.assertIn('$ErrorActionPreference = "Continue"', powershell)
-        self.assertIn(':$repo_root/plugins/deepscientist-lite-core/controller:$repo_root', bash)
+        self.assertIn(':$repo_root/plugins/deepscientist-lite-control-plane/controller:$repo_root', bash)
 
     def test_supervised_probe_recovers_same_action_and_converges(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

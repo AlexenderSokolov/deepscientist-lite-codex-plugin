@@ -18,7 +18,7 @@ fi
 
 mkdir -p "$evidence_root"
 export PYTHONDONTWRITEBYTECODE=1
-export PYTHONPATH="$dependency_root:$root/plugins/deepscientist-lite-core/controller${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="$dependency_root:$root/plugins/deepscientist-lite-control-plane/controller${PYTHONPATH:+:$PYTHONPATH}"
 
 "$python_bin" "$root/plugins/deepscientist-lite-control-plane/controller/phase1_fault_harness.py" \
   --dependency-root "$dependency_root" --python-bin "$python_bin" \

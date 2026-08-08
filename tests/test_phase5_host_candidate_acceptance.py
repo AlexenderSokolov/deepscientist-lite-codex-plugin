@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tools.validation import phase5_host_candidate_acceptance as module
 from tools.validation.phase5_host_candidate_acceptance import (
     build_fresh_desktop_acceptance,
     build_hook_acceptance,
@@ -94,15 +95,7 @@ class Phase5HostCandidateAcceptanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             candidate = self.candidate(root)
-            packages = {name: version for name, version in (
-                ("deepscientist-lite", "0.10.0-beta.2"),
-                ("deepscientist-lite-academic", "0.10.0-beta.2"),
-                ("deepscientist-lite-web", "0.3.0-alpha.1"),
-                ("deepscientist-lite-knowledge", "0.3.0-alpha.1"),
-                ("deepscientist-lite-empirical", "0.3.0-alpha.1"),
-                ("deepscientist-lite-engineering", "0.3.0-alpha.1"),
-                ("deepscientist-lite-control-plane", "0.10.0-beta.2"),
-            )}
+            packages = dict(module.EXPECTED_PACKAGES)
             cache = write(root / "cache.json", {
                 "schema_version": "ds-lite.formal-cache-acceptance.v1", "status": "passed",
                 "candidate_digest": DIGEST, "expected_packages": packages,

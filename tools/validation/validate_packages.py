@@ -12,81 +12,23 @@ try:
     from package_identity import package_digest
 except ModuleNotFoundError:  # package import from repository root
     from tools.validation.package_identity import package_digest
+try:
+    from release_identity import load_package_set
+except ModuleNotFoundError:  # package import from repository root
+    from tools.validation.release_identity import load_package_set
 
 
-PACKAGES: dict[str, dict[str, Any]] = {
-   "core": {
-       "directory": "deepscientist-lite-core",
-       "name": "deepscientist-lite",
-       "version": "0.10.0-beta.2",
-       "skills": {
-           "ds-lite",
-           "ds-lite-analysis-write",
-           "ds-lite-coordinate",
-           "ds-lite-experiment",
-           "ds-lite-idea",
-           "ds-lite-intake",
-           "ds-lite-iterate",
-           "ds-lite-review",
-           "ds-lite-scout",
-       },
-   },
-   "academic": {
-       "directory": "deepscientist-lite-academic",
-       "name": "deepscientist-lite-academic",
-       "version": "0.10.0-beta.2",
-       "skill_count": 17,
-       "skill_prefix": "nature-",
-   },
-    "web": {
-        "directory": "deepscientist-lite-web",
-        "name": "deepscientist-lite-web",
-        "version": "0.3.0-alpha.1",
-        "skills": {"ds-lite-web"},
-    },
-    "knowledge": {
-        "directory": "deepscientist-lite-knowledge",
-        "name": "deepscientist-lite-knowledge",
-        "version": "0.3.0-alpha.1",
-        "skills": {"ds-lite-knowledge"},
-    },
-    "empirical": {
-        "directory": "deepscientist-lite-empirical",
-        "name": "deepscientist-lite-empirical",
-        "version": "0.3.0-alpha.1",
-        "skills": {"ds-lite-empirical"},
-        "max_files": 150,
-        "max_bytes": 5 * 1024 * 1024,
-    },
-    "engineering": {
-        "directory": "deepscientist-lite-engineering",
-        "name": "deepscientist-lite-engineering",
-        "version": "0.3.0-alpha.1",
-        "skills": {"ds-lite-engineering"},
-        "max_files": 150,
-        "max_bytes": 5 * 1024 * 1024,
-    },
-    "control-plane": {
-        "directory": "deepscientist-lite-control-plane",
-        "name": "deepscientist-lite-control-plane",
-        "version": "0.10.0-beta.2",
-        "skills": {"ds-lite-control-plane"},
-        "max_files": 80,
-        "max_bytes": 2 * 1024 * 1024,
-    },
-}
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
-MATRICES = {
-    "core-only": ("core",),
-    "core+academic": ("core", "academic"),
-    "core+empirical": ("core", "empirical"),
-    "core+engineering": ("core", "engineering"),
-    "core+web": ("core", "web"),
-    "core+knowledge": ("core", "knowledge"),
-    "core+web+knowledge": ("core", "web", "knowledge"),
-    "all-six": ("core", "academic", "web", "knowledge", "empirical", "engineering"),
-    "all-seven": ("core", "academic", "web", "knowledge", "empirical", "engineering", "control-plane"),
-}
+
+def _release_config(repo_root: Path) -> tuple[dict[str, dict[str, Any]], dict[str, tuple[str, ...]], str]:
+    package_set = load_package_set(repo_root)
+    packages = json.loads(json.dumps(package_set["packages"]))
+    for package in packages.values():
+        if "skills" in package:
+            package["skills"] = set(package["skills"])
+    matrices = {name: tuple(keys) for name, keys in package_set["installation_matrices"].items()}
+    return packages, matrices, package_set["core_compatibility"]
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -107,8 +49,8 @@ def discover_skills(package_root: Path) -> set[str]:
     }
 
 
-def validate_package(repo_root: Path, key: str) -> dict[str, Any]:
-    expected = PACKAGES[key]
+def validate_package(repo_root: Path, key: str, packages: dict[str, dict[str, Any]], core_compatibility: str) -> dict[str, Any]:
+    expected = packages[key]
     package_root = repo_root / "plugins" / expected["directory"]
     issues: list[str] = []
     try:
@@ -165,8 +107,7 @@ def validate_package(repo_root: Path, key: str) -> dict[str, Any]:
         if required.get("plugin") != "deepscientist-lite":
             issues.append("core-requirement-mismatch")
         required_version = required.get("version", "")
-        if not (required_version == "0.9.0-beta.1" or required_version.startswith(">=")):
-            issues.append("core-requirement-mismatch")
+        if required_version != core_compatibility:
             issues.append("core-requirement-mismatch")
         if compatibility.get("missing_core") != "blocked":
             issues.append("missing-core-must-block")
@@ -190,14 +131,14 @@ def validate_package(repo_root: Path, key: str) -> dict[str, Any]:
     }
 
 
-def validate_marketplace(repo_root: Path) -> list[str]:
+def validate_marketplace(repo_root: Path, packages: dict[str, dict[str, Any]]) -> list[str]:
     issues: list[str] = []
     marketplace = load_json(repo_root / ".agents" / "plugins" / "marketplace.json")
     entries = {item.get("name"): item for item in marketplace.get("plugins", [])}
-    expected_names = {value["name"] for value in PACKAGES.values()}
+    expected_names = {value["name"] for value in packages.values()}
     if set(entries) != expected_names:
         issues.append("marketplace-package-set-mismatch")
-    for expected in PACKAGES.values():
+    for expected in packages.values():
         entry = entries.get(expected["name"], {})
         source = entry.get("source", {})
         if source.get("source") != "local":
@@ -207,9 +148,9 @@ def validate_marketplace(repo_root: Path) -> list[str]:
     return issues
 
 
-def validate_matrices(results: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+def validate_matrices(results: dict[str, dict[str, Any]], packages: dict[str, dict[str, Any]], matrices: dict[str, tuple[str, ...]]) -> list[dict[str, Any]]:
     matrix_results: list[dict[str, Any]] = []
-    for matrix_name, package_keys in MATRICES.items():
+    for matrix_name, package_keys in matrices.items():
         skills: list[str] = []
         package_statuses: list[str] = []
         for key in package_keys:
@@ -220,7 +161,7 @@ def validate_matrices(results: dict[str, dict[str, Any]]) -> list[dict[str, Any]
         matrix_results.append(
             {
                 "matrix": matrix_name,
-                "packages": [PACKAGES[key]["name"] for key in package_keys],
+                "packages": [packages[key]["name"] for key in package_keys],
                 "status": status,
                 "skill_count": len(set(skills)),
                 "route_collisions": collisions,
@@ -230,12 +171,15 @@ def validate_matrices(results: dict[str, dict[str, Any]]) -> list[dict[str, Any]
 
 
 def validate(repo_root: Path, package: str) -> tuple[dict[str, Any], int]:
-    selected = list(PACKAGES) if package == "all" else [package]
-    results = {key: validate_package(repo_root, key) for key in selected}
-    marketplace_issues = validate_marketplace(repo_root) if package == "all" else []
-    matrices = validate_matrices({key: validate_package(repo_root, key) for key in PACKAGES}) if package == "all" else []
+    packages, matrices, core_compatibility = _release_config(repo_root)
+    selected = list(packages) if package == "all" else [package]
+    results = {key: validate_package(repo_root, key, packages, core_compatibility) for key in selected}
+    marketplace_issues = validate_marketplace(repo_root, packages) if package == "all" else []
+    matrix_results = validate_matrices(
+        {key: validate_package(repo_root, key, packages, core_compatibility) for key in packages}, packages, matrices
+    ) if package == "all" else []
     failed = any(item["status"] != "passed" for item in results.values())
-    failed = failed or bool(marketplace_issues) or any(item["status"] != "passed" for item in matrices)
+    failed = failed or bool(marketplace_issues) or any(item["status"] != "passed" for item in matrix_results)
     receipt = {
         "schema_version": "ds-lite.package-validation.v1",
         "observed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -243,7 +187,7 @@ def validate(repo_root: Path, package: str) -> tuple[dict[str, Any], int]:
         "status": "failed" if failed else "passed",
         "packages": list(results.values()),
         "marketplace_issues": marketplace_issues,
-        "installation_matrices": matrices,
+        "installation_matrices": matrix_results,
         "real_host_gates": {
             "hook": "not-verified",
             "delegation": "not-verified",
@@ -259,7 +203,7 @@ def validate(repo_root: Path, package: str) -> tuple[dict[str, Any], int]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate split DeepScientist Lite packages.")
     parser.add_argument("--repo-root", default=str(Path(__file__).resolve().parents[2]))
-    parser.add_argument("--package", choices=[*PACKAGES, "all"], default="all")
+    parser.add_argument("--package", choices=[*load_package_set(REPO_ROOT)["packages"], "all"], default="all")
     parser.add_argument("--output")
     args = parser.parse_args(argv)
     try:

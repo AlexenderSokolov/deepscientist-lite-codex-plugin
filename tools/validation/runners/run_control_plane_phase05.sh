@@ -30,7 +30,7 @@ if [[ ! -d "$dependency_root" || ! -f "$source_home/config.toml" || -z "${OPENAI
 fi
 
 mkdir -p "$evidence_root"
-schema_root="$root/plugins/deepscientist-lite-core/schemas/codex/0.128.0"
+schema_root="$root/plugins/deepscientist-lite-control-plane/schemas/codex/0.128.0"
 export PYTHONDONTWRITEBYTECODE=1
 export PYTHONPATH="$dependency_root${PYTHONPATH:+:$PYTHONPATH}"
 

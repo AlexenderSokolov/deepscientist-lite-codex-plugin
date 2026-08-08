@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import hashlib
 import ipaddress
 import json
@@ -22,8 +23,6 @@ from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 CAPABILITY_SCHEMA = "ds-lite.capability.v1"
 SOURCE_RECORD_SCHEMA = "ds-lite.source-record.v1"
 SOURCE_RECORD_V2_SCHEMA = "ds-lite.source-record.v2"
-CORE_NAME = "deepscientist-lite"
-CORE_VERSION = "0.10.0-beta.2"
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 EXTERNAL_RE = re.compile(r"^external://([a-z][a-z0-9_-]*)/(.+)$")
@@ -340,14 +339,16 @@ def validate_source_record_v2(payload: Any) -> dict[str, Any]:
 
 
 def doctor(core_root: str | None) -> tuple[dict[str, Any], int]:
+    compatibility = json.loads((Path(__file__).resolve().parents[1] / "compatibility.json").read_text(encoding="utf-8"))
+    required = compatibility["requires"]
     raw = core_root or os.environ.get("DS_LITE_CORE_ROOT", "").strip()
     if not raw:
         return {
             "schema_version": "ds-lite.pack-doctor.v1",
             "status": "blocked",
             "reason": "core-root-not-provided",
-            "required_plugin": CORE_NAME,
-            "required_version": CORE_VERSION,
+            "required_plugin": required["plugin"],
+            "required_version": required["version"],
         }, 2
     manifest_path = Path(raw).expanduser() / ".codex-plugin" / "plugin.json"
     try:
@@ -357,24 +358,38 @@ def doctor(core_root: str | None) -> tuple[dict[str, Any], int]:
             "schema_version": "ds-lite.pack-doctor.v1",
             "status": "blocked",
             "reason": "core-manifest-unavailable",
-            "required_plugin": CORE_NAME,
-            "required_version": CORE_VERSION,
+            "required_plugin": required["plugin"],
+            "required_version": required["version"],
         }, 2
     observed = {"plugin": manifest.get("name"), "version": manifest.get("version")}
-    if observed != {"plugin": CORE_NAME, "version": CORE_VERSION}:
+    semver_path = Path(raw).expanduser().resolve() / "scripts" / "ds_lite_semver.py"
+    spec = importlib.util.spec_from_file_location("ds_lite_semver", semver_path)
+    if spec is None or spec.loader is None:
+        return {
+            "schema_version": "ds-lite.pack-doctor.v1", "status": "blocked",
+            "reason": "core-semver-unavailable", "required_plugin": required["plugin"],
+            "required_version": required["version"], "observed": observed,
+        }, 2
+    semver = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(semver)
+    try:
+        compatible = observed.get("plugin") == required["plugin"] and semver.satisfies(str(observed.get("version", "")), required["version"])
+    except (AttributeError, TypeError, ValueError):
+        compatible = False
+    if not compatible:
         return {
             "schema_version": "ds-lite.pack-doctor.v1",
             "status": "blocked",
             "reason": "incompatible-core",
-            "required_plugin": CORE_NAME,
-            "required_version": CORE_VERSION,
+            "required_plugin": required["plugin"],
+            "required_version": required["version"],
             "observed": observed,
         }, 2
     return {
         "schema_version": "ds-lite.pack-doctor.v1",
         "status": "passed",
-        "required_plugin": CORE_NAME,
-        "required_version": CORE_VERSION,
+        "required_plugin": required["plugin"],
+        "required_version": required["version"],
         "observed": observed,
     }, 0
 

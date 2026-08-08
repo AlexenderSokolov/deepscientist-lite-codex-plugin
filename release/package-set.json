@@ -1,0 +1,78 @@
+{
+  "schema_version": "ds-lite.package-set.v1",
+  "release_version": "0.10.0-beta.3",
+  "target_tag": "v0.10.0-beta.3",
+  "core_compatibility": ">=0.10.0-beta.3 <0.11.0",
+  "packages": {
+    "core": {
+      "directory": "deepscientist-lite-core",
+      "name": "deepscientist-lite",
+      "version": "0.10.0-beta.3",
+      "skills": [
+        "ds-lite",
+        "ds-lite-analysis-write",
+        "ds-lite-coordinate",
+        "ds-lite-experiment",
+        "ds-lite-idea",
+        "ds-lite-intake",
+        "ds-lite-iterate",
+        "ds-lite-review",
+        "ds-lite-scout"
+      ]
+    },
+    "academic": {
+      "directory": "deepscientist-lite-academic",
+      "name": "deepscientist-lite-academic",
+      "version": "0.10.0-beta.3",
+      "skill_count": 17,
+      "skill_prefix": "nature-"
+    },
+    "web": {
+      "directory": "deepscientist-lite-web",
+      "name": "deepscientist-lite-web",
+      "version": "0.10.0-beta.3",
+      "skills": ["ds-lite-web"]
+    },
+    "knowledge": {
+      "directory": "deepscientist-lite-knowledge",
+      "name": "deepscientist-lite-knowledge",
+      "version": "0.10.0-beta.3",
+      "skills": ["ds-lite-knowledge"]
+    },
+    "empirical": {
+      "directory": "deepscientist-lite-empirical",
+      "name": "deepscientist-lite-empirical",
+      "version": "0.10.0-beta.3",
+      "skills": ["ds-lite-empirical"],
+      "max_files": 150,
+      "max_bytes": 5242880
+    },
+    "engineering": {
+      "directory": "deepscientist-lite-engineering",
+      "name": "deepscientist-lite-engineering",
+      "version": "0.10.0-beta.3",
+      "skills": ["ds-lite-engineering"],
+      "max_files": 150,
+      "max_bytes": 5242880
+    },
+    "control-plane": {
+      "directory": "deepscientist-lite-control-plane",
+      "name": "deepscientist-lite-control-plane",
+      "version": "0.10.0-beta.3",
+      "skills": ["ds-lite-control-plane"],
+      "max_files": 360,
+      "max_bytes": 5242880
+    }
+  },
+  "installation_matrices": {
+    "core-only": ["core"],
+    "core+academic": ["core", "academic"],
+    "core+empirical": ["core", "empirical"],
+    "core+engineering": ["core", "engineering"],
+    "core+web": ["core", "web"],
+    "core+knowledge": ["core", "knowledge"],
+    "core+web+knowledge": ["core", "web", "knowledge"],
+    "all-six": ["core", "academic", "web", "knowledge", "empirical", "engineering"],
+    "all-seven": ["core", "academic", "web", "knowledge", "empirical", "engineering", "control-plane"]
+  }
+}

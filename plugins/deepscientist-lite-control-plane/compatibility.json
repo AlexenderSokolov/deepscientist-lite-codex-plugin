@@ -1,7 +1,12 @@
 {
   "schema_version": "ds-lite.pack-compatibility.v1",
-  "requires": {"plugin": "deepscientist-lite", "version": ">=0.10.0-beta.2"},
-  "missing_core": "blocked",
-  "optional": true,
-  "runtime_dependencies": ["dbos"]
+  "pack": {
+    "plugin": "deepscientist-lite-control-plane",
+    "version": "0.10.0-beta.3"
+  },
+  "requires": {
+    "plugin": "deepscientist-lite",
+    "version": ">=0.10.0-beta.3 <0.11.0"
+  },
+  "missing_core": "blocked"
 }

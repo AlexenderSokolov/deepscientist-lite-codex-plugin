@@ -148,7 +148,8 @@ class TrustedHostPrepareTests(unittest.TestCase):
         repo_root = Path(__file__).resolve().parents[1]
         identity = trusted_host_prepare._candidate_identity(repo_root)
         self.assertEqual(identity["plugin"], "deepscientist-lite")
-        self.assertEqual(identity["version"], "0.10.0-beta.2")
+        package_set = json.loads((repo_root / "release" / "package-set.json").read_text(encoding="utf-8"))
+        self.assertEqual(identity["version"], package_set["packages"]["core"]["version"])
         self.assertEqual(identity["skill_count"], 9)
         self.assertEqual(
             identity["hook_events"],
@@ -173,11 +174,11 @@ class TrustedHostPrepareTests(unittest.TestCase):
             )
             (core / "skills" / "example" / "SKILL.md").write_text("test", encoding="utf-8")
             (core / "scripts" / "worker.py").write_text("VALUE = 1\n", encoding="utf-8")
-            before = trusted_host_prepare._candidate_identity(root)["source_sha256"]
+            before = trusted_host_prepare.tree_digest(core)
             cache = core / "scripts" / "__pycache__"
             cache.mkdir()
             (cache / "worker.cpython-313.pyc").write_bytes(b"runtime cache")
-            after = trusted_host_prepare._candidate_identity(root)["source_sha256"]
+            after = trusted_host_prepare.tree_digest(core)
             self.assertEqual(after, before)
 
 

@@ -16,8 +16,8 @@ case "$(cd "$(dirname "$evidence_root")" 2>/dev/null && pwd)/$(basename "$eviden
 mkdir "$evidence_root"
 export PYTHONDONTWRITEBYTECODE=1
 export PYTHON_BIN="$python_bin"
-export PYTHONPATH="$dbos_root:$repo_root/plugins/deepscientist-lite-core/controller:$repo_root${PYTHONPATH:+:$PYTHONPATH}"
-schema_root="$repo_root/plugins/deepscientist-lite-core/schemas/codex/$codex_version"
+export PYTHONPATH="$dbos_root:$repo_root/plugins/deepscientist-lite-control-plane/controller:$repo_root${PYTHONPATH:+:$PYTHONPATH}"
+schema_root="$repo_root/plugins/deepscientist-lite-control-plane/schemas/codex/$codex_version"
 previous="$repo_root/research/.validation-tmp/control-plane-phase3-final-20260731-03/phase3-decision.json"
 previous_hash="6fba9ca1417efa3a36faecf45d852b902ddc8a57481dfacc50be112b143a1341"
 

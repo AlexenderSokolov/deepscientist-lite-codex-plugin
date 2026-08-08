@@ -17,21 +17,13 @@ class OfflineAcceptanceTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         shell = (root / "teaching" / "run_transport_diagnostics.sh").read_text(encoding="utf-8")
         powershell = (root / "teaching" / "run_transport_diagnostics.ps1").read_text(encoding="utf-8")
-        validate_shell = (root / "tools" / "validation" / "run_validate.sh").read_text(encoding="utf-8")
-        validate_powershell = (root / "tools" / "validation" / "run_validate.ps1").read_text(encoding="utf-8")
+        validator = (root / "tools" / "validation" / "validate_all.py").read_text(encoding="utf-8")
         for text in (shell, powershell):
             self.assertIn("offline_acceptance.py", text)
             self.assertIn("Output", text.replace("OUTPUT", "Output"))
             self.assertNotIn("communication-beta2-20260720-gated-02", text)
-        for target in (
-            "teaching/transport_diagnostics.py",
-            "teaching/fake_transport_codex.py",
-            "teaching/offline_acceptance.py",
-            "tests/test_transport_diagnostics.py",
-            "tests/test_offline_acceptance.py",
-        ):
-            self.assertIn(target, validate_shell)
-            self.assertIn(target, validate_powershell)
+        self.assertIn('root / "teaching"', validator)
+        self.assertIn('root / "tests"', validator)
 
     def test_transport_suite_covers_seven_single_attempt_scenarios(self) -> None:
         parent = Path(tempfile.mkdtemp(prefix="ds-lite-offline-acceptance-"))

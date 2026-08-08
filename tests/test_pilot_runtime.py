@@ -147,13 +147,10 @@ class PilotRuntimeEntrypointTests(unittest.TestCase):
         for relative in ("tools/validation/run_validate.ps1", "tools/validation/run_validate.sh"):
             with self.subTest(validation=relative):
                 text = (REPO_ROOT / relative).read_text(encoding="utf-8").replace("\\", "/")
-                for required in (
-                    "teaching/pilot_runtime.py",
-                    "teaching/pilot_score.py",
-                    "tests/test_pilot_runtime.py",
-                    "tests/test_upstream_transfer.py",
-                ):
-                    self.assertIn(required, text)
+                self.assertIn("validate_all.py", text)
+        validator = (REPO_ROOT / "tools" / "validation" / "validate_all.py").read_text(encoding="utf-8")
+        self.assertIn('root / "teaching"', validator)
+        self.assertIn('root / "tests"', validator)
 
     def test_blocked_real_pilot_has_a_redacted_teaching_failure_case(self) -> None:
         path = REPO_ROOT / "teaching" / "pilot-failure-case-20260717.zh.md"

@@ -10,10 +10,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    from tools.validation.release_identity import ReleaseIdentityError, load_package_set
+except ModuleNotFoundError:
+    from release_identity import ReleaseIdentityError, load_package_set
+
 
 SCHEMA = "ds-lite.academic-provider-acceptance.v1"
-CORE = {"name": "deepscientist-lite", "version": "0.10.0-beta.2"}
-ACADEMIC = {"name": "deepscientist-lite-academic", "version": "0.10.0-beta.2"}
 ALL_PROVIDERS = ("crossref", "openalex", "semantic-scholar", "arxiv")
 TRANSIENT_FAILURES = {"timeout", "rate-limit", "network"}
 
@@ -85,12 +88,19 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     repo_root = Path(args.repo_root).expanduser().resolve()
     core_root = Path(args.core_root).expanduser().resolve() if args.core_root else repo_root / "plugins" / "deepscientist-lite-core"
     academic_root = repo_root / "plugins" / "deepscientist-lite-academic"
+    try:
+        packages = load_package_set(repo_root)["packages"]
+        expected_core = {"name": packages["core"]["name"], "version": packages["core"]["version"]}
+        expected_academic = {"name": packages["academic"]["name"], "version": packages["academic"]["version"]}
+    except (ReleaseIdentityError, KeyError, TypeError):
+        receipt["reason"] = "package-set-unavailable"
+        return receipt, 2
     core = _manifest(core_root / ".codex-plugin" / "plugin.json")
     academic = _manifest(academic_root / ".codex-plugin" / "plugin.json")
-    if {"name": core.get("name"), "version": core.get("version")} != CORE:
+    if {"name": core.get("name"), "version": core.get("version")} != expected_core:
         receipt["reason"] = "incompatible-core"
         return receipt, 2
-    if {"name": academic.get("name"), "version": academic.get("version")} != ACADEMIC:
+    if {"name": academic.get("name"), "version": academic.get("version")} != expected_academic:
         receipt["reason"] = "incompatible-academic-pack"
         return receipt, 2
 

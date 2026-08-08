@@ -1,6 +1,6 @@
 ---
 name: nature-literature-pipeline
-description: Use the complete nature-literature-pipeline workflow, preserving its upstream routing and supporting materials. | Complete automated literature discovery pipeline; multi-source search → six-dimension scoring → fine reading → formatted delivery → archival. Combines a configurable engine with daily cron-driven application layer. Works with Feishu, Telegram, or any messaging platform.
+description: Use the complete nature-literature-pipeline workflow, preserving its upstream routing and supporting materials. Complete automated literature discovery pipeline; multi-source search → six-dimension scoring → fine reading → formatted delivery → archival. Combines a configurable engine with daily cron-driven application layer. Works with Feishu, Telegram, or any messaging platform.
 ---
 
 # DS Lite Integration Boundary

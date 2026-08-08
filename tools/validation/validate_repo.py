@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
@@ -1225,7 +1226,7 @@ def validate_teaching_runner(repo_root: Path) -> None:
         if not (compatibility_output / "project" / "research" / "evidence" / "evidence-demo" / "manifest.json").exists():
             fail("run_evidence_lab.sh compatibility entry did not produce an Evidence Pack")
 
-def main() -> int:
+def validate_legacy_monolith() -> int:
     repo_root = Path(__file__).resolve().parents[2]
     install_tempfile_policy(repo_root)
     plugin_root = repo_root / "plugins" / "deepscientist-lite"
@@ -1236,6 +1237,57 @@ def main() -> int:
     validate_state_script(repo_root, plugin_root)
     print("OK: DeepScientist Lite plugin repository validation passed.")
     return 0
+
+
+def validate_active_repo(repo_root: Path) -> int:
+    """Validate the active seven-package release surface, not the frozen monolith."""
+    from tools.validation.generate_academic_contract import apply as check_academic_contract
+    from tools.validation.release_identity import check_identity, load_package_set
+    from tools.validation.validate_packages import validate as validate_packages
+
+    package_set = load_package_set(repo_root)
+    issues = check_identity(repo_root)
+    if issues:
+        fail("release identity mismatch: " + ", ".join(issues))
+    if check_academic_contract(repo_root, write=False):
+        fail("Academic registry or descriptions are not generated")
+    receipt, code = validate_packages(repo_root, "all")
+    if code:
+        fail("active package validation failed: " + json.dumps(receipt, ensure_ascii=True))
+    registry = json.loads((repo_root / "plugins" / "deepscientist-lite-academic" / "references" / "nature-skill-registry.json").read_text(encoding="utf-8"))
+    if registry.get("schema_version") != "ds-lite.nature-skill-registry.v2" or len(registry.get("skills", [])) != 17:
+        fail("Academic registry contract is invalid")
+    forbidden = "plugins/deepscientist-lite-core/controller"
+    allowed = {"tests/test_control_plane_runtime_boundary.py", "tools/validation/validate_repo.py"}
+    for root in (repo_root / "tests", repo_root / "teaching", repo_root / "tools", repo_root / ".github"):
+        if not root.exists():
+            continue
+        for path in root.rglob("*"):
+            if not path.is_file() or path.suffix.lower() not in {".py", ".ps1", ".sh", ".md", ".json", ".yml", ".yaml"}:
+                continue
+            relative = path.relative_to(repo_root).as_posix()
+            if relative in allowed:
+                continue
+            if forbidden in path.read_text(encoding="utf-8", errors="replace").replace("\\", "/"):
+                fail(f"active control-plane reference still targets Core: {relative}")
+    print(json.dumps({
+        "schema_version": "ds-lite.active-repo-validation.v1",
+        "status": "passed",
+        "release_version": package_set["release_version"],
+        "package_count": len(package_set["packages"]),
+        "installation_matrix_count": len(package_set["installation_matrices"]),
+        "legacy_monolith": "not-validated-by-default",
+    }, ensure_ascii=True))
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Validate DS Lite active packages or the frozen legacy monolith.")
+    parser.add_argument("--legacy-monolith", action="store_true")
+    args = parser.parse_args(argv)
+    if args.legacy_monolith:
+        return validate_legacy_monolith()
+    return validate_active_repo(Path(__file__).resolve().parents[2])
 
 if __name__ == "__main__":
     raise SystemExit(main())

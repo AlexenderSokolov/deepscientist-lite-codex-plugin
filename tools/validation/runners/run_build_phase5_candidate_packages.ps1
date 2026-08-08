@@ -2,11 +2,12 @@ param(
     [Parameter(Mandatory=$true)][string]$WindowsPackageRoot,
     [Parameter(Mandatory=$true)][string]$LinuxPackageRoot,
     [Parameter(Mandatory=$true)][string]$EvidenceRoot,
-    [string]$PythonBin = "C:\ProgramData\anaconda3\python.exe"
+    [string]$PythonBin = ""
 )
 
 $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+$PythonBin = & (Join-Path $PSScriptRoot "resolve_python.ps1") -ExplicitPython $PythonBin
 $WindowsPackageRoot = [IO.Path]::GetFullPath($WindowsPackageRoot)
 $LinuxPackageRoot = [IO.Path]::GetFullPath($LinuxPackageRoot)
 $EvidenceRoot = [IO.Path]::GetFullPath($EvidenceRoot)

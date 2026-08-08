@@ -10,49 +10,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGINS = ROOT / "plugins"
-
-EXPECTED = {
-    "deepscientist-lite-core": {
-        "name": "deepscientist-lite",
-        "version": "0.10.0-beta.2",
-        "skills": {
-            "ds-lite",
-            "ds-lite-analysis-write",
-            "ds-lite-coordinate",
-            "ds-lite-experiment",
-            "ds-lite-idea",
-            "ds-lite-intake",
-            "ds-lite-iterate",
-            "ds-lite-review",
-            "ds-lite-scout",
-        },
-    },
-    "deepscientist-lite-academic": {
-        "name": "deepscientist-lite-academic",
-        "version": "0.10.0-beta.2",
-        "skill_count": 17,
-    },
-    "deepscientist-lite-web": {
-        "name": "deepscientist-lite-web",
-        "version": "0.3.0-alpha.1",
-        "skills": {"ds-lite-web"},
-    },
-    "deepscientist-lite-knowledge": {
-        "name": "deepscientist-lite-knowledge",
-        "version": "0.3.0-alpha.1",
-        "skills": {"ds-lite-knowledge"},
-    },
-    "deepscientist-lite-empirical": {
-        "name": "deepscientist-lite-empirical",
-        "version": "0.3.0-alpha.1",
-        "skills": {"ds-lite-empirical"},
-    },
-    "deepscientist-lite-engineering": {
-        "name": "deepscientist-lite-engineering",
-        "version": "0.3.0-alpha.1",
-        "skills": {"ds-lite-engineering"},
-    },
-}
+PACKAGE_SET = json.loads((ROOT / "release" / "package-set.json").read_text(encoding="utf-8"))
+PACKAGES = PACKAGE_SET["packages"]
+EXPECTED = {package["directory"]: package for package in PACKAGES.values()}
 
 
 def discovered_skills(plugin: Path) -> set[str]:
@@ -94,22 +54,14 @@ class PluginPackageTests(unittest.TestCase):
             (ROOT / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8")
         )
         entries = {item["name"]: item for item in marketplace["plugins"]}
+        self.assertEqual(set(entries), {package["name"] for package in PACKAGES.values()})
         self.assertEqual(
-            set(entries),
-            {
-                "deepscientist-lite",
-                "deepscientist-lite-academic",
-                "deepscientist-lite-web",
-                "deepscientist-lite-knowledge",
-                "deepscientist-lite-empirical",
-                "deepscientist-lite-engineering",
-                "deepscientist-lite-control-plane",
-            },
+            entries[PACKAGES["core"]["name"]]["source"]["path"],
+            f"./plugins/{PACKAGES['core']['directory']}",
         )
-        self.assertEqual(entries["deepscientist-lite"]["source"]["path"], "./plugins/deepscientist-lite-core")
         self.assertEqual(
-            entries["deepscientist-lite-academic"]["source"]["path"],
-            "./plugins/deepscientist-lite-academic",
+            entries[PACKAGES["academic"]["name"]]["source"]["path"],
+            f"./plugins/{PACKAGES['academic']['directory']}",
         )
 
     def test_package_manifests_and_skill_boundaries(self) -> None:
@@ -124,10 +76,10 @@ class PluginPackageTests(unittest.TestCase):
                 self.assertEqual(manifest["skills"], "./skills/")
                 skills = discovered_skills(plugin)
                 if "skills" in expected:
-                    self.assertEqual(skills, expected["skills"])
+                    self.assertEqual(skills, set(expected["skills"]))
                 else:
                     self.assertEqual(len(skills), expected["skill_count"])
-                    self.assertTrue(all(name.startswith("nature-") for name in skills))
+                    self.assertTrue(all(name.startswith(expected["skill_prefix"]) for name in skills))
 
     def test_core_hook_source_declares_the_observed_four_event_config(self) -> None:
         core = PLUGINS / "deepscientist-lite-core"
@@ -184,20 +136,17 @@ class PluginPackageTests(unittest.TestCase):
                 self.assertEqual(len(discovered_skills(root)), 1)
 
     def test_optional_packages_publish_core_compatibility(self) -> None:
-        for directory in (
-            "deepscientist-lite-academic",
-            "deepscientist-lite-web",
-            "deepscientist-lite-knowledge",
-            "deepscientist-lite-empirical",
-            "deepscientist-lite-engineering",
-        ):
+        for key, expected in PACKAGES.items():
+            if key == "core":
+                continue
+            directory = expected["directory"]
             with self.subTest(package=directory):
                 compatibility = json.loads(
                     (PLUGINS / directory / "compatibility.json").read_text(encoding="utf-8")
                 )
                 self.assertEqual(compatibility["schema_version"], "ds-lite.pack-compatibility.v1")
                 self.assertEqual(compatibility["requires"]["plugin"], "deepscientist-lite")
-                self.assertEqual(compatibility["requires"]["version"], ">=0.10.0-beta.2")
+                self.assertEqual(compatibility["requires"]["version"], PACKAGE_SET["core_compatibility"])
                 self.assertEqual(compatibility["missing_core"], "blocked")
 
     def test_all_optional_pack_doctors_fail_closed_then_accept_matching_core(self) -> None:
@@ -260,10 +209,10 @@ class PluginPackageTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
         receipt = json.loads(completed.stdout)
         self.assertEqual(receipt["status"], "passed")
-        self.assertEqual({item["matrix"] for item in receipt["installation_matrices"]}, {
-            "core-only", "core+academic", "core+empirical", "core+engineering",
-            "core+web", "core+knowledge", "core+web+knowledge", "all-six", "all-seven",
-        })
+        self.assertEqual(
+            {item["matrix"] for item in receipt["installation_matrices"]},
+            set(PACKAGE_SET["installation_matrices"]),
+        )
         self.assertTrue(all(item["status"] == "passed" for item in receipt["installation_matrices"]))
         self.assertTrue(all(status == "not-verified" for status in receipt["real_host_gates"].values()))
 

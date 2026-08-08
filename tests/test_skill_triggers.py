@@ -226,21 +226,16 @@ class SkillTriggerMetadataTests(unittest.TestCase):
             with self.subTest(validator_anchor=anchor):
                 self.assertIn(anchor, validator)
 
-        compile_targets = (
-            "plugins/deepscientist-lite/scripts/ds_lite_hook.py",
-            "plugins/deepscientist-lite/scripts/ds_lite_iteration.py",
-            "tests/test_hooks.py",
-            "tests/test_iteration.py",
-            "tests/test_skill_triggers.py",
-        )
+        unified = (REPO_ROOT / "tools" / "validation" / "validate_all.py").read_text(encoding="utf-8")
+        self.assertIn("active_python_files", unified)
+        self.assertIn('root / "tests"', unified)
+        self.assertIn('root / "plugins" / name', unified)
         for runner in (
             REPO_ROOT / "tools" / "validation" / "run_validate.ps1",
             REPO_ROOT / "tools" / "validation" / "run_validate.sh",
         ):
             runner_text = runner.read_text(encoding="utf-8")
-            for target in compile_targets:
-                with self.subTest(runner=runner.name, target=target):
-                    self.assertIn(target, runner_text)
+            self.assertIn("validate_all.py", runner_text)
 
 
 if __name__ == "__main__":

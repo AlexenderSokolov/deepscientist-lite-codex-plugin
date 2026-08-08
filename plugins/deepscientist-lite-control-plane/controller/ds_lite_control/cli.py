@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import importlib.metadata
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -98,8 +99,25 @@ def _dbos_version() -> str:
         return "not-installed"
 
 
-def _observed_schema_digest() -> str:
-    sums = Path(__file__).resolve().parents[2] / "schemas" / "codex" / "0.128.0" / "SHA256SUMS"
+def resolve_schema_root(explicit: Path | None = None, *, codex_version: str = "0.128.0") -> Path:
+    """Choose explicit, bundled, then source-development schema roots."""
+    if explicit is not None:
+        candidate = explicit.expanduser().resolve()
+        if not candidate.is_dir():
+            raise ValueError("explicit schema root is unavailable")
+        return candidate
+    bundled = Path(__file__).resolve().parents[2] / "schemas" / "codex" / codex_version
+    if bundled.is_dir():
+        return bundled
+    if os.environ.get("DS_LITE_SOURCE_DEVELOPMENT") == "1":
+        fallback = Path(__file__).resolve().parents[3] / "deepscientist-lite-core" / "schemas" / "codex" / codex_version
+        if fallback.is_dir():
+            return fallback
+    raise ValueError("control-plane schema root is unavailable")
+
+
+def _observed_schema_digest(schema_root: Path | None = None) -> str:
+    sums = resolve_schema_root(schema_root) / "SHA256SUMS"
     return hashlib.sha256(sums.read_bytes()).hexdigest() if sums.is_file() else "missing"
 
 
@@ -426,7 +444,7 @@ def main(argv: list[str] | None = None) -> int:
                 protocol_present=journal_path.is_file(),
                 codex_schema_digest=(
                     runtime["schema"]["observed_bundle_digest"]
-                    if runtime is not None else _observed_schema_digest()
+                    if runtime is not None else _observed_schema_digest(args.schema_root)
                 ),
                 expected_codex_schema_digest=(
                     runtime["schema"]["expected_bundle_digest"]

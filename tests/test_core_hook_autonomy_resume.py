@@ -17,20 +17,45 @@ assert spec and spec.loader
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
+import ds_lite_autonomy_v2
+
 
 class CoreHookAutonomyResumeTests(unittest.TestCase):
+    def _v2_contract(self, root: Path) -> dict:
+        work = root / "research" / "work-unit.json"
+        work.parent.mkdir(parents=True, exist_ok=True)
+        work.write_text("{}", encoding="utf-8")
+        approvals = root / "approvals"
+        approvals.mkdir(exist_ok=True)
+        (approvals / "user.md").write_text("approved\n", encoding="utf-8")
+        return {
+            "schema_version": "ds-lite.autonomy-contract.v2",
+            "work_unit_ref": "research/work-unit.json",
+            "goals": ["verify-core"],
+            "gates": [{"id": "gate-a", "depends_on": [], "effect": "read"}],
+            "budget": {"max_seconds": 60, "max_attempts_per_gate": 3},
+            "authorization": {
+                "status": "approved", "authority": "user", "ref": "approvals/user.md",
+                "allowed_effects": ["read"], "release_gate": False,
+            },
+            "continuity": {"mode": "foreground-bounded"},
+            "terminal_policy": "report",
+        }
+
+    def _write_v2_terminal(self, root: Path, run: Path) -> None:
+        contract = self._v2_contract(root)
+        (root / "research" / "autonomy" / "contract.json").write_text(json.dumps(contract), encoding="utf-8")
+        summary = ds_lite_autonomy_v2.summarize(
+            contract, status="completed", completed=["gate-a"], blocked=[], next_action="final-report"
+        )
+        (run / "summary-v2.json").write_text(json.dumps(summary), encoding="utf-8")
+
     def test_v2_completed_summary_is_terminal_for_report_policy(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
             run = root / "research" / "autonomy" / "run"
             run.mkdir(parents=True)
-            (root / "research" / "autonomy" / "contract.json").write_text("{}", encoding="utf-8")
-            (run / "summary.json").write_text(json.dumps({
-                "schema_version": "ds-lite.autonomy-summary.v2",
-                "status": "completed",
-                "terminal_policy": "report",
-                "release_authorized": False,
-            }), encoding="utf-8")
+            self._write_v2_terminal(root, run)
             (run / "progress-001.json").write_text(json.dumps({"status": "completed"}), encoding="utf-8")
             self.assertEqual(hook._autonomy_stop_gaps(root), [])
 
@@ -39,20 +64,13 @@ class CoreHookAutonomyResumeTests(unittest.TestCase):
             root = Path(raw)
             run = root / "research" / "autonomy" / "run"
             run.mkdir(parents=True)
-            (root / "research" / "autonomy" / "contract.json").write_text("{}", encoding="utf-8")
             (run / "summary.json").write_text(json.dumps({
                 "schema_version": "ds-lite.autonomy-summary.v1",
                 "status": "completed",
                 "next_action": "release",
                 "release_authorized": True,
             }), encoding="utf-8")
-            (run / "summary-v2.json").write_text(json.dumps({
-                "schema_version": "ds-lite.autonomy-summary.v2",
-                "status": "completed",
-                "terminal_policy": "report",
-                "release_authorized": False,
-                "next_action": "final-report",
-            }), encoding="utf-8")
+            self._write_v2_terminal(root, run)
             (run / "progress-001.json").write_text(json.dumps({"status": "completed"}), encoding="utf-8")
             self.assertEqual(hook._autonomy_stop_gaps(root), [])
             self.assertIn("final-report", hook._autonomy_context(root))

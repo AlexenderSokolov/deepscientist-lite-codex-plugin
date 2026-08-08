@@ -11,13 +11,13 @@ DeepScientist Lite 用一组 Codex 技能和普通项目文件来解决这些交
 
 ```mermaid
 graph LR
-    subgraph "Core · 0.9.0-beta.1 · 9 skills"
+    subgraph "Core · 0.10.0-beta.3 · 9 skills"
         A["目标保持 → 路线追踪 → 实验记录 → 证据打包 → 审查 → 迭代 → 委派 → 交接"]
     end
-    subgraph "Academic · 0.9.0-beta.1 · 17 skills"
+    subgraph "Academic · 0.10.0-beta.3 · 17 skills"
         B["文献检索 · 引用验证 · 论文阅读 · 写作 · 润色 · 审稿模拟 · 回复信 · 投稿辅助"]
     end
-    subgraph "可选包 · 0.3.0-alpha.1 · 各 1 skill"
+    subgraph "可选包 · 0.10.0-beta.3 · 各 1 skill"
         C["Web 公共网页采集"]
         D["Knowledge 知识提案"]
         E["Empirical 实证研究"]
@@ -29,12 +29,12 @@ graph LR
 
 | 包 | 版本 | Skills 数 | 一句话说明 |
 | --- | --- | --- | --- |
-| Core | `0.9.0-beta.1` | 9 | 领域中立的工作协议：目标保持、路线追踪、实验、证据、审查、迭代、委派、交接 |
-| Academic | `0.9.0-beta.1` | 17 | Nature 级论文工作流：从文献检索到投稿辅助的完整链条 |
-| Web | `0.3.0-alpha.1` | 1 | 公共网页采集与来源记录 |
-| Knowledge | `0.3.0-alpha.1` | 1 | 审查门控的知识提案 |
-| Empirical | `0.3.0-alpha.1` | 1 | 有界实证研究规范与结果交接 |
-| Engineering | `0.3.0-alpha.1` | 1 | 有界工程数值分析与图形审计 |
+| Core | `0.10.0-beta.3` | 9 | 领域中立的工作协议：目标保持、路线追踪、实验、证据、审查、迭代、委派、交接 |
+| Academic | `0.10.0-beta.3` | 17 | Nature 级论文工作流：从文献检索到投稿辅助的完整链条 |
+| Web | `0.10.0-beta.3` | 1 | 公共网页采集与来源记录 |
+| Knowledge | `0.10.0-beta.3` | 1 | 审查门控的知识提案 |
+| Empirical | `0.10.0-beta.3` | 1 | 有界实证研究规范与结果交接 |
+| Engineering | `0.10.0-beta.3` | 1 | 有界工程数值分析与图形审计 |
 
 **典型研究工作流：**
 

@@ -4,14 +4,14 @@ This repository is a Codex marketplace repository.
 
 ## Runtime Plugin Packages
 
-- `.agents/plugins/marketplace.json`: one marketplace exposing six independently installable packages.
-- `plugins/deepscientist-lite-core/`: `deepscientist-lite` `0.10.0-beta.2`; nine Core skills and the bounded foreground file protocol. The package has no vendor snapshot, MCP server, daemon, database, or browser runtime.
-- `plugins/deepscientist-lite-academic/`: `0.10.0-beta.2`; 17 discoverable Nature workflows, each deployed directly without routing aggregation. It checks for the matching Core and owns no Hook.
-- `plugins/deepscientist-lite-control-plane/`: `0.10.0-beta.2`; optional durable controller/DBOS bridge boundary. Missing DBOS blocks only this extension.
-- `plugins/deepscientist-lite-web/`: `0.3.0-alpha.1`; public-only capability and v1/v2 source-record protocols plus bounded HTTP provenance recording. Playwright, Firecrawl, Tapestry, and agent-browser remain optional external backends.
-- `plugins/deepscientist-lite-knowledge/`: `0.3.0-alpha.1`; review-gated Tapestry and ScholarAIO handoffs. It does not own either upstream store or write formal ResearchKB knowledge directly.
-- `plugins/deepscientist-lite-empirical/`: `0.3.0-alpha.1`; one method-neutral router for empirical specs, diagnostics, robustness, and Core Evidence Pack results.
-- `plugins/deepscientist-lite-engineering/`: `0.3.0-alpha.1`; one router for numerical, FFT, sampling, simulation, units, and figure checks.
+- `.agents/plugins/marketplace.json`: one marketplace exposing seven independently installable packages.
+- `plugins/deepscientist-lite-core/`: `deepscientist-lite` `0.10.0-beta.3`; nine Core skills and the bounded foreground file protocol. The package has no vendor snapshot, MCP server, daemon, database, or browser runtime.
+- `plugins/deepscientist-lite-academic/`: `0.10.0-beta.3`; 17 discoverable Nature workflows, each deployed directly without routing aggregation. It checks for a compatible Core and owns no Hook.
+- `plugins/deepscientist-lite-control-plane/`: `0.10.0-beta.3`; optional durable controller/DBOS bridge boundary with its canonical controller and schema bundle. Missing DBOS blocks only this extension.
+- `plugins/deepscientist-lite-web/`: `0.10.0-beta.3`; public-only capability and v1/v2 source-record protocols plus bounded HTTP provenance recording. Playwright, Firecrawl, Tapestry, and agent-browser remain optional external backends.
+- `plugins/deepscientist-lite-knowledge/`: `0.10.0-beta.3`; review-gated Tapestry and ScholarAIO handoffs. It does not own either upstream store or write formal ResearchKB knowledge directly.
+- `plugins/deepscientist-lite-empirical/`: `0.10.0-beta.3`; one method-neutral router for empirical specs, diagnostics, robustness, and Core Evidence Pack results.
+- `plugins/deepscientist-lite-engineering/`: `0.10.0-beta.3`; one router for numerical, FFT, sampling, simulation, units, and figure checks.
 - `plugins/deepscientist-lite/`: frozen `0.6.0-beta.1` monolith retained only for evidence identity and compatibility during the transition. It is no longer the marketplace target.
 
 Each optional package publishes `compatibility.json` and fails closed unless it observes the required `deepscientist-lite` Core version. Marketplace dependency propagation is not assumed.
@@ -42,7 +42,7 @@ Each optional package publishes `compatibility.json` and fails closed unless it 
 
 Core remains lightweight: no MCP server, daemon, Web/TUI, connector, local model bundle, academic snapshot, or web backend is declared in its manifest. Optional packages do not acquire global state or bypass Core approval and stopping rules.
 
-Run the package-specific wrappers under `tools/validation/runners/` (`run_validate_core.*`, `run_validate_academic.*`, `run_validate_web.*`, `run_validate_knowledge.*`, `run_validate_empirical.*`, and `run_validate_engineering.*`). `tools/validation/validate_packages.py --package all` checks eight install matrices, route collisions, compatibility contracts, package digests, and Core/domain size limits. It deliberately reports real Hook, delegation, matched effect, formal cache, fresh Desktop, and release gates as `not-verified`.
+Run `python tools/validation/validate_all.py` for the active local validation flow. `tools/validation/validate_packages.py --package all` checks nine install matrices, route collisions, compatibility contracts, package digests, and Core/domain size limits. It deliberately reports real Hook, delegation, matched effect, formal cache, fresh Desktop, and release gates as `not-verified`.
 
 ## Skills Deployment
 

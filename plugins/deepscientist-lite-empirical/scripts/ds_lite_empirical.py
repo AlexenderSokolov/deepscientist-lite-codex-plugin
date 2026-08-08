@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -12,7 +13,6 @@ from typing import Any
 
 SPEC_SCHEMA = "ds-lite.empirical-spec.v1"
 RESULT_SCHEMA = "ds-lite.empirical-result.v1"
-CORE = {"plugin": "deepscientist-lite", "version": "0.10.0-beta.2"}
 BACKEND_STATUSES = {"available", "unavailable", "not-observed"}
 RESULT_STATUSES = {"completed", "partial", "blocked"}
 CHECK_STATUSES = {"passed", "failed", "warning", "not-observed"}
@@ -133,7 +133,10 @@ def validate_result(payload: Any) -> dict[str, Any]:
 
 def doctor(core_root: str | None) -> tuple[dict[str, Any], int]:
     raw = core_root or os.environ.get("DS_LITE_CORE_ROOT", "").strip()
-    result = {"schema_version": "ds-lite.pack-doctor.v1", "pack": "deepscientist-lite-empirical", "required": CORE, "status": "blocked"}
+    package_root = Path(__file__).resolve().parents[1]
+    compatibility = json.loads((package_root / "compatibility.json").read_text(encoding="utf-8"))
+    required = compatibility["requires"]
+    result = {"schema_version": "ds-lite.pack-doctor.v1", "pack": compatibility["pack"], "required": required, "status": "blocked"}
     if not raw:
         result["reason"] = "core-root-not-provided"
         return result, 2
@@ -144,7 +147,18 @@ def doctor(core_root: str | None) -> tuple[dict[str, Any], int]:
         return result, 2
     observed = {"plugin": manifest.get("name"), "version": manifest.get("version")}
     result["observed"] = observed
-    if observed != CORE:
+    semver_path = Path(raw).expanduser().resolve() / "scripts" / "ds_lite_semver.py"
+    spec = importlib.util.spec_from_file_location("ds_lite_semver", semver_path)
+    if spec is None or spec.loader is None:
+        result["reason"] = "core-semver-unavailable"
+        return result, 2
+    semver = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(semver)
+    try:
+        compatible = observed.get("plugin") == required.get("plugin") and semver.satisfies(str(observed.get("version", "")), required["version"])
+    except (AttributeError, TypeError, ValueError):
+        compatible = False
+    if not compatible:
         result["reason"] = "incompatible-core"
         return result, 2
     result.update({"status": "passed", "reason": "compatible-core-observed"})

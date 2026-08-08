@@ -15,8 +15,8 @@ case "$(cd "$(dirname "$evidence_root")" 2>/dev/null && pwd)/$(basename "$eviden
 [[ "$($codex_bin --version)" == "codex-cli $codex_version" ]] || { echo "Codex $codex_version required" >&2; exit 2; }
 mkdir "$evidence_root"
 export PYTHONDONTWRITEBYTECODE=1
-export PYTHONPATH="$dbos_root:$repo_root/plugins/deepscientist-lite-core/controller:$repo_root${PYTHONPATH:+:$PYTHONPATH}"
-schema_root="$repo_root/plugins/deepscientist-lite-core/schemas/codex/$codex_version"
+export PYTHONPATH="$dbos_root:$repo_root/plugins/deepscientist-lite-control-plane/controller:$repo_root${PYTHONPATH:+:$PYTHONPATH}"
+schema_root="$repo_root/plugins/deepscientist-lite-control-plane/schemas/codex/$codex_version"
 previous="$repo_root/research/.validation-tmp/control-plane-phase2-continuation-20260731-06/phase2-decision-03.json"
 
 fault_exit=0; "$python_bin" "$repo_root/plugins/deepscientist-lite-control-plane/controller/phase3_fault_harness.py" --workdir "$evidence_root/fault-work" --output "$evidence_root/fault-matrix.json" --python-bin "$python_bin" --dependency-root "$dbos_root" --seed 20260731 --trials 100 --timeout 20 || fault_exit=$?

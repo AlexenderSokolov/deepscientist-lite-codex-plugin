@@ -19,15 +19,21 @@ HOOK_SPEC.loader.exec_module(ds_lite_hook)
 class AutonomyContractV2Tests(unittest.TestCase):
     def contract(self, root: Path, **overrides):
         work = root / "research" / "work-unit.json"
-        work.parent.mkdir(parents=True)
+        work.parent.mkdir(parents=True, exist_ok=True)
         work.write_text("{}", encoding="utf-8")
         value = {
             "schema_version": "ds-lite.autonomy-contract.v2",
             "work_unit_ref": "research/work-unit.json",
             "goals": ["verify-core"],
-            "gates": [{"id": "gate-a", "depends_on": []}],
-            "budget": {"max_seconds": 60},
-            "authorization": {"status": "approved", "scope": "project", "release_gate": False},
+            "gates": [{"id": "gate-a", "depends_on": [], "effect": "read"}],
+            "budget": {"max_seconds": 60, "max_attempts_per_gate": 3},
+            "authorization": {
+                "status": "approved",
+                "authority": "user",
+                "ref": "approvals/user.md",
+                "allowed_effects": ["read"],
+                "release_gate": False,
+            },
             "continuity": {"mode": "foreground-bounded"},
             "terminal_policy": "report",
         }
@@ -47,6 +53,17 @@ class AutonomyContractV2Tests(unittest.TestCase):
             root = Path(raw)
             value = self.contract(root, terminal_policy="release")
             with self.assertRaises(ds_lite_autonomy_v2.AutonomyV2Error):
+                ds_lite_autonomy_v2.validate_contract(value, project_root=root)
+
+    def test_release_effect_cannot_bypass_authorization(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            value = self.contract(
+                root,
+                gates=[{"id": "gate-a", "depends_on": [], "effect": "release"}],
+                terminal_policy="report",
+            )
+            with self.assertRaisesRegex(ds_lite_autonomy_v2.AutonomyV2Error, "effect"):
                 ds_lite_autonomy_v2.validate_contract(value, project_root=root)
 
     def test_foreground_runner_fails_closed_without_execution_projection(self):
@@ -73,21 +90,14 @@ class AutonomyContractV2Tests(unittest.TestCase):
                 encoding="utf-8",
             )
             execution = {
-                "contract": {
-                    "autonomy_id": "v2-success",
-                    "status": "prepared",
-                    "goals": ["verify-core"],
-                    "budget": {"max_attempts_per_gate": 3, "max_seconds": 30},
-                    "authorization": {"status": "approved", "authority": "user", "ref": "approvals/user.md"},
-                    "release": {"authorized": True, "required_gates": ["gate-a"]},
-                    "gates": [{
-                        "id": "gate-a",
-                        "depends_on": [],
+                "schema_version": "ds-lite.autonomy-execution.v1",
+                "gates": {
+                    "gate-a": {
                         "command": [sys.executable, "runner.py", "receipts/gate-a-{attempt}.json"],
                         "receipt_ref": "receipts/gate-a-{attempt}.json",
                         "retry_class": "none",
-                    }],
-                }
+                    }
+                },
             }
             value = self.contract(root, execution=execution)
             contract_path = root / "research" / "autonomy" / "contract.json"
@@ -101,11 +111,54 @@ class AutonomyContractV2Tests(unittest.TestCase):
             self.assertFalse(result["release_authorized"])
             self.assertEqual(result["next_action"], "final-report")
             self.assertTrue((output / "summary-v2.json").is_file())
-            self.assertEqual(json.loads((output / "summary-v2.json").read_text(encoding="utf-8"))["schema_version"], "ds-lite.autonomy-summary.v2")
+            summary = json.loads((output / "summary-v2.json").read_text(encoding="utf-8"))
+            self.assertEqual(summary["schema_version"], "ds-lite.autonomy-summary.v2")
+            self.assertEqual(summary["work_unit_ref"], "research/work-unit.json")
+            self.assertEqual(summary["gate_ids"], ["gate-a"])
+            self.assertEqual(summary["authorization_ref"], "approvals/user.md")
             (root / "research" / "autonomy" / "stop-first.json").write_text(json.dumps({
                 "schema_version": "ds-lite.stop-first-protocol.v1", "status": "prepared",
             }), encoding="utf-8")
             self.assertEqual(ds_lite_hook._autonomy_stop_gaps(root), [])
+
+    def test_hook_rejects_summary_binding_drift(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            contract_path = root / "research" / "autonomy" / "contract.json"
+            run = contract_path.parent / "run"
+            contract_path.parent.mkdir(parents=True, exist_ok=True)
+            (root / "research" / "work-unit.json").write_text("{}", encoding="utf-8")
+            contract_path.write_text(json.dumps(self.contract(root)), encoding="utf-8")
+            run.mkdir()
+            summary = ds_lite_autonomy_v2.summarize(
+                self.contract(root), status="completed", completed=["gate-a"], blocked=[], next_action="final-report"
+            )
+            summary["gate_ids"] = ["other-gate"]
+            (run / "summary-v2.json").write_text(json.dumps(summary), encoding="utf-8")
+            (run / "progress-001.json").write_text(json.dumps({"status": "completed"}), encoding="utf-8")
+            self.assertEqual(
+                ds_lite_hook._autonomy_stop_gaps(root),
+                ["autonomy v2 summary gate_ids does not match contract"],
+            )
+
+    def test_legacy_execution_projection_fails_closed_on_goal_drift(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            value = self.contract(root, execution={
+                "contract": {
+                    "schema_version": "ds-lite.autonomy-contract.v1",
+                    "goals": ["different-goal"],
+                    "budget": {"max_seconds": 60, "max_attempts_per_gate": 3},
+                    "authorization": {"status": "approved", "authority": "user", "ref": "approvals/user.md"},
+                    "gates": [{
+                        "id": "gate-a", "depends_on": [], "command": ["echo", "ok"],
+                        "receipt_ref": "receipts/gate-a.json", "retry_class": "none",
+                    }],
+                }
+            })
+            normalized = ds_lite_autonomy_v2.validate_contract(value, project_root=root)
+            with self.assertRaisesRegex(ds_lite_autonomy_v2.AutonomyV2Error, "goals"):
+                ds_lite_autonomy_v2._execution_map(normalized)
 
 
 if __name__ == "__main__":

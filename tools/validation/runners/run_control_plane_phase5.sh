@@ -90,7 +90,7 @@ observed_phase4_sha="$($python_bin -c 'import hashlib,pathlib,sys; print(hashlib
 [[ "${observed_phase4_sha,,}" == "${phase4_decision_sha256,,}" ]] || { echo "authoritative Phase4 decision SHA-256 mismatch" >&2; exit 2; }
 
 export PYTHONDONTWRITEBYTECODE=1
-export PYTHONPATH="$dbos_root:$repo_root/plugins/deepscientist-lite-core/controller:$repo_root${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="$dbos_root:$repo_root/plugins/deepscientist-lite-control-plane/controller:$repo_root${PYTHONPATH:+:$PYTHONPATH}"
 "$python_bin" -c 'import sys; from pathlib import Path; from ds_lite_control.runtime_pin import verify_runtime_selection; result=verify_runtime_selection(Path(sys.argv[1]),Path(sys.argv[2]),expected_version=sys.argv[3]); raise SystemExit(0 if result["valid"] else 2)' "$codex_bin" "$schema_root" "$codex_version"
 
 mkdir "$evidence_root"

@@ -7,14 +7,13 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Iterable
 
 
-DEFAULT_WINDOWS_ROOT = Path(r"F:\DeepScientistLitePilots\matched-pilot-20260717-01")
-DEFAULT_WSL_ROOT = Path(r"G:\DeepScientistLitePilots\matched-pilot-20260717-01")
 CASES = ("engineering-continuity", "math-counterexample", "numerical-seeds", "idea-evaluation")
 ARMS = ("plain", "scratchpad", "ds-lite")
 FIELDS = (
@@ -388,15 +387,19 @@ def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description="Score redacted public artifacts from the DeepScientist Lite matched pilot.")
     subcommands = result.add_subparsers(dest="command", required=True)
     score = subcommands.add_parser("score", help="score all 12 case-arm workspaces")
-    score.add_argument("--windows-root", type=Path, default=DEFAULT_WINDOWS_ROOT)
-    score.add_argument("--wsl-root", type=Path, default=DEFAULT_WSL_ROOT)
+    score.add_argument("--windows-root", type=Path)
+    score.add_argument("--wsl-root", type=Path)
     return result
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
-        report = score_pilot(args.windows_root, args.wsl_root)
+        windows_root = args.windows_root or (Path(os.environ["DS_LITE_PILOT_WINDOWS_ROOT"]) if os.environ.get("DS_LITE_PILOT_WINDOWS_ROOT") else None)
+        wsl_root = args.wsl_root or (Path(os.environ["DS_LITE_PILOT_WSL_ROOT"]) if os.environ.get("DS_LITE_PILOT_WSL_ROOT") else None)
+        if windows_root is None or wsl_root is None:
+            raise ScoreError("pass --windows-root and --wsl-root, or set DS_LITE_PILOT_WINDOWS_ROOT and DS_LITE_PILOT_WSL_ROOT")
+        report = score_pilot(windows_root, wsl_root)
     except (ScoreError, OSError, ValueError, KeyError) as exc:
         print(f"pilot scoring failed: {exc}", file=sys.stderr)
         return 1

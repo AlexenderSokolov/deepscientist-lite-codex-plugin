@@ -48,7 +48,7 @@ def load_registry(script_path: Path) -> dict:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise SetupError("nature skill registry is unavailable") from exc
-    if value.get("schema_version") != "ds-lite.nature-skill-registry.v1":
+    if value.get("schema_version") not in {"ds-lite.nature-skill-registry.v1", "ds-lite.nature-skill-registry.v2"}:
         raise SetupError("nature skill registry schema is unsupported")
     return value
 

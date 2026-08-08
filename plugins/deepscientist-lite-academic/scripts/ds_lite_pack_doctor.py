@@ -2,10 +2,24 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import sys
 from pathlib import Path
+
+
+def _compatible_core(core_root: Path, required: dict[str, str], observed: dict[str, object]) -> bool:
+    module_path = core_root / "scripts" / "ds_lite_semver.py"
+    try:
+        spec = importlib.util.spec_from_file_location("ds_lite_semver", module_path)
+        if spec is None or spec.loader is None:
+            return False
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return observed.get("plugin") == required.get("plugin") and module.satisfies(str(observed.get("version", "")), required["version"])
+    except (AttributeError, ImportError, OSError, SyntaxError, TypeError, ValueError):
+        return False
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -18,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
     result = {
         "schema_version": "ds-lite.pack-doctor.v1",
         "pack": compatibility["pack"],
-        "version": compatibility["version"],
+        "version": compatibility["pack"]["version"],
         "status": "blocked",
         "required": compatibility["requires"],
     }
@@ -37,13 +51,7 @@ def main(argv: list[str] | None = None) -> int:
     observed = {"plugin": core_manifest.get("name"), "version": core_manifest.get("version")}
     result["observed"] = observed
     required = compatibility["requires"]
-    def version_key(value):
-        return tuple(int(part) if part.isdigit() else part for part in str(value).replace("-", ".").split("."))
-    compatible_version = required.get("version") == observed.get("version") or (
-        isinstance(required.get("version"), str) and required["version"].startswith(">=")
-        and version_key(observed.get("version", "")) >= version_key(required["version"][2:])
-    )
-    if observed.get("plugin") != required.get("plugin") or not compatible_version:
+    if not _compatible_core(Path(raw_core).expanduser().resolve(), required, observed):
         result["reason"] = "incompatible-core"
         print(json.dumps(result, ensure_ascii=False))
         return 2

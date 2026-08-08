@@ -1,6 +1,6 @@
 ---
 name: nature-figure
-description: Use the complete nature-figure workflow, preserving its upstream routing and supporting materials. Create, revise, audit, and export submission-grade scientific figures for Nature-family and other high-impact venues in Python (matplotlib/seaborn) or R (ggplot2/patchwork/ComplexHeatmap), including multi-panel plots, figures4papers-style work, and journal-ready SVG/PDF/TIFF outputs. Use for paper or scientific plots, manuscript data visualization, 论文配图、学术写作配图、科研绘图、科研作图、画图、作图、出图、论文图表、可视化. Define the conclusion, evidence logic, data integrity, template compatibility, export needs, and reviewer risks before plotting; honor or persist the Python/R backend choice. Also use the separate OpenRouter GPT Image 2 route for explicit AI-generated graphical abstracts, mechanism diagrams, concept schemat
+description: Use the complete nature-figure workflow, preserving its upstream routing and supporting materials. Create, revise, audit, and export submission-grade scientific figures for Nature-family and other high-impact venues in Python (matplotlib/seaborn) or R (ggplot2/patchwork/ComplexHeatmap), including multi-panel plots, figures4papers-style work, and journal-ready SVG/PDF/TIFF outputs. Use for paper or scientific plots, manuscript data visualization, 论文配图、学术写作配图、科研绘图、科研作图、画图、作图、出图、论文图表、可视化. Define the conclusion, evidence logic, data integrity, template compatibility, export needs, and reviewer risks before plotting; honor or persist the Python/R backend choice.
 ---
 
 # DS Lite Integration Boundary
@@ -20,6 +20,13 @@ Every invocation follows DS Lite `start / progress / end`: state the target, fac
 authorization, actual action, evidence, failure layer, unverified items, and one next
 action. Do not save prompts, credentials, raw responses, hidden reasoning, or absolute
 workstation paths.
+
+Candidate distribution keeps the workflow, scripts, templates, indexes, and
+small local previews in this package. High-resolution `figures4papers` examples
+may be delivered separately as `academic-examples.zip`; when that archive is
+available, extract it at the Academic package root before using those examples.
+When it is absent, use the retained templates and previews, and report the
+high-resolution example set as `not-observed` rather than inventing a substitute.
 
 ## Preserved Upstream Workflow
 

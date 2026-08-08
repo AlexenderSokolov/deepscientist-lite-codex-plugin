@@ -1,7 +1,7 @@
 {
- "name": "deepscientist-lite",
- "version": "0.10.0-beta.2",
- "description": "A bounded, recoverable, evidence-aware worker protocol for small and medium research tasks.",
+  "name": "deepscientist-lite",
+  "version": "0.10.0-beta.3",
+  "description": "A bounded, recoverable, evidence-aware worker protocol for small and medium research tasks.",
   "author": {
     "name": "DeepScientist Lite maintainers"
   },

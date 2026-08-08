@@ -32,9 +32,10 @@ class FormalCacheAcceptanceTests(unittest.TestCase):
                            "observed_bundle_digest": "a" * 64},
             }
             with patch.object(module, "verify_runtime_selection", return_value=runtime), \
-                    patch.object(module, "_run", side_effect=fake_run):
+                    patch.object(module, "_run", side_effect=fake_run), \
+                    patch.object(module, "_installed_skill_inventory", side_effect=lambda _home, _packages, expected: expected):
                 receipt = module.run(
-                    codex_bin=binary, repo_root=root, output_root=root / "out",
+                    codex_bin=binary, repo_root=module.ROOT, output_root=root / "out",
                     schema_root=schema_root, expected_version="0.146.0",
                     expected_sha256=expected_sha, candidate_digest="a" * 64,
                 )
@@ -43,6 +44,34 @@ class FormalCacheAcceptanceTests(unittest.TestCase):
             self.assertTrue(receipt["schema_identity"]["valid"])
             self.assertEqual(receipt["cli_identity"]["sha256"], expected_sha.lower())
             self.assertEqual(receipt["candidate_digest"], "a" * 64)
+            self.assertEqual(receipt["marketplace_source"], "repository-projection")
+            self.assertEqual(sum(map(len, receipt["observed_skill_inventory"].values())), 31)
+
+    def test_explicit_candidate_projection_must_contain_the_expected_packages(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            binary = root / "codex.exe"
+            binary.write_bytes(b"codex")
+            schemas = root / "schemas"
+            schemas.mkdir()
+            runtime = {
+                "valid": True, "expected_codex_version": "0.146.0",
+                "codex_binary_version": "0.146.0",
+                "schema": {"valid": True, "manifest_digest": "f" * 64,
+                           "observed_bundle_digest": "a" * 64},
+            }
+            candidate = root / "candidate"
+            (candidate / ".agents" / "plugins").mkdir(parents=True)
+            (candidate / ".agents" / "plugins" / "marketplace.json").write_text("{}\n", encoding="utf-8")
+            (candidate / "plugins").mkdir()
+            with patch.object(module, "verify_runtime_selection", return_value=runtime):
+                with self.assertRaisesRegex(module.FormalCacheError, "marketplace projection"):
+                    module.run(
+                        codex_bin=binary, repo_root=module.ROOT, output_root=root / "out",
+                        schema_root=schemas, expected_version="0.146.0",
+                        expected_sha256=module._sha256(binary), candidate_digest="a" * 64,
+                        marketplace_root=candidate,
+                    )
 
     def test_nonstable_version_or_invalid_schema_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

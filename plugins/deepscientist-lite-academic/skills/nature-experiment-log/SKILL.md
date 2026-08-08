@@ -1,6 +1,6 @@
 ---
 name: nature-experiment-log
-description: Use the complete nature-experiment-log workflow, preserving its upstream routing and supporting materials. "标准化实验日志记录——接收原始材料（图/语音/文字），产出带 YAML frontmatter 的标准日志到 Obsidian vault。需配合飞书 CLI 或手动输入使用。"
+description: Use the complete nature-experiment-log workflow, preserving its upstream routing and supporting materials. "标准化实验日志记录——接收原始材料（图/语音/文字），产出带 YAML frontmatter 的标准日志到 Obsidian vault。需配合飞书 CLI 或手动输入使用。".
 ---
 
 # DS Lite Integration Boundary

@@ -1,6 +1,6 @@
 {
   "name": "deepscientist-lite-web",
-  "version": "0.3.0-alpha.1",
+  "version": "0.10.0-beta.3",
   "description": "Public-only web acquisition and provenance records for DeepScientist Lite.",
   "author": {
     "name": "DeepScientist Lite maintainers"

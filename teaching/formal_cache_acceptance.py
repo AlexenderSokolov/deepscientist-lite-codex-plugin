@@ -15,26 +15,31 @@ from typing import Any
 
 STABLE_CODEX_VERSION = "0.146.0"
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 CONTROLLER_ROOT = ROOT / "plugins" / "deepscientist-lite-control-plane" / "controller"
 if str(CONTROLLER_ROOT) not in sys.path:
     sys.path.insert(0, str(CONTROLLER_ROOT))
 
 from ds_lite_control.runtime_pin import verify_runtime_selection  # noqa: E402
-
-
-EXPECTED_PACKAGES = {
-    "deepscientist-lite": "0.10.0-beta.2",
-    "deepscientist-lite-academic": "0.10.0-beta.2",
-    "deepscientist-lite-web": "0.3.0-alpha.1",
-    "deepscientist-lite-knowledge": "0.3.0-alpha.1",
-    "deepscientist-lite-empirical": "0.3.0-alpha.1",
-    "deepscientist-lite-engineering": "0.3.0-alpha.1",
-    "deepscientist-lite-control-plane": "0.10.0-beta.2",
-}
+from tools.validation.release_identity import ReleaseIdentityError, load_package_set  # noqa: E402
 
 
 class FormalCacheError(RuntimeError):
     pass
+
+
+def expected_packages(repo_root: Path) -> dict[str, str]:
+    try:
+        return {
+            package["name"]: package["version"]
+            for package in load_package_set(repo_root)["packages"].values()
+        }
+    except (ReleaseIdentityError, KeyError, TypeError) as exc:
+        raise FormalCacheError("package release identity is unavailable") from exc
+
+
+EXPECTED_PACKAGES = expected_packages(ROOT)
 
 
 def _sha256(path: Path) -> str:
@@ -66,18 +71,87 @@ def _run(command: list[str], env: dict[str, str], cwd: Path) -> tuple[int | None
     return result.returncode, len([line for line in raw.splitlines() if line]), hashlib.sha256(raw.encode("utf-8", errors="replace")).hexdigest(), parsed
 
 
-def _observed_packages(value: Any) -> dict[str, str]:
+def _observed_packages(value: Any, expected_names: set[str]) -> dict[str, str]:
     observed: dict[str, str] = {}
     if isinstance(value, dict):
         name = value.get("name")
         version = value.get("version")
-        if isinstance(name, str) and isinstance(version, str) and name in EXPECTED_PACKAGES:
+        if isinstance(name, str) and isinstance(version, str) and name in expected_names:
             observed[name] = version
         for child in value.values():
-            observed.update(_observed_packages(child))
+            observed.update(_observed_packages(child, expected_names))
     elif isinstance(value, list):
         for child in value:
-            observed.update(_observed_packages(child))
+            observed.update(_observed_packages(child, expected_names))
+    return observed
+
+
+def _skill_inventory_from_projection(root: Path, package_set: dict[str, Any]) -> dict[str, list[str]]:
+    inventory: dict[str, list[str]] = {}
+    for package in package_set["packages"].values():
+        package_root = root / "plugins" / package["directory"]
+        skills_root = package_root / "skills"
+        discovered = sorted(
+            path.parent.name for path in skills_root.glob("*/SKILL.md") if path.is_file()
+        )
+        declared = package.get("skills")
+        if isinstance(declared, list):
+            if discovered != sorted(declared):
+                raise FormalCacheError("marketplace projection skill inventory is inconsistent")
+        elif (
+            len(discovered) != package.get("skill_count")
+            or not all(name.startswith(package.get("skill_prefix", "")) for name in discovered)
+        ):
+            raise FormalCacheError("marketplace projection skill inventory is inconsistent")
+        inventory[package["name"]] = discovered
+    return inventory
+
+
+def _marketplace_identity(
+    root: Path, package_set: dict[str, Any], expected: dict[str, str], *, explicit: bool,
+) -> dict[str, Any]:
+    marketplace_manifest = root / ".agents" / "plugins" / "marketplace.json"
+    plugins_root = root / "plugins"
+    if not marketplace_manifest.is_file() or not plugins_root.is_dir():
+        raise FormalCacheError("marketplace projection is incomplete")
+    try:
+        json.loads(marketplace_manifest.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise FormalCacheError("marketplace projection manifest is invalid") from exc
+    observed: dict[str, str] = {}
+    for manifest_path in plugins_root.glob("*/.codex-plugin/plugin.json"):
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise FormalCacheError("marketplace package manifest is invalid") from exc
+        name = manifest.get("name")
+        version = manifest.get("version")
+        if isinstance(name, str) and isinstance(version, str) and name in expected:
+            observed[name] = version
+    if observed != expected:
+        raise FormalCacheError("marketplace projection package identity is inconsistent")
+    return {
+        "source": "explicit-candidate-projection" if explicit else "repository-projection",
+        "marketplace_manifest_sha256": _sha256(marketplace_manifest).lower(),
+        "skill_inventory": _skill_inventory_from_projection(root, package_set),
+    }
+
+
+def _installed_skill_inventory(
+    home: Path, packages: dict[str, str], expected: dict[str, list[str]],
+) -> dict[str, list[str]]:
+    cache_root = home / "plugins" / "cache" / "deepscientist-lite"
+    observed: dict[str, list[str]] = {}
+    for name, version in packages.items():
+        skills_root = cache_root / name / version / "skills"
+        if not skills_root.is_dir():
+            raise FormalCacheError("installed marketplace skill cache is incomplete")
+        discovered = sorted(
+            path.parent.name for path in skills_root.glob("*/SKILL.md") if path.is_file()
+        )
+        observed[name] = discovered
+    if observed != expected:
+        raise FormalCacheError("installed marketplace skill inventory is inconsistent")
     return observed
 
 
@@ -112,6 +186,7 @@ def run(
     *, codex_bin: Path | str, repo_root: Path | str, output_root: Path | str,
     schema_root: Path | str, expected_version: str, expected_sha256: str,
     candidate_digest: str, package_digest: str | None = None,
+    marketplace_root: Path | str | None = None,
 ) -> dict[str, Any]:
     binary = Path(codex_bin).resolve()
     repo = Path(repo_root).resolve()
@@ -138,13 +213,23 @@ def run(
         raise FormalCacheError("selected runtime or schema bundle is invalid") from exc
     if not runtime.get("valid") or not runtime.get("schema", {}).get("valid"):
         raise FormalCacheError("selected runtime or schema bundle is invalid")
+    expected = expected_packages(repo)
+    try:
+        package_set = load_package_set(repo)
+    except ReleaseIdentityError as exc:
+        raise FormalCacheError("package release identity is unavailable") from exc
+    marketplace = Path(marketplace_root).resolve() if marketplace_root is not None else repo
+    marketplace_identity = _marketplace_identity(
+        marketplace, package_set, expected, explicit=marketplace_root is not None,
+    )
+    expected_skills = marketplace_identity["skill_inventory"]
     root.mkdir(parents=True)
     home = root / "codex-home"
     home.mkdir()
     env = os.environ.copy()
     env["CODEX_HOME"] = str(home)
-    commands = [("marketplace", [str(binary), "plugin", "marketplace", "add", str(repo)])]
-    commands.extend((name, [str(binary), "plugin", "add", f"{name}@deepscientist-lite"]) for name in EXPECTED_PACKAGES)
+    commands = [("marketplace", [str(binary), "plugin", "marketplace", "add", str(marketplace)])]
+    commands.extend((name, [str(binary), "plugin", "add", f"{name}@deepscientist-lite"]) for name in expected)
     observations: list[dict[str, object]] = []
     for label, command in commands:
         returncode, line_count, digest, _ = _run(command, env, repo)
@@ -155,9 +240,13 @@ def run(
     list_returncode, list_lines, list_digest, listed = _run([str(binary), "plugin", "list", "--json"], env, repo)
     observations.append({"label": "plugin-list", "returncode_observed": list_returncode is not None, "returncode": list_returncode,
                          "output_line_count": list_lines, "output_sha256": list_digest})
-    observed = _observed_packages(listed)
-    expected = EXPECTED_PACKAGES
-    passed = all(item["returncode"] == 0 for item in observations) and observed == expected
+    observed = _observed_packages(listed, set(expected))
+    observed_skills = _installed_skill_inventory(home, expected, expected_skills)
+    passed = (
+        all(item["returncode"] == 0 for item in observations)
+        and observed == expected
+        and observed_skills == expected_skills
+    )
     receipt = {
         "schema_version": "ds-lite.formal-cache-acceptance.v1",
         "status": "passed" if passed else "blocked",
@@ -175,9 +264,12 @@ def run(
             "manifest_sha256": runtime["schema"]["manifest_digest"],
             "bundle_sha256": runtime["schema"]["observed_bundle_digest"],
         },
-        "marketplace_source": "local",
+        "marketplace_source": marketplace_identity["source"],
+        "marketplace_identity": marketplace_identity,
         "expected_packages": expected,
         "observed_packages": observed,
+        "expected_skill_inventory": expected_skills,
+        "observed_skill_inventory": observed_skills,
         "command_observations": observations,
         "model_request_made": False,
         "raw_output_persisted": False,
@@ -202,6 +294,7 @@ def main() -> int:
     parser.add_argument("--expected-sha256", required=True)
     parser.add_argument("--candidate-digest", required=True)
     parser.add_argument("--package-digest")
+    parser.add_argument("--marketplace-root")
     args = parser.parse_args()
     try:
         receipt = run(
@@ -209,6 +302,7 @@ def main() -> int:
             output_root=args.output_root, schema_root=args.schema_root,
             expected_version=args.expected_version, expected_sha256=args.expected_sha256,
             candidate_digest=args.candidate_digest, package_digest=args.package_digest,
+            marketplace_root=args.marketplace_root,
         )
     except FormalCacheError as exc:
         print(json.dumps({"status": "blocked", "reason": str(exc)}))

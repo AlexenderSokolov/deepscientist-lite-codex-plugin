@@ -13,12 +13,12 @@ case "$evidence_root" in "$root"/*) ;; *) echo "EVIDENCE_ROOT must stay inside r
 [[ -x "$codex_bin" ]] || { echo "pinned Codex app-server binary required" >&2; exit 2; }
 mkdir -p "$evidence_root"
 export PYTHONDONTWRITEBYTECODE=1
-export PYTHONPATH="$dependency_root:$root/plugins/deepscientist-lite-core/controller${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="$dependency_root:$root/plugins/deepscientist-lite-control-plane/controller${PYTHONPATH:+:$PYTHONPATH}"
 "$python_bin" "$root/plugins/deepscientist-lite-control-plane/controller/phase2_fault_harness.py" --workdir "$evidence_root/fault-work" --output "$evidence_root/fault-matrix.json" --seed 20260731 --trials 100
 set +e
 "$python_bin" -m unittest tests.test_control_plane_phase2 tests.test_control_plane_phase2_app_server tests.test_control_plane_phase2_runner tests.test_control_plane_phase2_fault_harness tests.test_control_plane_phase1 tests.test_control_plane_phase1_cli -v >"$evidence_root/phase-tests.txt" 2>&1
 phase_exit=$?
-"$python_bin" teaching/controller_app_server_smoke.py --codex-bin "$codex_bin" --home "$evidence_root/codex-home" --workspace "$root" --schema-root "$root/plugins/deepscientist-lite-core/schemas/codex/0.128.0" --output "$evidence_root/canonical-thread-smoke.json"
+"$python_bin" teaching/controller_app_server_smoke.py --codex-bin "$codex_bin" --home "$evidence_root/codex-home" --workspace "$root" --schema-root "$root/plugins/deepscientist-lite-control-plane/schemas/codex/0.128.0" --output "$evidence_root/canonical-thread-smoke.json"
 smoke_exit=$?
 "$python_bin" -m teaching.control_plane_phase2_evidence managed --project "$evidence_root/managed-project" --backup "$evidence_root/managed-backup" --restore "$evidence_root/managed-restore" --output "$evidence_root/managed-probe.json"
 managed_exit=$?

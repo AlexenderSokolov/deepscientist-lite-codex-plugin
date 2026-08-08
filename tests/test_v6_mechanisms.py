@@ -159,13 +159,23 @@ class ClaimLedgerTests(unittest.TestCase):
             "executed_code_ref": "scripts/run_experiment.py",
             "verifier": {"type": "deterministic", "result": "pass"},
             "fidelity": "medium",
-            "status": "supported",
+            "status": "draft",
             "created_at": "2026-08-04T10:00:00Z",
             "extensions": {},
         }
         result = ds_lite_claim_ledger.append_claim(self.ledger_path, claim)
         self.assertEqual(result["claim_id"], "claim-001")
         self.assertIn("claim_digest", result)
+        self.assertEqual(result["status"], "draft")
+
+    def test_append_rejects_terminal_claim(self):
+        ds_lite_claim_ledger.create_ledger("terminal-claim-ledger", "wu-terminal", self.root)
+        claim = self._draft_claim("claim-terminal")
+        claim["status"] = "supported"
+        with self.assertRaisesRegex(ds_lite_claim_ledger.ClaimError, "start as draft"):
+            ds_lite_claim_ledger.append_claim(
+                str(Path(self.root) / "research" / "artifacts" / "claim-ledger-terminal-claim-ledger.json"), claim
+            )
 
     def test_confirmatory_claim_requires_pre_registration(self):
         ds_lite_claim_ledger.create_ledger("test-claim-ledger-2", "wu-002", self.root)
@@ -203,7 +213,7 @@ class ClaimLedgerTests(unittest.TestCase):
                 "executed_code_ref": "",
                 "verifier": {"type": "t", "result": "pass"},
                 "fidelity": "medium",
-                "status": "supported",
+                "status": "draft",
                 "created_at": "2026-08-04T10:00:00Z",
                 "extensions": {},
             }
@@ -259,6 +269,8 @@ class ClaimLedgerTests(unittest.TestCase):
         self.assertEqual(result["status"], "supported")
         self.assertEqual(result["extensions"]["review_verdict"], "pass")
         self.assertRegex(result["extensions"]["review_sha256"], r"^[a-f0-9]{64}$")
+        self.assertEqual(result["extensions"]["review_ref"], "research/artifacts/review-001.json")
+        self.assertNotIn("review_path", result["extensions"])
 
     def test_review_promotion_rejects_unbound_evidence(self):
         ds_lite_claim_ledger.create_ledger("review-ledger-2", "wu-review", self.root)

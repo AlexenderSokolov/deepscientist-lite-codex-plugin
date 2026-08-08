@@ -13,13 +13,14 @@ param(
     [Parameter(Mandatory=$true)][string]$Phase4DecisionSha256,
     [Parameter(Mandatory=$true)][string]$Regressions,
     [Parameter(Mandatory=$true)][string]$PublicationActions,
-    [string]$PythonBin = "C:\ProgramData\anaconda3\python.exe",
+    [string]$PythonBin = "",
     [string]$CodexVersion = "0.146.0"
 )
 
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $false
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+$PythonBin = & (Join-Path $PSScriptRoot "resolve_python.ps1") -ExplicitPython $PythonBin
 if ([IO.Path]::IsPathRooted($EvidenceRoot)) {
     $EvidenceRoot = [IO.Path]::GetFullPath($EvidenceRoot)
 } else {

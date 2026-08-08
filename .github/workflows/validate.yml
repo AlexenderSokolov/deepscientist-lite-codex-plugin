@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           python tools/validation/install_locked_dependencies.py \
-            --lock plugins/deepscientist-lite-core/controller/requirements.lock
+            --lock plugins/deepscientist-lite-control-plane/controller/requirements.lock
           python -c "import dbos; print('DBOS', getattr(dbos, '__version__', '2.29.0'))"
       - name: Validate on Unix
         if: runner.os != 'Windows'

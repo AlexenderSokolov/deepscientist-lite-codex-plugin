@@ -1,6 +1,6 @@
 ---
 name: nature-writing
-description: Use the complete nature-writing workflow, preserving its upstream routing and supporting materials. Draft, restructure, or plan Nature-style manuscript sections and initial-submission materials from author-provided claims, results, figures, notes, or Chinese drafts. Use when the user wants to write or rebuild an abstract, introduction, related-work, method, experiments, discussion, conclusion, title, full manuscript argument, pre-submission cover letter, title page, highlights, author-contribution statement, availability/declaration text, reviewer suggestions, or a complete initial submission package rather than only polish finished prose. Also trigger on general academic-writing and first-submission requests such as writing a paper from scratch, drafting a manuscript/section, structuring 
+description: Use the complete nature-writing workflow, preserving its upstream routing and supporting materials. Draft, restructure, or plan Nature-style manuscript sections and initial-submission materials from author-provided claims, results, figures, notes, or Chinese drafts. Use when the user wants to write or rebuild an abstract, introduction, related-work, method, experiments, discussion, conclusion, title, full manuscript argument, pre-submission cover letter, title page, highlights, author-contribution statement, availability/declaration text, reviewer suggestions, or a complete initial submission package rather than only polish finished prose.
 ---
 
 # DS Lite Integration Boundary

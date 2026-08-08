@@ -8,12 +8,14 @@ from tools.validation.check_text_compatibility import iter_files
 
 
 class CrossSystemValidationTests(unittest.TestCase):
-    def test_validation_entrypoints_accept_authorized_temp_root(self) -> None:
+    def test_validation_entrypoints_delegate_to_the_unified_validator(self) -> None:
         root = Path(__file__).resolve().parents[1]
         shell = (root / "tools" / "validation" / "run_validate.sh").read_text(encoding="utf-8")
         powershell = (root / "tools" / "validation" / "run_validate.ps1").read_text(encoding="utf-8")
-        self.assertIn("TEMP_ROOT", shell)
-        self.assertIn("TEMP_ROOT", powershell)
+        self.assertIn("validate_all.py", shell)
+        self.assertIn("validate_all.py", powershell)
+        self.assertIn("PYTHON_BIN", shell)
+        self.assertIn("PYTHON_BIN", powershell)
 
     def test_executable_shells_do_not_embed_python_source(self):
         root = Path(__file__).resolve().parents[1]

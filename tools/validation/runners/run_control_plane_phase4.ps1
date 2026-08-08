@@ -2,13 +2,14 @@ param(
     [Parameter(Mandatory=$true)][string]$EvidenceRoot,
     [Parameter(Mandatory=$true)][string]$DbosDependencyRoot,
     [Parameter(Mandatory=$true)][string]$CodexBin,
-    [string]$PythonBin = "C:\ProgramData\anaconda3\python.exe",
+    [string]$PythonBin = "",
     [string]$Model = "gpt-5.6-sol",
     [string]$CodexVersion = "0.146.0-alpha.3.1"
 )
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $false
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+$PythonBin = & (Join-Path $PSScriptRoot "resolve_python.ps1") -ExplicitPython $PythonBin
 $EvidenceRoot = [IO.Path]::GetFullPath((Join-Path $Root $EvidenceRoot))
 $RepoPrefix = $Root + [IO.Path]::DirectorySeparatorChar
 if (-not $EvidenceRoot.StartsWith($RepoPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw "EvidenceRoot must stay inside repository" }
@@ -20,7 +21,7 @@ New-Item -ItemType Directory -Path $EvidenceRoot | Out-Null
 $env:PYTHONDONTWRITEBYTECODE = "1"
 $env:PYTHON_BIN = $PythonBin
 $env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller") + ";" + $Root
-$SchemaRoot = Join-Path $Root "plugins\deepscientist-lite-core\schemas\codex\$CodexVersion"
+$SchemaRoot = Join-Path $Root "plugins\deepscientist-lite-control-plane\schemas\codex\$CodexVersion"
 $Previous = Join-Path $Root "research\.validation-tmp\control-plane-phase3-final-20260731-03\phase3-decision.json"
 $PreviousHash = "6fba9ca1417efa3a36faecf45d852b902ddc8a57481dfacc50be112b143a1341"
 

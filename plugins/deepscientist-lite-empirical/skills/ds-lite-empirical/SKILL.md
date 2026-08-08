@@ -5,7 +5,7 @@ description: Specify, execute, diagnose, or review a bounded empirical research 
 
 # DS Lite Empirical
 
-Use this pack only with DeepScientist Lite Core `0.9.0-beta.1`. Before acting, run `python <empirical-plugin>/scripts/ds_lite_empirical.py doctor --core-root <core-plugin>`. A missing or different Core version is `blocked`.
+Use this pack only with a DeepScientist Lite Core that satisfies this package's `compatibility.json`. Before acting, run `python <empirical-plugin>/scripts/ds_lite_empirical.py doctor --core-root <core-plugin>`. A missing or incompatible Core is `blocked`.
 
 ## Route
 

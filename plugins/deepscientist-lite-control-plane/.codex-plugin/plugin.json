@@ -1,8 +1,10 @@
 {
   "name": "deepscientist-lite-control-plane",
-  "version": "0.10.0-beta.2",
+  "version": "0.10.0-beta.3",
   "description": "Optional durable control-plane bridge for DS Lite; it is not required by Core.",
-  "author": {"name": "DeepScientist Lite maintainers"},
+  "author": {
+    "name": "DeepScientist Lite maintainers"
+  },
   "homepage": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
   "repository": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
   "license": "Apache-2.0",
@@ -13,8 +15,14 @@
     "longDescription": "An optional extension for durable multi-gate orchestration. Missing DBOS blocks only this extension and never Core validation.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
-    "capabilities": ["Interactive", "Read", "Write"],
-    "defaultPrompt": ["Use $ds-lite-control-plane for an explicitly approved durable control-plane action."],
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use $ds-lite-control-plane for an explicitly approved durable control-plane action."
+    ],
     "brandColor": "#5A4A78",
     "screenshots": []
   }

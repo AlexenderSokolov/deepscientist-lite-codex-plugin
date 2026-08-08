@@ -8,6 +8,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = REPO_ROOT / "plugins" / "deepscientist-lite-core"
 COMMUNICATION_ROOT = PLUGIN_ROOT / "references" / "communication"
+PACKAGE_SET = json.loads((REPO_ROOT / "release" / "package-set.json").read_text(encoding="utf-8"))
 EXPECTED_SKILLS = {
     "ds-lite",
     "ds-lite-intake",
@@ -95,7 +96,7 @@ class CommunicationLayerTests(unittest.TestCase):
         manifest = json.loads((PLUGIN_ROOT / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["hooks"], "./hooks/hooks.json")
         self.assertNotIn("mcpServers", manifest)
-        self.assertEqual(manifest["version"], "0.10.0-beta.2")
+        self.assertEqual(manifest["version"], PACKAGE_SET["packages"]["core"]["version"])
 
 
 if __name__ == "__main__":

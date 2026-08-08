@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory=$true)][string]$EvidenceRoot,
     [Parameter(Mandatory=$true)][string]$DbosDependencyRoot,
     [Parameter(Mandatory=$true)][string]$CodexBin,
-    [string]$PythonBin = "C:\ProgramData\anaconda3\python.exe",
+    [string]$PythonBin = "",
     [string]$Model = "gpt-5.6-sol",
     [string]$CodexVersion = "0.146.0-alpha.3.1",
     [switch]$AmbientHome
@@ -10,6 +10,7 @@ param(
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $false
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+$PythonBin = & (Join-Path $PSScriptRoot "resolve_python.ps1") -ExplicitPython $PythonBin
 $EvidenceRoot = [IO.Path]::GetFullPath((Join-Path $Root $EvidenceRoot))
 $RepoPrefix = $Root + [IO.Path]::DirectorySeparatorChar
 if (-not $EvidenceRoot.StartsWith($RepoPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw "EvidenceRoot must stay inside repository" }
@@ -21,10 +22,10 @@ New-Item -ItemType Directory -Path $EvidenceRoot | Out-Null
 $env:PYTHONDONTWRITEBYTECODE = "1"
 $env:PYTHON_BIN = $PythonBin
 $env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller") + ";" + $Root
-$SchemaRoot = Join-Path $Root "plugins\deepscientist-lite-core\schemas\codex\$CodexVersion"
+$SchemaRoot = Join-Path $Root "plugins\deepscientist-lite-control-plane\schemas\codex\$CodexVersion"
 $Previous = Join-Path $Root "research\.validation-tmp\control-plane-phase2-continuation-20260731-06\phase2-decision-03.json"
 
-& $PythonBin plugins\deepscientist-lite-core\controller\phase3_fault_harness.py --workdir (Join-Path $EvidenceRoot "fault-work") --output (Join-Path $EvidenceRoot "fault-matrix.json") --python-bin $PythonBin --dependency-root $DbosDependencyRoot --seed 20260731 --trials 100 --timeout 20
+& $PythonBin plugins\deepscientist-lite-control-plane\controller\phase3_fault_harness.py --workdir (Join-Path $EvidenceRoot "fault-work") --output (Join-Path $EvidenceRoot "fault-matrix.json") --python-bin $PythonBin --dependency-root $DbosDependencyRoot --seed 20260731 --trials 100 --timeout 20
 $faultExit = $LASTEXITCODE
 & $PythonBin -m teaching.control_plane_phase3_evidence supervised --project (Join-Path $EvidenceRoot "managed-project") --runtime (Join-Path $EvidenceRoot "managed-runtime") --output (Join-Path $EvidenceRoot "supervised-recovery.json")
 $supervisedExit = $LASTEXITCODE

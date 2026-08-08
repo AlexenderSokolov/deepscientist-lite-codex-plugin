@@ -177,6 +177,8 @@ def append_claim(ledger_path: str, claim: dict[str, Any]) -> dict[str, Any]:
         raise ClaimError("invalid ledger schema")
 
     validated = validate_claim(claim)
+    if validated["status"] != "draft":
+        raise ClaimError("new claims must start as draft and be promoted by typed review")
 
     existing_ids = {c["claim_id"] for c in ledger["claims"]}
     if validated["claim_id"] in existing_ids:
@@ -249,7 +251,6 @@ def promote_claim_from_review(ledger_path: str, claim_id: str, review_path: str)
     extensions = claim.setdefault("extensions", {})
     extensions.update({
         "review_ref": review["review_artifact_ref"],
-        "review_path": review_file.as_posix(),
         "review_sha256": review_digest,
         "review_verdict": review["verdict"],
         "review_claim_assessment": review["claim_assessment"],

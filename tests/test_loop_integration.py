@@ -85,20 +85,17 @@ class LoopIntegrationTests(unittest.TestCase):
         for relative in (
             "teaching/run_loop_acceptance.ps1",
             "teaching/run_cross_system_validation.ps1",
-            "tools/validation/run_validate.ps1",
         ):
             source = self._text(relative)
             self.assertNotIn("[Guid]::NewGuid()", source, relative)
             self.assertIn("Get-Date", source, relative)
             self.assertIn("$PID", source, relative)
 
-    def test_validation_entries_use_clean_wrapper_and_unique_reports(self):
-        for relative in (
-            "tools/validation/run_validate.ps1",
-            "tools/validation/run_validate.sh",
-            "teaching/run_cross_system_validation.ps1",
-            "teaching/run_cross_system_validation.sh",
-        ):
+    def test_validation_entries_use_the_unified_validator_or_clean_wrapper(self):
+        for relative in ("tools/validation/run_validate.ps1", "tools/validation/run_validate.sh"):
+            source = self._text(relative)
+            self.assertIn("validate_all.py", source, relative)
+        for relative in ("teaching/run_cross_system_validation.ps1", "teaching/run_cross_system_validation.sh"):
             source = self._text(relative)
             self.assertIn("run_trusted_hook_host_clean", source, relative)
             self.assertNotIn("run_trusted_hook_host.ps1", source, relative)
@@ -119,12 +116,14 @@ class LoopIntegrationTests(unittest.TestCase):
             result = check_file(ROOT / relative)
             self.assertNotIn("mixed-line-endings", result["violations"], relative)
 
-    def test_unified_validation_compiles_upstream_audit_test(self):
+    def test_unified_validation_discovers_active_python_roots(self):
+        source = self._text("tools/validation/validate_all.py")
+        self.assertIn("active_python_files", source)
         for relative in (
             "tools/validation/run_validate.ps1",
             "tools/validation/run_validate.sh",
         ):
-            self.assertIn("tests/test_autoresearch_audit.py", self._text(relative), relative)
+            self.assertIn("validate_all.py", self._text(relative), relative)
 
 
 if __name__ == "__main__":

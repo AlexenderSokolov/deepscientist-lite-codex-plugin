@@ -64,7 +64,9 @@ class PackageIdentityReceiptTests(unittest.TestCase):
                 cache_receipt=cache_receipt,
                 host_receipt=host_receipt,
                 loaded_runtime="codex-cli-0.146.0",
-                tag="v0.10.0-beta.2",
+                tag=json.loads(
+                    (Path(__file__).resolve().parents[1] / "release" / "package-set.json").read_text(encoding="utf-8")
+                )["target_tag"],
             )
             self.assertEqual(identity["candidate_digest"], "a" * 64)
             self.assertEqual(identity["status"]["candidate"], "observed")

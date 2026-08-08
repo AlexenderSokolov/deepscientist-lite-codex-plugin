@@ -21,6 +21,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from teaching.pilot_runtime import clone_nonsecret_provider_config
 from tools.validation.package_identity import tree_digest
+from tools.validation.release_identity import ReleaseIdentityError, load_package_set
 
 EXPECTED_SHA256 = "EFDB3540EF74B9909408C8D38DA79483454797B36F471E3E004FC2BF2B70E22A"
 EXPECTED_VERSION = "0.144.5"
@@ -65,15 +66,21 @@ def _run_install(codex_bin: Path, repo_root: Path, home: Path) -> None:
 def _candidate_identity(repo_root: Path) -> dict[str, Any]:
     plugin_root = repo_root / "plugins" / "deepscientist-lite-core"
     try:
+        package_set = load_package_set(repo_root)
+        expected = package_set["packages"]["core"]
         manifest = json.loads((plugin_root / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
         hooks = json.loads((plugin_root / "hooks" / "hooks.json").read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+    except (OSError, ReleaseIdentityError, UnicodeError, json.JSONDecodeError, KeyError, TypeError) as exc:
         raise PreparationError("split Core candidate identity is unavailable") from exc
     skills = sorted(
         path.name for path in (plugin_root / "skills").iterdir()
         if path.is_dir() and (path / "SKILL.md").is_file()
     )
-    if manifest.get("name") != "deepscientist-lite" or manifest.get("version") != "0.10.0-beta.2":
+    if (
+        manifest.get("name") != expected["name"]
+        or manifest.get("version") != expected["version"]
+        or skills != expected["skills"]
+    ):
         raise PreparationError("split Core manifest does not match the formal candidate")
     return {
         "plugin": manifest["name"],
