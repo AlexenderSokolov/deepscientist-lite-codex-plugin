@@ -1,4 +1,4 @@
-# DeepScientist Lite Codex Plugin â€?Research Command Kit
+# DeepScientist Lite Codex Plugin â€” Research Command Kit
 
 [ä¸­æ–‡è¯´æ˜Ž](README.zh.md) Â· [User Guide](docs/user-guide.zh.md) Â· [Documentation](docs/README.md) Â· [Acknowledgments](ACKNOWLEDGMENTS.md)
 
@@ -13,7 +13,7 @@ DeepScientist Lite solves these handoff problems with a set of Codex skills and 
 ```mermaid
 graph LR
     subgraph "Core Â· 0.10.0-beta.2 Â· 9 skills"
-        A["Goal retention â†?Route tracing â†?Experiment logging â†?Evidence packing â†?Review â†?Iteration â†?Delegation â†?Handoff"]
+        A["Goal retention â€” Route tracing â€” Experiment logging â€” Evidence packing â€” Review â€” Iteration â€” Delegation â€” Handoff"]
     end
     subgraph "Academic Â· 0.10.0-beta.2 Â· 17 skills"
         B["Literature search Â· Citation verification Â· Paper reading Â· Writing Â· Polishing Â· Review simulation Â· Response letters Â· Submission"]
@@ -50,7 +50,7 @@ flowchart LR
     analysis --> iterate["iterate<br/>Reflect and iterate"]
 ```
 
-`intake` sets goals and criteria â†?`scout` surveys baselines â†?`idea` compares approaches â†?`experiment` logs contracts and runs â†?`review` checks evidence â†?`analysis-write` summarizes findings â†?`iterate` reflects and advances.
+`intake` sets goals and criteria â€” `scout` surveys baselines â€” `idea` compares approaches â€” `experiment` logs contracts and runs â€” `review` checks evidence â€” `analysis-write` summarizes findings â€” `iterate` reflects and advances.
 
 ## Quick Start
 
@@ -94,7 +94,7 @@ For Chinese project titles on Windows, write longer text into a UTF-8 file and u
 
 - **Unified entry `$ds-lite`:** Inspects a research or engineering workspace, reads the Mission Board, and routes to the next action. For approved multi-gate projects, it defaults to the foreground controller to push all ready gates continuously: transient failures (network, rate-limit, timeout) retry per contract; it polls receipts silently after each command; after session interruption, `--resume` restores without re-running completed or frozen gates.
 - **Foreground controller (`ds_lite_autonomy.py`):** A DAG-level bounded autonomy controller that runs in the foreground session. It pushes frozen, authorized gates, generates sanitized progress receipts (`ds-lite.progress-report.v1`), and freezes immediately on non-idempotent operations, duplicate-risk writes, or unauthorized releases. No background daemon.
-- **Bounded loop adapter (`ds_lite_loop.py`):** Runs consecutive bounded iterations as a supervised loop. Each iteration is a complete "execute â†?receipt â†?check" cycle with fail-closed external boundaries. Stops on terminal states (completed/blocked/failed/ambiguous).
+- **Bounded loop adapter (`ds_lite_loop.py`):** Runs consecutive bounded iterations as a supervised loop. Each iteration is a complete "execute â€” receipt â€” check" cycle with fail-closed external boundaries. Stops on terminal states (completed/blocked/failed/ambiguous).
 - **Stateless Hook system (`ds_lite_hook.py`):** Host-triggered, stateless event Hooks for pre/post tool-use, user prompt submission, and stop events. Collected redacted events feed the learning system and quality gates. Hooks hold no state and create no persistent connections.
 - **Project initialization:** Creates `PROJECT.md`, `STATUS.md`, and `RESEARCH_MAP.md` with an initial Graph.
 - **Mission Board:** `mission` and `render-status` project the Graph into a human-readable task board. `STATUS.md` shows what happened, what is next, and where rollback is possible.
@@ -112,13 +112,13 @@ Graph v2 uses atomic writes, revision checks, and project-relative or symbolic e
 ```
 research/
   state/
-    graph.json              â†?Machine-authoritative state graph
+    graph.json              â€” Machine-authoritative state graph
   status/
-    STATUS.md               â†?Current node, next step, rollback points (human-readable)
-  artifacts/                â†?What each step did, with public justification
-  evidence/<run-id>/        â†?Experiment contracts, logs, metrics, file hashes
-PROJECT.md                  â†?Project goals and criteria (rarely changes)
-RESEARCH_MAP.md             â†?Research map (rendered from Graph, human-readable)
+    STATUS.md               â€” Current node, next step, rollback points (human-readable)
+  artifacts/                â€” What each step did, with public justification
+  evidence/<run-id>/        â€” Experiment contracts, logs, metrics, file hashes
+PROJECT.md                  â€” Project goals and criteria (rarely changes)
+RESEARCH_MAP.md             â€” Research map (rendered from Graph, human-readable)
 ```
 
 `graph.json` is the single source of truth. `STATUS.md` and `RESEARCH_MAP.md` are human projections. When they disagree, `graph.json` wins.
