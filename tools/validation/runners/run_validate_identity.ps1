@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $Python = if ($env:PYTHON_BIN) { $env:PYTHON_BIN } else { "python" }
 if (-not $env:IDENTITY_OUTPUT) { throw "IDENTITY_OUTPUT must point to a fresh receipt path" }
