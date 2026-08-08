@@ -1,15 +1,16 @@
 import queue
 import time
 import unittest
-import tempfile
+import io
+import json
 from pathlib import Path
 import sys
 
 from teaching.app_server_continuation_acceptance import (
-    _configured_model,
     _error_diagnostic,
     _formal_trust_state,
     _next_stdout_event,
+    _notify,
     _thread_id,
     evaluate_session_control,
     evaluate_stop_first,
@@ -18,11 +19,15 @@ from teaching.app_server_continuation_fixture import REPO_ROOT
 
 
 class FormalHookTrustTests(unittest.TestCase):
-    def test_fresh_host_model_is_loaded_from_non_sensitive_config(self):
-        with tempfile.TemporaryDirectory(prefix="ds-lite-model-fixture-") as directory:
-            root = Path(directory)
-            (root / "config.toml").write_text("model = 'gpt-5.5'\n", encoding="utf-8")
-            self.assertEqual(_configured_model(root), "gpt-5.5")
+    def test_initialized_notification_has_no_request_identifier(self):
+        process = type("Process", (), {"stdin": io.StringIO()})()
+        _notify(process, "initialized")
+        self.assertEqual(json.loads(process.stdin.getvalue()), {"method": "initialized"})
+
+    def test_legacy_harness_leaves_model_selection_to_the_fresh_host(self):
+        acceptance = (Path(__file__).resolve().parents[1] / "teaching" / "app_server_continuation_acceptance.py").read_text(encoding="utf-8")
+        self.assertNotIn('"modelProvider": "custom"', acceptance)
+        self.assertNotIn('"model": model', acceptance)
 
     def test_error_diagnostic_keeps_only_category_and_hash(self):
         diagnostic = _error_diagnostic({"message": "Provider request timed out"})

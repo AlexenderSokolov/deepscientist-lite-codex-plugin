@@ -15,14 +15,10 @@ import time
 from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "plugins" / "deepscientist-lite-core" / "scripts"
+
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 from ds_lite_recovery import classify_failure
-
-try:
-    import tomllib
-except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback is not used by the pinned runner
-    tomllib = None
 
 
 class AppServerProtocolError(RuntimeError):
@@ -36,6 +32,16 @@ class AppServerProtocolError(RuntimeError):
 def _send(process: subprocess.Popen[str], request_id: int, method: str, params: dict) -> None:
     assert process.stdin is not None
     process.stdin.write(json.dumps({"id": request_id, "method": method, "params": params}) + "\n")
+    process.stdin.flush()
+
+
+def _notify(process: subprocess.Popen[str], method: str, params: dict | None = None) -> None:
+    """Send a JSON-RPC notification after the matching request handshake."""
+    assert process.stdin is not None
+    payload: dict[str, object] = {"method": method}
+    if params is not None:
+        payload["params"] = params
+    process.stdin.write(json.dumps(payload) + "\n")
     process.stdin.flush()
 
 
@@ -196,19 +202,6 @@ def _error_diagnostic(error: object) -> dict[str, str]:
     }
 
 
-def _configured_model(home: Path) -> str:
-    """Use the fresh host's declared model without persisting its config."""
-    if tomllib is not None:
-        try:
-            payload = tomllib.loads((home / "config.toml").read_text(encoding="utf-8"))
-            model = payload.get("model") if isinstance(payload, dict) else None
-            if isinstance(model, str) and model.strip():
-                return model.strip()
-        except (OSError, UnicodeError, ValueError, TypeError):
-            pass
-    return "gpt-5.6-sol"
-
-
 def evaluate_stop_first(*, trust_ready: bool, hook_counts: dict[str, int], summary_completed: bool,
                         terminal: str, continuation_observed: bool = False) -> tuple[str, str]:
     """Retire Stop-first external continuation as a non-passing protocol."""
@@ -278,15 +271,14 @@ def run(codex_bin: Path, home: Path, workspace: Path, hook_events: Path, output:
     external_runner_completed = False
     protocol_failure: str | None = None
     protocol_phase: str | None = None
-    model = _configured_model(home)
     try:
         _send(process, 1, "initialize", {"clientInfo": {"name": "ds-lite-acceptance", "version": "0.8.1"}})
         initialized = _response(process, 1)
         if not isinstance(initialized.get("result"), dict):
             raise AppServerProtocolError("initialize")
+        _notify(process, "initialized")
         _send(process, 2, "thread/start", {
             "cwd": str(workspace), "approvalPolicy": "never", "ephemeral": True,
-            "model": model, "modelProvider": "custom",
         })
         thread = _thread_id(_response(process, 2))
         _send(process, 3, "hooks/list", {"threadId": thread})
@@ -309,7 +301,6 @@ def run(codex_bin: Path, home: Path, workspace: Path, hook_events: Path, output:
         if trust_ready:
             _send(process, 6, "turn/start", {
                 "threadId": thread, "cwd": str(workspace), "approvalPolicy": "never",
-                "model": model, "modelProvider": "custom",
                 "input": [{"type": "text", "text": "End now."}],
             })
             deadline = time.monotonic() + timeout
