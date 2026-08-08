@@ -15,6 +15,7 @@ from teaching.fresh_runtime_candidate_acceptance import (
     failure_layer,
     formal_binding,
     schema_binding,
+    validate_provider_session,
 )
 
 
@@ -40,6 +41,22 @@ def formal_receipt() -> dict:
 
 
 class FreshRuntimeCandidateTests(unittest.TestCase):
+    def test_provider_session_requires_explicit_redacted_read_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "provider-session.json"
+            path.write_text(json.dumps({
+                "schema_version": "ds-lite.provider-session.v1",
+                "destination": "codex-app-server", "authorized": True,
+                "provider_ref": "ambient-approved", "model_ref": "declared-default",
+                "workspace_ref": ".", "fresh_thread": True,
+                "allowed_effects": ["read"], "prompt": "Return OK without tools.",
+            }), encoding="utf-8")
+            session = validate_provider_session(path, Path(directory))
+            self.assertEqual(session["allowed_effects"], ["read"])
+            self.assertEqual(len(session["prompt_sha256"]), 64)
+            path.write_text(json.dumps({**json.loads(path.read_text(encoding="utf-8")), "api_key": "redacted"}), encoding="utf-8")
+            with self.assertRaisesRegex(FreshRuntimeCandidateError, "redacted"):
+                validate_provider_session(path, Path(directory))
     def test_app_server_uses_the_verified_direct_cli_command(self) -> None:
         self.assertEqual(app_server_command(Path("codex.cmd")), ["codex.cmd", "app-server"])
 

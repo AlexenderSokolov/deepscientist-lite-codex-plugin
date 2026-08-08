@@ -62,6 +62,57 @@ def _load_json(path: Path) -> dict[str, Any]:
     return value
 
 
+def _forbidden_contract_key(value: object) -> bool:
+    if isinstance(value, dict):
+        for key, child in value.items():
+            lowered = str(key).casefold()
+            if any(token in lowered for token in ("credential", "password", "secret", "token", "api_key", "login")):
+                return True
+            if _forbidden_contract_key(child):
+                return True
+    if isinstance(value, list):
+        return any(_forbidden_contract_key(child) for child in value)
+    return False
+
+
+def validate_provider_session(path: Path, workspace: Path) -> dict[str, Any]:
+    """Validate a user-provided, redacted authorization contract before any turn."""
+    payload = _load_json(path)
+    required = {
+        "schema_version", "destination", "authorized", "provider_ref", "model_ref",
+        "workspace_ref", "fresh_thread", "allowed_effects", "prompt",
+    }
+    if set(payload) != required or _forbidden_contract_key(payload):
+        raise FreshRuntimeCandidateError("provider-session contract is not redacted or complete")
+    workspace_ref = payload["workspace_ref"]
+    if (
+        not isinstance(workspace_ref, str) or not workspace_ref or workspace_ref != "."
+        or Path(workspace_ref).is_absolute() or ".." in Path(workspace_ref).parts
+    ):
+        raise FreshRuntimeCandidateError("provider-session workspace reference must be relative")
+    prompt = payload["prompt"]
+    effects = payload["allowed_effects"]
+    if (
+        payload["schema_version"] != "ds-lite.provider-session.v1"
+        or payload["destination"] != "codex-app-server"
+        or payload["authorized"] is not True
+        or not isinstance(payload["provider_ref"], str) or not payload["provider_ref"].strip()
+        or not isinstance(payload["model_ref"], str) or not payload["model_ref"].strip()
+        or payload["fresh_thread"] is not True
+        or effects != ["read"]
+        or not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 4000
+    ):
+        raise FreshRuntimeCandidateError("provider-session contract does not authorize this turn")
+    return {
+        "destination": payload["destination"],
+        "provider_ref": payload["provider_ref"].strip(),
+        "model_ref": payload["model_ref"].strip(),
+        "prompt": prompt,
+        "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        "allowed_effects": list(effects),
+    }
+
+
 def formal_binding(receipt: dict[str, Any], candidate_digest: str, package_digest: str) -> dict[str, Any]:
     """Validate the immutable cache receipt before the host is launched."""
     if not _valid_digest(candidate_digest) or not _valid_digest(package_digest):
@@ -199,6 +250,36 @@ def hook_summary(response: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def stop_event_summary(directory: Path) -> dict[str, Any]:
+    events: list[dict[str, str]] = []
+    paths = sorted(directory.glob("*.json"), key=lambda item: (item.stat().st_mtime_ns, item.name)) if directory.is_dir() else []
+    for path in paths:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+        if not isinstance(value, dict) or value.get("event_type") != "stop":
+            continue
+        decision = value.get("decision")
+        if not isinstance(decision, str):
+            continue
+        item = {"decision": decision}
+        for key in ("thread_id_sha256", "turn_id_sha256"):
+            value_hash = value.get(key)
+            if isinstance(value_hash, str) and len(value_hash) == 64:
+                item[key] = value_hash
+        events.append(item)
+    thread_ids = {item["thread_id_sha256"] for item in events if "thread_id_sha256" in item}
+    turn_ids = {item["turn_id_sha256"] for item in events if "turn_id_sha256" in item}
+    return {
+        "events": events,
+        "decisions": [item["decision"] for item in events],
+        "same_thread": len(thread_ids) == 1,
+        "same_turn": len(turn_ids) == 1,
+        "raw_events_persisted": True,
+    }
+
+
 def failure_layer(exc: BaseException) -> str:
     """Keep host diagnostics non-reversible in the persisted receipt."""
     if isinstance(exc, AppServerClosed):
@@ -212,7 +293,8 @@ def failure_layer(exc: BaseException) -> str:
 
 def run(
     *, codex_bin: Path, formal_cache_root: Path, workspace: Path, schema_root: Path,
-    output: Path, candidate_digest: str, package_digest: str, diagnostic: bool = False,
+    output: Path, candidate_digest: str, package_digest: str, provider_session: Path | None = None,
+    diagnostic: bool = False,
 ) -> dict[str, Any]:
     output = output.resolve()
     if output.exists():
@@ -250,6 +332,11 @@ def run(
     notification_schema_source = "not-observed"
     failure = "none"
     status = "blocked"
+    provider_status = "not-provided"
+    provider_prompt_hash: str | None = None
+    turn_terminal = "not-requested"
+    stop_chain = "not-observed-no-provider-session"
+    stop_observation = stop_event_summary(hook_events)
     try:
         transport = JsonRpcTransport(process)
         initialize = transport.request("initialize", {"clientInfo": {"name": "ds-lite-fresh-runtime", "version": "0.10.0-beta.3"}})
@@ -270,6 +357,53 @@ def run(
         hooks = hook_summary(listed)
         if not hooks["candidate_hook_set_observed"]:
             raise FreshRuntimeCandidateError("candidate Hook set is incomplete")
+        if provider_session is not None:
+            session = validate_provider_session(provider_session.resolve(), workspace.resolve())
+            provider_status = "validated"
+            provider_prompt_hash = session["prompt_sha256"]
+            turn_start = transport.request("turn/start", {
+                "threadId": thread_id,
+                "input": [{"type": "text", "text": session["prompt"]}],
+            })
+            turn = turn_start.get("result", {}).get("turn") if isinstance(turn_start.get("result"), dict) else None
+            if not isinstance(turn, dict) or not isinstance(turn.get("id"), str) or not turn["id"]:
+                raise FreshRuntimeCandidateError("turn/start did not return a turn identity")
+            provider_status = "turn-started"
+            completed = transport.wait_for_notification(
+                "turn/completed",
+                lambda notification: (
+                    isinstance(notification.get("params"), dict)
+                    and notification["params"].get("threadId") == thread_id
+                    and isinstance(notification["params"].get("turn"), dict)
+                    and notification["params"]["turn"].get("id") == turn["id"]
+                ),
+                timeout=120.0,
+            )
+            turn_terminal = "turn/completed" if completed is not None else (
+                "turn/failed"
+                if any(notification.get("method") == "turn/failed" for notification in transport.notifications)
+                else "timeout"
+            )
+            stop_observation = stop_event_summary(hook_events)
+            summary = workspace / "research" / "autonomy" / "run" / "summary.json"
+            summary_completed = False
+            if summary.is_file():
+                try:
+                    summary_completed = json.loads(summary.read_text(encoding="utf-8")).get("status") == "completed"
+                except (OSError, UnicodeError, json.JSONDecodeError):
+                    summary_completed = False
+            if (
+                turn_terminal == "turn/completed"
+                and stop_observation["decisions"] == ["block", "allow"]
+                and stop_observation["same_thread"] and stop_observation["same_turn"] and summary_completed
+            ):
+                stop_chain = "passed"
+                status = "passed"
+            else:
+                stop_chain = "blocked-stop-chain"
+                raise FreshRuntimeCandidateError("same-thread Stop chain was not observed")
+        else:
+            stop_observation = stop_event_summary(hook_events)
         status = "passed"
     except (AppServerClosed, FreshRuntimeCandidateError, OSError, ValueError, json.JSONDecodeError) as exc:
         failure = failure_layer(exc)
@@ -298,8 +432,12 @@ def run(
         "fresh_thread_observed": bool(thread_id),
         "thread_id_sha256": hashlib.sha256(thread_id.encode("utf-8")).hexdigest() if thread_id else None,
         "hooks": hooks,
-        "no_external_model_request": True,
-        "stop_chain_status": "not-observed-no-provider-session",
+        "no_external_model_request": provider_session is None,
+        "provider_session_status": provider_status,
+        "provider_session_prompt_sha256": provider_prompt_hash,
+        "turn_terminal": turn_terminal,
+        "stop_chain_status": stop_chain,
+        "stop_observation": stop_observation,
         "release_allowed": False,
         "raw_response_persisted": False,
         "raw_error_text_persisted": False,
@@ -317,6 +455,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--candidate-digest", required=True)
     parser.add_argument("--package-digest", required=True)
+    parser.add_argument("--provider-session", type=Path)
     parser.add_argument("--diagnostic", action="store_true", help="Print only exception type and errno.")
     args = parser.parse_args()
     try:
