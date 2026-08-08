@@ -1257,6 +1257,15 @@ def validate_active_repo(repo_root: Path) -> int:
     registry = json.loads((repo_root / "plugins" / "deepscientist-lite-academic" / "references" / "nature-skill-registry.json").read_text(encoding="utf-8"))
     if registry.get("schema_version") != "ds-lite.nature-skill-registry.v2" or len(registry.get("skills", [])) != 17:
         fail("Academic registry contract is invalid")
+    fresh_runtime_runners = (
+        repo_root / "tools" / "validation" / "runners" / "run_accept_fresh_runtime_candidate.ps1",
+        repo_root / "tools" / "validation" / "runners" / "run_accept_fresh_runtime_candidate.sh",
+    )
+    for runner in fresh_runtime_runners:
+        if not runner.is_file():
+            fail(f"fresh-runtime candidate runner is missing: {runner.name}")
+        if "fresh_runtime_candidate_acceptance.py" not in runner.read_text(encoding="utf-8"):
+            fail(f"fresh-runtime candidate runner targets the wrong entry point: {runner.name}")
     forbidden = "plugins/deepscientist-lite-core/controller"
     allowed = {"tests/test_control_plane_runtime_boundary.py", "tools/validation/validate_repo.py"}
     for root in (repo_root / "tests", repo_root / "teaching", repo_root / "tools", repo_root / ".github"):

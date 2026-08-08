@@ -112,6 +112,16 @@ class FreshRuntimeCandidateTests(unittest.TestCase):
         self.assertIn('if __package__ in {None, ""}:', script)
         self.assertIn("sys.path.insert(0, str(repo_root))", script)
 
+    def test_candidate_runtime_wrappers_require_an_explicit_provider_session(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        runners = root / "tools" / "validation" / "runners"
+        powershell = (runners / "run_accept_fresh_runtime_candidate.ps1").read_text(encoding="utf-8")
+        bash = (runners / "run_accept_fresh_runtime_candidate.sh").read_text(encoding="utf-8")
+        for required in ("$ProviderSession", "--provider-session", "fresh_runtime_candidate_acceptance.py"):
+            self.assertIn(required, powershell)
+        self.assertIn("set -euo pipefail", bash)
+        self.assertIn("fresh_runtime_candidate_acceptance.py", bash)
+
 
 if __name__ == "__main__":
     unittest.main()
