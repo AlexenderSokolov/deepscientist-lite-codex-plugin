@@ -6,7 +6,10 @@
     "license": "Apache-2.0",
     "vendor_root": "plugins/deepscientist-lite/vendor/nature-skills/91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b"
   },
-  "runtime_skill_count": 17,
+ "runtime_skill_count": 17,
+ "canonical_skill_count": 17,
+ "alias_count": 0,
+ "discovery_policy": "count actual skills directories; all 17 nature skills are deployed directly without routing aggregation",
   "shared_layer": {
     "name": ".nature-shared",
     "discoverable": false,

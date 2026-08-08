@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import importlib.util
 import os
 import subprocess
@@ -349,6 +350,21 @@ class HookBehaviorTests(unittest.TestCase):
         rendered = receipts[0].read_text(encoding="utf-8")
         self.assertNotIn(secret, rendered)
         self.assertNotIn(str(self.root), rendered)
+
+    def test_host_receipt_hashes_thread_and_turn_identity(self) -> None:
+        receipt_dir = Path(tempfile.mkdtemp(prefix="ds-lite-hook-identity-parent-")) / "events"
+        env = os.environ.copy()
+        env["DS_LITE_HOOK_ACCEPTANCE_DIR"] = str(receipt_dir)
+        completed = subprocess.run(
+            [sys.executable, str(HOOK_SCRIPT), "stop"], cwd=PLUGIN_ROOT,
+            input=json.dumps({"cwd": str(self.root), "stop_hook_active": False,
+                              "thread_id": "thread-001", "turn_id": "turn-001"}),
+            text=True, encoding="utf-8", errors="replace", capture_output=True, env=env,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(next(receipt_dir.glob("*.json")).read_text(encoding="utf-8"))
+        self.assertEqual(payload["thread_id_sha256"], hashlib.sha256(b"thread-001").hexdigest())
+        self.assertEqual(payload["turn_id_sha256"], hashlib.sha256(b"turn-001").hexdigest())
 
 
 if __name__ == "__main__":

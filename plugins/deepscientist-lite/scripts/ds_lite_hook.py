@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -305,7 +306,7 @@ def handle_event(event_name: str, payload: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def _write_host_acceptance_event(event_name: str, decision: str) -> None:
+def _write_host_acceptance_event(event_name: str, decision: str, hook_input: dict[str, Any] | None = None) -> None:
     raw_directory = os.environ.get("DS_LITE_HOOK_ACCEPTANCE_DIR", "").strip()
     if not raw_directory:
         return
@@ -316,6 +317,13 @@ def _write_host_acceptance_event(event_name: str, decision: str) -> None:
         "event_type": event_name,
         "decision": decision,
     }
+    hook_input = hook_input or {}
+    thread_id = hook_input.get("thread_id") or hook_input.get("threadId")
+    turn_id = hook_input.get("turn_id") or hook_input.get("turnId")
+    if isinstance(thread_id, str) and thread_id.strip():
+        payload["thread_id_sha256"] = hashlib.sha256(thread_id.encode("utf-8")).hexdigest()
+    if isinstance(turn_id, str) and turn_id.strip():
+        payload["turn_id_sha256"] = hashlib.sha256(turn_id.encode("utf-8")).hexdigest()
     path = directory / f"{uuid.uuid4().hex}-{event_name}.json"
     with path.open("x", encoding="utf-8") as handle:
         json.dump(payload, handle, ensure_ascii=True, sort_keys=True)
@@ -334,7 +342,7 @@ def main(argv: list[str] | None = None) -> int:
         if not isinstance(payload, dict):
             raise ValueError("hook input must be a JSON object")
         result = handle_event(args.event, payload)
-        _write_host_acceptance_event(args.event, str(result.get("decision", "unknown")))
+        _write_host_acceptance_event(args.event, str(result.get("decision", "unknown")), payload)
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False))
         return 1

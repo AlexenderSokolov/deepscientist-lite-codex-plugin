@@ -19,5 +19,7 @@ $env:PYTHONDONTWRITEBYTECODE = "1"
 $env:PYTHONUTF8 = "1"
 $env:PYTHONPATH = (Split-Path -Parent $PSScriptRoot)
 $python = if ($env:PYTHON_BIN) { $env:PYTHON_BIN } else { "python" }
-& $python (Join-Path $PSScriptRoot "trusted_hook_run.py") --codex-bin $CodexBin --codex-home $CodexHome --workspace $Workspace --hook-events $HookEvents --output $Output --prompt $Prompt
+$expectedVersion = if ($env:CODEX_EXPECTED_VERSION) { $env:CODEX_EXPECTED_VERSION } else { "0.144.5" }
+$expectedSha256 = if ($env:CODEX_EXPECTED_SHA256) { $env:CODEX_EXPECTED_SHA256 } else { "EFDB3540EF74B9909408C8D38DA79483454797B36F471E3E004FC2BF2B70E22A" }
+& $python (Join-Path $PSScriptRoot "trusted_hook_run.py") --codex-bin $CodexBin --codex-home $CodexHome --workspace $Workspace --hook-events $HookEvents --output $Output --prompt $Prompt --expected-version $expectedVersion --expected-sha256 $expectedSha256
 exit $LASTEXITCODE

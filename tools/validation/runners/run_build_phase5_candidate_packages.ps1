@@ -6,7 +6,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $WindowsPackageRoot = [IO.Path]::GetFullPath($WindowsPackageRoot)
 $LinuxPackageRoot = [IO.Path]::GetFullPath($LinuxPackageRoot)
 $EvidenceRoot = [IO.Path]::GetFullPath($EvidenceRoot)

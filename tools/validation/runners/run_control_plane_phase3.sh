@@ -19,7 +19,7 @@ export PYTHONPATH="$dbos_root:$repo_root/plugins/deepscientist-lite-core/control
 schema_root="$repo_root/plugins/deepscientist-lite-core/schemas/codex/$codex_version"
 previous="$repo_root/research/.validation-tmp/control-plane-phase2-continuation-20260731-06/phase2-decision-03.json"
 
-fault_exit=0; "$python_bin" "$repo_root/plugins/deepscientist-lite-core/controller/phase3_fault_harness.py" --workdir "$evidence_root/fault-work" --output "$evidence_root/fault-matrix.json" --python-bin "$python_bin" --dependency-root "$dbos_root" --seed 20260731 --trials 100 --timeout 20 || fault_exit=$?
+fault_exit=0; "$python_bin" "$repo_root/plugins/deepscientist-lite-control-plane/controller/phase3_fault_harness.py" --workdir "$evidence_root/fault-work" --output "$evidence_root/fault-matrix.json" --python-bin "$python_bin" --dependency-root "$dbos_root" --seed 20260731 --trials 100 --timeout 20 || fault_exit=$?
 supervised_exit=0; "$python_bin" -m teaching.control_plane_phase3_evidence supervised --project "$evidence_root/managed-project" --runtime "$evidence_root/managed-runtime" --output "$evidence_root/supervised-recovery.json" || supervised_exit=$?
 resource_exit=0; "$python_bin" -m teaching.control_plane_phase3_evidence resource --output "$evidence_root/resource-windows.json" || resource_exit=$?
 real_args=("$repo_root/teaching/controller_phase3_multigate_smoke.py" --codex-bin "$codex_bin" --codex-version "$codex_version" --schema-root "$schema_root" --task-workspace "$evidence_root/real-workspace" --runtime "$evidence_root/real-runtime" --output "$evidence_root/real-multigate-smoke.json" --journal-summary "$evidence_root/broker-journal-summary.json" --model "$model")

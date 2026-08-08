@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 python_bin="${PYTHON_BIN:?set PYTHON_BIN to verified Python 3.13.5}"
 dependency_root="${DBOS_DEPENDENCY_ROOT:?set DBOS_DEPENDENCY_ROOT to locked DBOS 2.29.0 root}"
 evidence_root="${EVIDENCE_ROOT:?set EVIDENCE_ROOT to a new repository-local directory}"
@@ -14,7 +14,7 @@ case "$evidence_root" in "$root"/*) ;; *) echo "EVIDENCE_ROOT must stay inside r
 mkdir -p "$evidence_root"
 export PYTHONDONTWRITEBYTECODE=1
 export PYTHONPATH="$dependency_root:$root/plugins/deepscientist-lite-core/controller${PYTHONPATH:+:$PYTHONPATH}"
-"$python_bin" "$root/plugins/deepscientist-lite-core/controller/phase2_fault_harness.py" --workdir "$evidence_root/fault-work" --output "$evidence_root/fault-matrix.json" --seed 20260731 --trials 100
+"$python_bin" "$root/plugins/deepscientist-lite-control-plane/controller/phase2_fault_harness.py" --workdir "$evidence_root/fault-work" --output "$evidence_root/fault-matrix.json" --seed 20260731 --trials 100
 set +e
 "$python_bin" -m unittest tests.test_control_plane_phase2 tests.test_control_plane_phase2_app_server tests.test_control_plane_phase2_runner tests.test_control_plane_phase2_fault_harness tests.test_control_plane_phase1 tests.test_control_plane_phase1_cli -v >"$evidence_root/phase-tests.txt" 2>&1
 phase_exit=$?
@@ -26,7 +26,7 @@ managed_exit=$?
 doctor_exit=$?
 PYTHON_BIN="$python_bin" bash "$root/tools/validation/runners/run_validate_core.sh" --output "$evidence_root/core-validation.json"
 core_exit=$?
-"$python_bin" -c "import ast; from pathlib import Path; files=list(Path(r'$root/plugins/deepscientist-lite-core/controller/ds_lite_control').glob('*.py')); [ast.parse(p.read_text(encoding='utf-8'), filename=str(p)) for p in files]; print('AST_OK', len(files))"
+"$python_bin" -c "import ast; from pathlib import Path; files=list(Path(r'$root/plugins/deepscientist-lite-control-plane/controller/ds_lite_control').glob('*.py')); [ast.parse(p.read_text(encoding='utf-8'), filename=str(p)) for p in files]; print('AST_OK', len(files))"
 compile_exit=$?
 set -e
 "$python_bin" - "$evidence_root/run-summary.json" "$phase_exit" "$smoke_exit" "$managed_exit" "$doctor_exit" "$core_exit" "$compile_exit" <<'PY'

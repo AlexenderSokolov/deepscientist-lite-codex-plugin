@@ -15,6 +15,17 @@ if str(REPO_ROOT) not in sys.path:
 
 from tools.validation.project_temp import install_tempfile_policy
 
+# Public boundary anchors. Maintainer retrospectives remain optional/private;
+# the validator checks the public covenant, iteration script, hook, and teaching
+# artifact paths rather than depending on private maintainer prose.
+PUBLIC_REFLECTION_BOUNDARY = (
+    "action-reflection-philosophy.zh.md",
+    "responsible-exploration-covenant.md",
+    "ds_lite_iteration.py",
+    "ds_lite_hook.py",
+    "action-reflection-student.zh.md",
+)
+
 EXPECTED_SKILLS = [
     "ds-lite",
     "ds-lite-intake",

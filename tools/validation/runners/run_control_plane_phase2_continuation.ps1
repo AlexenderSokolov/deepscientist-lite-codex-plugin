@@ -7,7 +7,7 @@ param(
     [string]$PreviousSmoke = "research\.validation-tmp\control-plane-phase2-20260731-02\canonical-thread-smoke.json"
 )
 $ErrorActionPreference = "Stop"
-$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $EvidenceRoot = [IO.Path]::GetFullPath((Join-Path $Root $EvidenceRoot))
 $RepoRoot = [IO.Path]::GetFullPath($Root) + [IO.Path]::DirectorySeparatorChar
 if (-not $EvidenceRoot.StartsWith($RepoRoot, [StringComparison]::OrdinalIgnoreCase)) { throw "EvidenceRoot must stay inside repository" }
@@ -20,7 +20,7 @@ $PreviousSmoke = [IO.Path]::GetFullPath((Join-Path $Root $PreviousSmoke))
 if ((Get-FileHash $PreviousDecision -Algorithm SHA256).Hash.ToLowerInvariant() -ne "9e3187a2f16e922a6e6360000c914dfabbb57e38695250de9c5be3a5a085372b") { throw "Phase 2 decision-02 hash drift" }
 New-Item -ItemType Directory -Path $EvidenceRoot | Out-Null
 $env:PYTHONDONTWRITEBYTECODE = "1"
-$env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-core\controller") + $(if ($env:PYTHONPATH) { ";" + $env:PYTHONPATH } else { "" })
+$env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller") + $(if ($env:PYTHONPATH) { ";" + $env:PYTHONPATH } else { "" })
 
 & $PythonBin (Join-Path $Root "plugins\deepscientist-lite-core\controller\phase2_fault_harness.py") --workdir (Join-Path $EvidenceRoot "fault-work") --output (Join-Path $EvidenceRoot "fault-matrix.json") --seed 20260731 --trials 100
 $faultExit = $LASTEXITCODE

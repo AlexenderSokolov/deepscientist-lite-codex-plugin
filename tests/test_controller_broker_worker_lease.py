@@ -1,9 +1,15 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
+import sys
 import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CONTROLLER_ROOT = ROOT / "plugins" / "deepscientist-lite-core" / "controller"
+sys.path.insert(0, str(CONTROLLER_ROOT))
+sys.path.insert(0, str(ROOT))
 
 from ds_lite_control.store import ControlStore
 from teaching.controller_broker_worker import take_over_expired_lease

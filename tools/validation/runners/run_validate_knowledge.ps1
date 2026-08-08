@@ -1,6 +1,6 @@
 param([string]$Output)
 $ErrorActionPreference = "Stop"
-$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $Python = if ($env:PYTHON_BIN) { $env:PYTHON_BIN } else { "python" }
 $Arguments = @("$Root\tools\validation\validate_packages.py", "--repo-root", $Root, "--package", "knowledge")
 if ($Output) { $Arguments += @("--output", $Output) }

@@ -302,12 +302,17 @@ def run_once(*, codex_bin: Path | str, codex_home: Path | str, workspace: Path |
                 decision = value["decision"].lower()
                 if event_type is not None and decision in HOOK_DECISIONS:
                     hook_event_counts[f"{event_type}:{decision}"] += 1
-                    hook_event_sequence.append({
+                    sequence_item = {
                         "event_type": event_type,
                         "decision": decision,
                         "reason_present": value.get("reason_present") is True,
                         "stop_hook_active": value.get("stop_hook_active") is True,
-                    })
+                    }
+                    for identity_key in ("thread_id_sha256", "turn_id_sha256"):
+                        identity_value = value.get(identity_key)
+                        if isinstance(identity_value, str) and re.fullmatch(r"[a-f0-9]{64}", identity_value):
+                            sequence_item[identity_key] = identity_value
+                    hook_event_sequence.append(sequence_item)
                 else:
                     unrecognized_hook_event_count += 1
     hook_events = [
@@ -324,6 +329,14 @@ def run_once(*, codex_bin: Path | str, codex_home: Path | str, workspace: Path |
     )
     if stop_block_terminal:
         status = "blocked"
+    stop_identity = [item for item in hook_event_sequence if item.get("event_type") == "stop"]
+    thread_hashes = {item.get("thread_id_sha256") for item in stop_identity if item.get("thread_id_sha256")}
+    turn_hashes = {item.get("turn_id_sha256") for item in stop_identity if item.get("turn_id_sha256")}
+    hook_identity_consistent = (
+        len(stop_identity) >= 2
+        and len(thread_hashes) == 1
+        and len(turn_hashes) == 1
+    )
     collaboration_tools: Counter[str] = Counter()
     collaboration_statuses: Counter[str] = Counter()
     collaboration_receivers: set[str] = set()
@@ -358,6 +371,9 @@ def run_once(*, codex_bin: Path | str, codex_home: Path | str, workspace: Path |
         "hook_events": hook_events,
         "hook_event_sequence": hook_event_sequence,
         "hook_event_counts": dict(sorted(hook_event_counts.items())),
+        "hook_thread_id_sha256": next(iter(thread_hashes), None),
+        "hook_turn_id_sha256": next(iter(turn_hashes), None),
+        "hook_identity_consistent": hook_identity_consistent,
         "unrecognized_hook_event_count": unrecognized_hook_event_count,
         "collaboration": {
             "spawn_count": collaboration_tools.get("spawn_agent", 0),

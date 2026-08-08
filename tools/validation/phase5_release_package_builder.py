@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import shutil
 from pathlib import Path
 from typing import Any
+
+try:
+    from package_identity import tree_digest
+except ModuleNotFoundError:  # package import from repository root
+    from tools.validation.package_identity import tree_digest
 
 
 PACKAGE_DIRECTORIES = (
@@ -18,17 +22,9 @@ PACKAGE_DIRECTORIES = (
     "deepscientist-lite-knowledge",
     "deepscientist-lite-empirical",
     "deepscientist-lite-engineering",
+    "deepscientist-lite-control-plane",
 )
 EXPECTED_HOOK_EVENTS = {"UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"}
-
-
-def _tree_digest(root: Path) -> str:
-    digest = hashlib.sha256()
-    for path in sorted(item for item in root.rglob("*") if item.is_file()):
-        relative = path.relative_to(root).as_posix().encode("utf-8")
-        content = path.read_bytes()
-        digest.update(relative + b"\0" + hashlib.sha256(content).digest())
-    return digest.hexdigest()
 
 
 def _write_once(path: Path, payload: dict[str, Any]) -> None:
@@ -43,11 +39,18 @@ def _write_once(path: Path, payload: dict[str, Any]) -> None:
         os.fsync(stream.fileno())
 
 
-def _copy_ignore(_: str, names: list[str]) -> set[str]:
-    return {
+def _copy_ignore(source: str, names: list[str]) -> set[str]:
+    ignored = {
         name for name in names
-        if name == "__pycache__" or name.endswith((".pyc", ".pyo"))
+        if name in {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tmp", "tmp"}
+        or name.endswith((".pyc", ".pyo"))
+        or name in {".env", ".env.local", "credentials.json", "secrets.json"}
     }
+    # Core retains a one-beta compatibility projection in source, but the
+    # publishable Core candidate must not carry the control-plane runtime.
+    if Path(source).name == "deepscientist-lite-core":
+        ignored.add("controller")
+    return ignored
 
 
 def _reject_symlinks(root: Path) -> None:
@@ -95,11 +98,14 @@ def build_release_packages(repository: Path, output_root: Path) -> dict[str, Any
     return {
         "schema_version": "ds-lite.phase5-release-package-build.v1",
         "status": "passed",
-        "package_digest": _tree_digest(destination),
+        "package_digest": tree_digest(destination),
         "package_directories": list(PACKAGE_DIRECTORIES),
         "transforms": [{
             "package": "deepscientist-lite-core",
             "operation": "remove-redundant-hooks-manifest-field",
+        }, {
+            "package": "deepscientist-lite-core",
+            "operation": "exclude-compatibility-control-plane-runtime",
         }],
         "source_mutated": False,
         "hook_config_retained": True,

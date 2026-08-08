@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-08-08: v0.10.0-beta.2 — router removal and direct deployment
+
+- Removed three router aggregation skills (nature-literature, nature-review, nature-convert) from the Academic package.
+- All 17 nature-* skills are now deployed directly without a routing aggregation layer.
+- Updated nature-skill-registry.json: runtime_skill_count 20 -> 17, canonical_skill_count 11 -> 17, alias_count 9 -> 0, removed aliases mapping.
+- Updated validate_packages.py: academic skill_count 20 -> 17.
+- Bumped Core and Academic versions from 0.10.0-beta.1 to 0.10.0-beta.2.
+- Updated README.md, README.zh.md, and PACKAGE.md to reflect 17 directly deployed skills.
+
 ## 2026-08-04: v6 mechanisms, compatibility fixes, and teaching area restructure
 
 - Implemented five missing v6 mechanisms:

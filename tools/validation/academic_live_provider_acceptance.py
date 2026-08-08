@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -12,8 +12,8 @@ from typing import Any
 
 
 SCHEMA = "ds-lite.academic-provider-acceptance.v1"
-CORE = {"name": "deepscientist-lite", "version": "0.9.0-beta.1"}
-ACADEMIC = {"name": "deepscientist-lite-academic", "version": "0.9.0-beta.1"}
+CORE = {"name": "deepscientist-lite", "version": "0.10.0-beta.2"}
+ACADEMIC = {"name": "deepscientist-lite-academic", "version": "0.10.0-beta.2"}
 ALL_PROVIDERS = ("crossref", "openalex", "semantic-scholar", "arxiv")
 TRANSIENT_FAILURES = {"timeout", "rate-limit", "network"}
 

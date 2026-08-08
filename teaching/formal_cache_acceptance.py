@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Validate a fresh local Codex marketplace cache without a model request."""
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from typing import Any
 
 STABLE_CODEX_VERSION = "0.146.0"
 ROOT = Path(__file__).resolve().parents[1]
-CONTROLLER_ROOT = ROOT / "plugins" / "deepscientist-lite-core" / "controller"
+CONTROLLER_ROOT = ROOT / "plugins" / "deepscientist-lite-control-plane" / "controller"
 if str(CONTROLLER_ROOT) not in sys.path:
     sys.path.insert(0, str(CONTROLLER_ROOT))
 
@@ -23,12 +23,13 @@ from ds_lite_control.runtime_pin import verify_runtime_selection  # noqa: E402
 
 
 EXPECTED_PACKAGES = {
-    "deepscientist-lite": "0.9.0-beta.1",
-    "deepscientist-lite-academic": "0.9.0-beta.1",
+    "deepscientist-lite": "0.10.0-beta.2",
+    "deepscientist-lite-academic": "0.10.0-beta.2",
     "deepscientist-lite-web": "0.3.0-alpha.1",
     "deepscientist-lite-knowledge": "0.3.0-alpha.1",
     "deepscientist-lite-empirical": "0.3.0-alpha.1",
     "deepscientist-lite-engineering": "0.3.0-alpha.1",
+    "deepscientist-lite-control-plane": "0.10.0-beta.2",
 }
 
 
@@ -110,17 +111,19 @@ def validate_receipt(value: dict[str, Any]) -> dict[str, Any]:
 def run(
     *, codex_bin: Path | str, repo_root: Path | str, output_root: Path | str,
     schema_root: Path | str, expected_version: str, expected_sha256: str,
-    candidate_digest: str,
+    candidate_digest: str, package_digest: str | None = None,
 ) -> dict[str, Any]:
-    binary = Path(codex_bin)
-    repo = Path(repo_root)
-    root = Path(output_root)
+    binary = Path(codex_bin).resolve()
+    repo = Path(repo_root).resolve()
+    root = Path(output_root).resolve()
     if root.exists():
         raise FormalCacheError("formal cache identity already exists; refusing overwrite")
     if expected_version != STABLE_CODEX_VERSION:
         raise FormalCacheError("formal cache acceptance requires stable 0.146.0")
     if not _valid_digest(candidate_digest):
         raise FormalCacheError("candidate digest must be a SHA-256 value")
+    if package_digest is not None and not _valid_digest(package_digest):
+        raise FormalCacheError("package digest must be a SHA-256 value")
     if (
         not binary.is_file() or not repo.is_dir()
         or not isinstance(expected_sha256, str)
@@ -129,7 +132,7 @@ def run(
         raise FormalCacheError("selected binary, SHA-256, or repository is unavailable")
     try:
         runtime = verify_runtime_selection(
-            binary, Path(schema_root), expected_version=expected_version,
+            binary, Path(schema_root).resolve(), expected_version=expected_version,
         )
     except (OSError, RuntimeError, UnicodeError, ValueError) as exc:
         raise FormalCacheError("selected runtime or schema bundle is invalid") from exc
@@ -160,6 +163,7 @@ def run(
         "status": "passed" if passed else "blocked",
         "failure_layer": "none" if passed else "formal-cache",
         "candidate_digest": candidate_digest,
+        "package_digest": package_digest,
         "cli_identity": {
             "expected_version": expected_version,
             "observed_version": runtime["codex_binary_version"],
@@ -197,13 +201,14 @@ def main() -> int:
     parser.add_argument("--expected-version", required=True)
     parser.add_argument("--expected-sha256", required=True)
     parser.add_argument("--candidate-digest", required=True)
+    parser.add_argument("--package-digest")
     args = parser.parse_args()
     try:
         receipt = run(
             codex_bin=args.codex_bin, repo_root=args.repo_root,
             output_root=args.output_root, schema_root=args.schema_root,
             expected_version=args.expected_version, expected_sha256=args.expected_sha256,
-            candidate_digest=args.candidate_digest,
+            candidate_digest=args.candidate_digest, package_digest=args.package_digest,
         )
     except FormalCacheError as exc:
         print(json.dumps({"status": "blocked", "reason": str(exc)}))

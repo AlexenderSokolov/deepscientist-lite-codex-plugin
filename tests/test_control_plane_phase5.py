@@ -526,7 +526,7 @@ class Phase5CandidateBindingTests(unittest.TestCase):
             self.assertEqual(first["candidate_digest"], second["candidate_digest"])
             self.assertEqual([entry["path"] for entry in first["files"]], ["src/main.py"])
 
-    def test_repository_candidate_uses_git_visible_files_and_write_once_output(self) -> None:
+    def test_repository_candidate_uses_tracked_files_and_write_once_output(self) -> None:
         module = importlib.import_module("ds_lite_control.candidate")
         with tempfile.TemporaryDirectory(prefix="ds-lite-phase5-git-candidate-") as directory:
             root = Path(directory)
@@ -550,7 +550,7 @@ class Phase5CandidateBindingTests(unittest.TestCase):
             manifest = module.build_repository_candidate_manifest(root)
             self.assertEqual(
                 [entry["path"] for entry in manifest["files"]],
-                [".gitignore", "tracked.txt", "untracked.txt"],
+                [".gitignore", "tracked.txt"],
             )
             output = root / "research" / ".validation-tmp" / "candidate-manifest.json"
             module.write_candidate_manifest(output, manifest)

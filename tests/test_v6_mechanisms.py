@@ -211,6 +211,73 @@ class ClaimLedgerTests(unittest.TestCase):
         result = ds_lite_claim_ledger.supersede_claim(ledger_path, "claim-a", "claim-b")
         self.assertEqual(result["status"], "superseded")
 
+    def _draft_claim(self, claim_id="claim-review"):
+        return {
+            "claim_id": claim_id,
+            "claim_type": "positive-result",
+            "statement": "s",
+            "selector": {"type": "metric", "query": "accuracy > 0.9"},
+            "evidence_refs": ["research/evidence/run-001/manifest.json"],
+            "dependence_group": "g",
+            "transformation_chain": [],
+            "executed_code_ref": "scripts/run.py",
+            "verifier": {"type": "deterministic", "result": "pass"},
+            "fidelity": "medium",
+            "status": "draft",
+            "created_at": "2026-08-04T10:00:00Z",
+            "extensions": {},
+        }
+
+    def _review(self, claim_id="claim-review", *, verdict="pass", assessment="supportable",
+                refs=None):
+        return {
+            "schema_version": "ds-lite.review-result.v1",
+            "review_id": "review-001",
+            "work_unit_id": "wu-review",
+            "profile_id": "profile-review",
+            "review_node_id": "review-001",
+            "reviewed_node_id": "iteration-001",
+            "reviewed_evidence_refs": refs or ["research/evidence/run-001/manifest.json"],
+            "evidence_validator": "validator-001",
+            "evidence_digest": "0" * 64,
+            "verdict": verdict,
+            "claim_assessment": assessment,
+            "channels": {"integrity": "pass" if verdict == "pass" else "fail"},
+            "limitations": [],
+            "review_artifact_ref": "research/artifacts/review-001.json",
+            "completed_at": "2026-08-04T10:00:00Z",
+            "extensions": {"claim_id": claim_id},
+        }
+
+    def test_review_promotion_records_typed_provenance(self):
+        ds_lite_claim_ledger.create_ledger("review-ledger", "wu-review", self.root)
+        ledger_path = str(Path(self.root) / "research" / "artifacts" / "claim-ledger-review-ledger.json")
+        ds_lite_claim_ledger.append_claim(ledger_path, self._draft_claim())
+        review_path = Path(self.root) / "research" / "artifacts" / "review-001.json"
+        review_path.write_text(json.dumps(self._review()), encoding="utf-8")
+        result = ds_lite_claim_ledger.promote_claim_from_review(ledger_path, "claim-review", str(review_path))
+        self.assertEqual(result["status"], "supported")
+        self.assertEqual(result["extensions"]["review_verdict"], "pass")
+        self.assertRegex(result["extensions"]["review_sha256"], r"^[a-f0-9]{64}$")
+
+    def test_review_promotion_rejects_unbound_evidence(self):
+        ds_lite_claim_ledger.create_ledger("review-ledger-2", "wu-review", self.root)
+        ledger_path = str(Path(self.root) / "research" / "artifacts" / "claim-ledger-review-ledger-2.json")
+        ds_lite_claim_ledger.append_claim(ledger_path, self._draft_claim("claim-review-2"))
+        review_path = Path(self.root) / "research" / "artifacts" / "review-002.json"
+        review_path.write_text(json.dumps(self._review("claim-review-2", refs=["outside.json"])), encoding="utf-8")
+        with self.assertRaisesRegex(ds_lite_claim_ledger.ClaimError, "subset"):
+            ds_lite_claim_ledger.promote_claim_from_review(ledger_path, "claim-review-2", str(review_path))
+
+    def test_refuted_review_marks_claim_contested(self):
+        ds_lite_claim_ledger.create_ledger("review-ledger-3", "wu-review", self.root)
+        ledger_path = str(Path(self.root) / "research" / "artifacts" / "claim-ledger-review-ledger-3.json")
+        ds_lite_claim_ledger.append_claim(ledger_path, self._draft_claim("claim-review-3"))
+        review_path = Path(self.root) / "research" / "artifacts" / "review-003.json"
+        review_path.write_text(json.dumps(self._review("claim-review-3", verdict="fail", assessment="refuted")), encoding="utf-8")
+        result = ds_lite_claim_ledger.promote_claim_from_review(ledger_path, "claim-review-3", str(review_path))
+        self.assertEqual(result["status"], "contested")
+
 
 class FactorCardV2Tests(unittest.TestCase):
     def test_validate_valid_card(self):

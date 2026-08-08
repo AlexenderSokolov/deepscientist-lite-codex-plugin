@@ -1,4 +1,4 @@
-﻿# DeepScientist Lite Codex Plugin — Research Command Kit
+# DeepScientist Lite Codex Plugin — Research Command Kit
 
 [中文说明](README.zh.md) · [User Guide](docs/user-guide.zh.md) · [Documentation](docs/README.md) · [Acknowledgments](ACKNOWLEDGMENTS.md)
 
@@ -6,16 +6,16 @@ Long research sessions overwhelm chat history. Switch to a new thread and you lo
 
 DeepScientist Lite solves these handoff problems with a set of Codex skills and ordinary project files. It does not judge scientific conclusions. For frozen, authorized, and auditable gates, it can push forward continuously via a foreground controller, auto-resume, and generate progress receipts without starting a background daemon. Its job is to leave behind goals, routes, experiments, and review results so the next session or the next person can pick up where things stopped.
 
-> **Official plugin:** DeepScientist Lite is the official Codex plugin for the DeepScientist workflow. "DeepScientist" identifies the upstream research workflow and platform. See [NOTICE](NOTICE) for project attribution and naming.
+> **Independent third-party plugin:** DeepScientist Lite is an independent, unofficial third-party Codex plugin. It borrows design ideas from the upstream DeepScientist workflow and platform but does not copy upstream code, schemas, or skill text. See [NOTICE](NOTICE) for project attribution and naming.
 
 ## Package Overview
 
 ```mermaid
 graph LR
-    subgraph "Core · 0.9.0-beta.1 · 9 skills"
+    subgraph "Core · 0.10.0-beta.2 · 9 skills"
         A["Goal retention → Route tracing → Experiment logging → Evidence packing → Review → Iteration → Delegation → Handoff"]
     end
-    subgraph "Academic · 0.9.0-beta.1 · 17 skills"
+    subgraph "Academic · 0.10.0-beta.2 · 17 skills"
         B["Literature search · Citation verification · Paper reading · Writing · Polishing · Review simulation · Response letters · Submission"]
     end
     subgraph "Optional packs · 0.3.0-alpha.1 · 1 skill each"
@@ -30,8 +30,9 @@ graph LR
 
 | Package | Version | Skills | What it does |
 | --- | --- | --- | --- |
-| Core | `0.9.0-beta.1` | 9 | Domain-neutral worker protocol: goal retention, route tracing, experiments, evidence, reviews, iterations, delegation, handoffs |
-| Academic | `0.9.0-beta.1` | 17 | Nature-grade paper workflow: literature search through submission |
+| Core | `0.10.0-beta.2` | 9 | Domain-neutral worker protocol: goal retention, route tracing, experiments, evidence, reviews, iterations, delegation, handoffs |
+| Academic | `0.10.0-beta.2` | 17 | Nature-grade paper workflow; 17 skills deployed directly without routing aggregation |
+| Control Plane | `0.10.0-beta.2` | optional | DBOS/controller extension; missing dependency does not block Core |
 | Web | `0.3.0-alpha.1` | 1 | Public web acquisition and provenance recording |
 | Knowledge | `0.3.0-alpha.1` | 1 | Review-gated knowledge proposals |
 | Empirical | `0.3.0-alpha.1` | 1 | Bounded empirical research specs and result handoff |

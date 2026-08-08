@@ -36,7 +36,14 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     observed = {"plugin": core_manifest.get("name"), "version": core_manifest.get("version")}
     result["observed"] = observed
-    if observed != compatibility["requires"]:
+    required = compatibility["requires"]
+    def version_key(value):
+        return tuple(int(part) if part.isdigit() else part for part in str(value).replace("-", ".").split("."))
+    compatible_version = required.get("version") == observed.get("version") or (
+        isinstance(required.get("version"), str) and required["version"].startswith(">=")
+        and version_key(observed.get("version", "")) >= version_key(required["version"][2:])
+    )
+    if observed.get("plugin") != required.get("plugin") or not compatible_version:
         result["reason"] = "incompatible-core"
         print(json.dumps(result, ensure_ascii=False))
         return 2

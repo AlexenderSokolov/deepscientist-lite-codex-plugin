@@ -6,7 +6,7 @@ if [[ $# -ne 3 ]]; then
   exit 2
 fi
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 WINDOWS_PACKAGE_ROOT="$1"
 LINUX_PACKAGE_ROOT="$2"
 EVIDENCE_ROOT="$3"

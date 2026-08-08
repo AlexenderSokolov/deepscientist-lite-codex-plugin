@@ -14,7 +14,7 @@ PLUGINS = ROOT / "plugins"
 EXPECTED = {
     "deepscientist-lite-core": {
         "name": "deepscientist-lite",
-        "version": "0.9.0-beta.1",
+        "version": "0.10.0-beta.2",
         "skills": {
             "ds-lite",
             "ds-lite-analysis-write",
@@ -29,8 +29,8 @@ EXPECTED = {
     },
     "deepscientist-lite-academic": {
         "name": "deepscientist-lite-academic",
-        "version": "0.9.0-beta.1",
-        "skill_count": 20,
+        "version": "0.10.0-beta.2",
+        "skill_count": 17,
     },
     "deepscientist-lite-web": {
         "name": "deepscientist-lite-web",
@@ -89,7 +89,7 @@ class PluginPackageTests(unittest.TestCase):
         self.assertIn("ds-lite.formal-release-gate.v2", powershell)
         self.assertIn("ds-lite.formal-release-gate.v2", bash)
 
-    def test_marketplace_exposes_six_independent_packages(self) -> None:
+    def test_marketplace_exposes_seven_independent_packages(self) -> None:
         marketplace = json.loads(
             (ROOT / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8")
         )
@@ -103,6 +103,7 @@ class PluginPackageTests(unittest.TestCase):
                 "deepscientist-lite-knowledge",
                 "deepscientist-lite-empirical",
                 "deepscientist-lite-engineering",
+                "deepscientist-lite-control-plane",
             },
         )
         self.assertEqual(entries["deepscientist-lite"]["source"]["path"], "./plugins/deepscientist-lite-core")
@@ -196,7 +197,7 @@ class PluginPackageTests(unittest.TestCase):
                 )
                 self.assertEqual(compatibility["schema_version"], "ds-lite.pack-compatibility.v1")
                 self.assertEqual(compatibility["requires"]["plugin"], "deepscientist-lite")
-                self.assertEqual(compatibility["requires"]["version"], "0.9.0-beta.1")
+                self.assertEqual(compatibility["requires"]["version"], ">=0.10.0-beta.2")
                 self.assertEqual(compatibility["missing_core"], "blocked")
 
     def test_all_optional_pack_doctors_fail_closed_then_accept_matching_core(self) -> None:
@@ -261,7 +262,7 @@ class PluginPackageTests(unittest.TestCase):
         self.assertEqual(receipt["status"], "passed")
         self.assertEqual({item["matrix"] for item in receipt["installation_matrices"]}, {
             "core-only", "core+academic", "core+empirical", "core+engineering",
-            "core+web", "core+knowledge", "core+web+knowledge", "all-six",
+            "core+web", "core+knowledge", "core+web+knowledge", "all-six", "all-seven",
         })
         self.assertTrue(all(item["status"] == "passed" for item in receipt["installation_matrices"]))
         self.assertTrue(all(status == "not-verified" for status in receipt["real_host_gates"].values()))

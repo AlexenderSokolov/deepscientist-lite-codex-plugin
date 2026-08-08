@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 python_bin="${PYTHON_BIN:-python3}"
 codex_bin="${CODEX_BIN:?set CODEX_BIN to the pinned Codex 0.128.0 executable}"
 source_home="${SOURCE_CODEX_HOME:-$HOME/.codex}"
@@ -45,10 +45,10 @@ export PYTHONPATH="$dependency_root${PYTHONPATH:+:$PYTHONPATH}"
   --dependency-root "$dependency_root" --python-bin "$python_bin" \
   --workdir "$evidence_root/dbos-work" --output "$evidence_root/dbos-sqlite-recovery.json" \
   --action-id "phase05-$(date -u +%Y%m%dT%H%M%SZ)"
-(cd "$root/plugins/deepscientist-lite-core/controller" && \
+(cd "$root/plugins/deepscientist-lite-control-plane/controller" && \
   "$python_bin" run_spike.py --dependency-root "$dependency_root" --seed 20260731 --trials 100 \
     --output "$evidence_root/fault-harness.json")
-"$python_bin" "$root/plugins/deepscientist-lite-core/controller/resource_probe.py" \
+"$python_bin" "$root/plugins/deepscientist-lite-control-plane/controller/resource_probe.py" \
   --dependency-root "$dependency_root" --output "$evidence_root/resource-probe.json"
 (cd "$root" && "$python_bin" -m teaching.control_plane_phase_tests --output "$evidence_root/phase-tests.json")
 PYTHON_BIN="$python_bin" bash "$root/tools/validation/runners/run_validate_core.sh" --output "$evidence_root/core-validation.json"

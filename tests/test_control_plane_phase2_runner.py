@@ -12,7 +12,7 @@ from ds_lite_control.app_server import AppServerResponseTimeout, AppServerAdapte
 from ds_lite_control.codex_actions import CodexActionRunner
 from ds_lite_control.domain import ControlStore, FenceRejected
 from ds_lite_control.workflows import WORKFLOW_REGISTRY
-from tests.test_control_plane_phase2_app_server import FakeProcess
+from support_fake_process import FakeProcess
 
 
 class Phase2RunnerTests(unittest.TestCase):

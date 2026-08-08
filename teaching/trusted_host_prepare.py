@@ -1,4 +1,4 @@
-"""Prepare a fresh, non-sensitive Codex host for trusted-hook acceptance.
+﻿"""Prepare a fresh, non-sensitive Codex host for trusted-hook acceptance.
 
 This module is intentionally invoked as a normal Python program. Shell launchers
 pass paths through argv; no shell ever embeds Python source code.
@@ -20,6 +20,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from teaching.pilot_runtime import clone_nonsecret_provider_config
+from tools.validation.package_identity import tree_digest
 
 EXPECTED_SHA256 = "EFDB3540EF74B9909408C8D38DA79483454797B36F471E3E004FC2BF2B70E22A"
 EXPECTED_VERSION = "0.144.5"
@@ -72,18 +73,7 @@ def _candidate_identity(repo_root: Path) -> dict[str, Any]:
         path.name for path in (plugin_root / "skills").iterdir()
         if path.is_dir() and (path / "SKILL.md").is_file()
     )
-    digest = hashlib.sha256()
-    files = sorted(
-        path for path in plugin_root.rglob("*")
-        if path.is_file()
-        and "__pycache__" not in path.parts
-        and path.suffix.lower() not in {".pyc", ".pyo"}
-    )
-    for path in files:
-        relative = path.relative_to(plugin_root).as_posix().encode("utf-8")
-        content = path.read_bytes()
-        digest.update(relative + b"\0" + hashlib.sha256(content).digest())
-    if manifest.get("name") != "deepscientist-lite" or manifest.get("version") != "0.9.0-beta.1":
+    if manifest.get("name") != "deepscientist-lite" or manifest.get("version") != "0.10.0-beta.2":
         raise PreparationError("split Core manifest does not match the formal candidate")
     return {
         "plugin": manifest["name"],
@@ -91,7 +81,7 @@ def _candidate_identity(repo_root: Path) -> dict[str, Any]:
         "skill_count": len(skills),
         "skills": skills,
         "hook_events": sorted(hooks.get("hooks", {})),
-        "source_sha256": digest.hexdigest(),
+        "source_sha256": tree_digest(plugin_root),
     }
 
 
@@ -99,10 +89,10 @@ def prepare(*, codex_bin: Path | str, source_home: Path | str,
             repo_root: Path | str, pilot_root: Path | str,
             install: bool = True, expected_version: str = EXPECTED_VERSION,
             expected_sha256: str = EXPECTED_SHA256) -> dict[str, Any]:
-    codex = Path(codex_bin)
-    source = Path(source_home)
-    repo = Path(repo_root)
-    root = Path(pilot_root)
+    codex = Path(codex_bin).resolve()
+    source = Path(source_home).resolve()
+    repo = Path(repo_root).resolve()
+    root = Path(pilot_root).resolve()
     for value in (str(codex), str(source), str(repo), str(root)):
         _reject_placeholder(value)
     if not codex.is_file() or not source.is_dir() or not repo.is_dir():

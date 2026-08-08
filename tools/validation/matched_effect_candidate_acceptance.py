@@ -86,6 +86,11 @@ def _core_inventory(root: Path) -> list[dict[str, Any]]:
     return sorted(result, key=lambda item: item["path"])
 
 
+def _candidate_core_inventory(root: Path) -> list[dict[str, Any]]:
+    """Inventory of the Core publish projection, excluding compatibility runtime."""
+    return [item for item in _core_inventory(root) if not item["path"].startswith(CORE_PREFIX + "controller/")]
+
+
 def _write_once(path: Path, payload: dict[str, Any]) -> None:
     destination = Path(path).resolve()
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -128,7 +133,7 @@ def build_acceptance(
     checks = {
         "candidate_schema_match": candidate.get("schema_version") == "ds-lite.phase5-release-candidate.v1",
         "candidate_digest_valid": _valid_digest(candidate_digest),
-        "candidate_core_inventory_match": candidate_core == _core_inventory(current_core),
+        "candidate_core_inventory_match": candidate_core == _candidate_core_inventory(current_core),
         "pilot_snapshot_unchanged": _valid_digest(expected_tree) and tree_digest(snapshot_core) == expected_tree,
         "pilot_matches_current_core": _valid_digest(expected_tree) and tree_digest(current_core) == expected_tree,
         "effect_schema_match": report.get("schema_version") == "ds-lite.matched-effect.v1",

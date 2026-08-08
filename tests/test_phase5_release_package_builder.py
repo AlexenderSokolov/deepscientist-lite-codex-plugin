@@ -79,6 +79,7 @@ class Phase5ReleasePackageBuilderTests(unittest.TestCase):
             self.assertNotIn("hooks", packaged_manifest)
             self.assertEqual(source_manifest.read_bytes(), source_before)
             self.assertTrue((output / "plugins" / "deepscientist-lite-core" / "hooks" / "hooks.json").is_file())
+            self.assertFalse((output / "plugins" / "deepscientist-lite-core" / "controller").exists())
             packaged_marketplace = json.loads(
                 (output / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8")
             )
@@ -89,10 +90,16 @@ class Phase5ReleasePackageBuilderTests(unittest.TestCase):
             self.assertFalse(any(path.name == "__pycache__" for path in output.rglob("*")))
             self.assertEqual(result["status"], "passed")
             self.assertEqual(result["package_digest"], tree_digest(output))
-            self.assertEqual(result["transforms"], [{
-                "package": "deepscientist-lite-core",
-                "operation": "remove-redundant-hooks-manifest-field",
-            }])
+            self.assertEqual(result["transforms"], [
+                {
+                    "package": "deepscientist-lite-core",
+                    "operation": "remove-redundant-hooks-manifest-field",
+                },
+                {
+                    "package": "deepscientist-lite-core",
+                    "operation": "exclude-compatibility-control-plane-runtime",
+                },
+            ])
 
     def test_builder_is_fresh_only_and_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as raw:

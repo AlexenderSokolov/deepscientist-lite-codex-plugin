@@ -1,6 +1,0 @@
-﻿interface:
-  display_name: "Nature Convert"
-  short_description: "Convert papers to presentation slides or patent applications."
-  default_prompt: "Use $nature-convert to convert a paper to slides or patent application format."
-policy:
-  allow_implicit_invocation: true

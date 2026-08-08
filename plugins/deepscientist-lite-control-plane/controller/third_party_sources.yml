@@ -1,0 +1,70 @@
+- project: dbos-transact-py
+  repository: https://github.com/dbos-inc/dbos-transact-py
+  adopted_as: runtime_dependency
+  version_or_commit: 2.29.0
+  license: MIT
+  files_or_ideas_used:
+    - Phase 1 durable workflow runtime
+- project: OpenSymphony
+  repository: https://github.com/kumanday/OpenSymphony
+  adopted_as: architecture_reference_only
+  version_or_commit: not-vendored
+  license: MIT
+  files_or_ideas_used:
+    - canonical thread lifecycle concepts
+- project: codex-sidecar
+  repository: https://github.com/nora/codex-sidecar
+  adopted_as: architecture_reference_only
+  version_or_commit: not-vendored
+  license: MIT
+  files_or_ideas_used:
+    - app-server response-gap concepts
+- project: Dagu
+  repository: https://github.com/dagucloud/dagu
+  adopted_as: reference_only_no_code
+  version_or_commit: not-vendored
+  license: GPL-3.0
+  files_or_ideas_used:
+    - none
+- project: codex-autoresearch
+  repository: https://github.com/congwa/codex-autoresearch
+  adopted_as: architecture_reference_only
+  version_or_commit: not-vendored
+  license: MIT (package metadata)
+  files_or_ideas_used:
+    - early session continuation terminology
+- project: Temporal
+  repository: https://github.com/temporalio/temporal
+  adopted_as: architecture_reference_only
+  version_or_commit: not-vendored
+  license: MIT
+  files_or_ideas_used:
+    - durable execution concepts
+- project: Prefect
+  repository: https://github.com/PrefectHQ/prefect
+  adopted_as: architecture_reference_only
+  version_or_commit: not-vendored
+  license: Apache-2.0
+  files_or_ideas_used:
+    - workflow observability concepts
+- project: LangGraph
+  repository: https://github.com/langchain-ai/langgraph
+  adopted_as: architecture_reference_only
+  version_or_commit: not-vendored
+  license: MIT
+  files_or_ideas_used:
+    - checkpoint terminology
+- project: Pueue
+  repository: https://github.com/Nukesor/pueue
+  adopted_as: architecture_reference_only
+  version_or_commit: not-vendored
+  license: MIT OR Apache-2.0
+  files_or_ideas_used:
+    - local queue ergonomics concepts
+- project: OpenAI Codex
+  repository: https://github.com/openai/codex
+  adopted_as: protocol_authority
+  version_or_commit: codex-cli-0.128.0 schema generation
+  license: Apache-2.0
+  files_or_ideas_used:
+    - Hook and app-server schema

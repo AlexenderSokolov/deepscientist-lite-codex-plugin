@@ -9,7 +9,7 @@ Communication boundary: 保护内容必须原样保留；不得改写用户约�
 
 ## Overview
 
-Use this gateway when the user needs the plugin but has not named a narrower action skill. The default project-setting is **automatic project advancement**: inspect the workspace, derive or load an approved `ds-lite.autonomy-contract.v1`, and keep the foreground controller moving every independent ready gate until all gates are terminal. A user who explicitly asks for one bounded action, planning only, or no side effects retains that narrower boundary.
+Use this gateway when the user needs the plugin but has not named a narrower action skill. For an existing workspace with `PROJECT.md`, a valid `research/work-unit.json`, approved project scope, and finite budget, the default is **bounded foreground project advancement** using `ds-lite.autonomy-contract.v2`. New projects, planning-only requests, missing evidence or authorization, and irreversible or release actions return to `blocked` or `awaiting-user-action`. `ds-lite.autonomy-contract.v1` remains a compatibility protocol for the 0.9 beta.
 
 Before acting, read [the Responsible Exploration Covenant](../../references/responsible-exploration-covenant.md) and use its shared start / progress / end protocol. Do not start the action until the mandatory Start report is sent with its exact labels. Do not finish with a bare success sentence: the mandatory End report must contain the evidence, failure layer, unverified items, next action, and user decision.
 
@@ -37,8 +37,8 @@ For a long conversation, resumed task, or ownership change, create and validate 
 | Passing or negative reviewed evidence must become a bounded analysis or handoff | `$ds-lite-analysis-write` |
 | An existing workspace should advance through one complete plan-execute-verify-reflect-report cycle | `$ds-lite-iterate` |
 | Two or three independent subtasks have disjoint paths and explicit delegation approval | `$ds-lite-coordinate` |
-| An approved bounded multi-gate acceptance or release experiment must continue without manual prompting | `ds_lite_autonomy.py` with `ds-lite.autonomy-contract.v1` |
-| The user asks to continue, automatically advance, or not stop until terminal evidence exists | Create/load `ds-lite.autonomy-contract.v1`, run `ds_lite_autonomy.py`, then `--resume` after interruption |
+| An approved bounded multi-gate project must continue without manual prompting | `ds_lite_autonomy_v2.py` with `ds-lite.autonomy-contract.v2`; use the control-plane extension only when explicitly approved |
+| A historical 0.9 beta receipt must be resumed | Keep `ds-lite.autonomy-contract.v1` and its original release-gate compatibility semantics |
 
 ## Feedback
 

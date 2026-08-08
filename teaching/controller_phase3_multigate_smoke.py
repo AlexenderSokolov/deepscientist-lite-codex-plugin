@@ -14,7 +14,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CONTROLLER_ROOT = ROOT / "plugins" / "deepscientist-lite-core" / "controller"
+CONTROLLER_ROOT = ROOT / "plugins" / "deepscientist-lite-control-plane" / "controller"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(CONTROLLER_ROOT))
 

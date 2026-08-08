@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import subprocess
 import sys
@@ -70,6 +70,28 @@ class TrustedHostPrepareTests(unittest.TestCase):
             self.assertEqual(receipt["codex_version"], "0.146.0")
             self.assertEqual(receipt["codex_sha256"], stable_hash)
 
+    def test_prepare_resolves_relative_paths_before_plugin_install(self):
+        with tempfile.TemporaryDirectory(dir=os.environ.get("TEMP")) as directory:
+            root = Path(directory)
+            binary = root / "codex.exe"; binary.write_bytes(b"stable")
+            source = self._source(root)
+            repository = root / "repository"; repository.mkdir()
+            previous = Path.cwd()
+            try:
+                os.chdir(root)
+                with patch.object(trusted_host_prepare, "_sha256", return_value="B" * 64), \
+                     patch.object(trusted_host_prepare, "_candidate_identity", return_value={"candidate": "ok"}), \
+                     patch.object(trusted_host_prepare, "_run_install") as install:
+                    receipt = trusted_host_prepare.prepare(
+                        codex_bin=Path("codex.exe"), source_home=Path("source"),
+                        repo_root=Path("repository"), pilot_root=Path("pilot"),
+                        install=True, expected_version="0.146.0", expected_sha256="B" * 64,
+                    )
+            finally:
+                os.chdir(previous)
+            self.assertEqual(receipt["status"], "prepared")
+            self.assertEqual(install.call_args.args[1], repository.resolve())
+
     def test_existing_root_is_not_overwritten(self):
         with tempfile.TemporaryDirectory(dir=os.environ.get("TEMP")) as directory:
             root = Path(directory)
@@ -126,7 +148,7 @@ class TrustedHostPrepareTests(unittest.TestCase):
         repo_root = Path(__file__).resolve().parents[1]
         identity = trusted_host_prepare._candidate_identity(repo_root)
         self.assertEqual(identity["plugin"], "deepscientist-lite")
-        self.assertEqual(identity["version"], "0.9.0-beta.1")
+        self.assertEqual(identity["version"], "0.10.0-beta.2")
         self.assertEqual(identity["skill_count"], 9)
         self.assertEqual(
             identity["hook_events"],
@@ -143,7 +165,7 @@ class TrustedHostPrepareTests(unittest.TestCase):
             (core / "skills" / "example").mkdir(parents=True)
             (core / "scripts").mkdir()
             (core / ".codex-plugin" / "plugin.json").write_text(
-                json.dumps({"name": "deepscientist-lite", "version": "0.9.0-beta.1"}),
+                json.dumps({"name": "deepscientist-lite", "version": "0.10.0-beta.2"}),
                 encoding="utf-8",
             )
             (core / "hooks" / "hooks.json").write_text(

@@ -52,6 +52,8 @@ class Phase5RunnerContractTests(unittest.TestCase):
 
     def test_shell_syntax_when_interpreters_are_available(self) -> None:
         bash = shutil.which("bash")
+        if bash and bash.replace("\\", "/").lower().endswith("/windows/system32/bash.exe"):
+            bash = None
         if bash:
             probe = subprocess.run([bash, "--version"], capture_output=True)
             if probe.returncode == 0:

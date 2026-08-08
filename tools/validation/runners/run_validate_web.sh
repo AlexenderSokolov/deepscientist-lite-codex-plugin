@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 python_bin="${PYTHON_BIN:-python3}"
 temp_root="${TEMP_ROOT:-$root/research/.validation-tmp}"
 run_temp="$temp_root/web-validation-$$"

@@ -1,0 +1,18 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "ds-lite-control-phase4",
+  "documentNamespace": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin/spdx/ds-lite-control-phase4-20260801",
+  "packages": [
+    {
+      "name": "dbos",
+      "SPDXID": "SPDXRef-DBOS",
+      "versionInfo": "2.29.0",
+      "downloadLocation": "https://pypi.org/project/dbos/2.29.0/",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "checksums": [{"algorithm": "SHA256", "checksumValue": "49104b64b8917dc3d321704f1d20058486c86129420b96b910f1e725fbdebca6"}]
+    }
+  ]
+}

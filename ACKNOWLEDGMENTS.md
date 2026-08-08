@@ -1,6 +1,6 @@
 # Acknowledgments
 
-DeepScientist Lite is the official Codex plugin for the DeepScientist research workflow.
+DeepScientist Lite is an independent, non-official third-party Codex plugin for research workflows.
 The projects below were read for design comparison, test ideas, or optional interoperability.
 This repository does not copy their prompts, skill text, runtime, credentials, or
 state machines unless a package notice explicitly says otherwise.

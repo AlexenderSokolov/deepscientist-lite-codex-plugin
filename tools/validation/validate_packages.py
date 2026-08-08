@@ -2,38 +2,42 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    from package_identity import package_digest
+except ModuleNotFoundError:  # package import from repository root
+    from tools.validation.package_identity import package_digest
+
 
 PACKAGES: dict[str, dict[str, Any]] = {
-    "core": {
-        "directory": "deepscientist-lite-core",
-        "name": "deepscientist-lite",
-        "version": "0.9.0-beta.1",
-        "skills": {
-            "ds-lite",
-            "ds-lite-analysis-write",
-            "ds-lite-coordinate",
-            "ds-lite-experiment",
-            "ds-lite-idea",
-            "ds-lite-intake",
-            "ds-lite-iterate",
-            "ds-lite-review",
-            "ds-lite-scout",
-        },
-    },
-    "academic": {
-        "directory": "deepscientist-lite-academic",
-        "name": "deepscientist-lite-academic",
-        "version": "0.9.0-beta.1",
-        "skill_count": 20,
-        "skill_prefix": "nature-",
-    },
+   "core": {
+       "directory": "deepscientist-lite-core",
+       "name": "deepscientist-lite",
+       "version": "0.10.0-beta.2",
+       "skills": {
+           "ds-lite",
+           "ds-lite-analysis-write",
+           "ds-lite-coordinate",
+           "ds-lite-experiment",
+           "ds-lite-idea",
+           "ds-lite-intake",
+           "ds-lite-iterate",
+           "ds-lite-review",
+           "ds-lite-scout",
+       },
+   },
+   "academic": {
+       "directory": "deepscientist-lite-academic",
+       "name": "deepscientist-lite-academic",
+       "version": "0.10.0-beta.2",
+       "skill_count": 17,
+       "skill_prefix": "nature-",
+   },
     "web": {
         "directory": "deepscientist-lite-web",
         "name": "deepscientist-lite-web",
@@ -62,6 +66,14 @@ PACKAGES: dict[str, dict[str, Any]] = {
         "max_files": 150,
         "max_bytes": 5 * 1024 * 1024,
     },
+    "control-plane": {
+        "directory": "deepscientist-lite-control-plane",
+        "name": "deepscientist-lite-control-plane",
+        "version": "0.10.0-beta.2",
+        "skills": {"ds-lite-control-plane"},
+        "max_files": 80,
+        "max_bytes": 2 * 1024 * 1024,
+    },
 }
 
 MATRICES = {
@@ -73,6 +85,7 @@ MATRICES = {
     "core+knowledge": ("core", "knowledge"),
     "core+web+knowledge": ("core", "web", "knowledge"),
     "all-six": ("core", "academic", "web", "knowledge", "empirical", "engineering"),
+    "all-seven": ("core", "academic", "web", "knowledge", "empirical", "engineering", "control-plane"),
 }
 
 
@@ -92,21 +105,6 @@ def discover_skills(package_root: Path) -> set[str]:
         for path in skills_root.iterdir()
         if path.is_dir() and (path / "SKILL.md").is_file()
     }
-
-
-def package_digest(package_root: Path) -> tuple[int, int, str]:
-    files = sorted(path for path in package_root.rglob("*") if path.is_file())
-    digest = hashlib.sha256()
-    total_bytes = 0
-    for path in files:
-        relative = path.relative_to(package_root).as_posix().encode("utf-8")
-        content = path.read_bytes()
-        total_bytes += len(content)
-        digest.update(len(relative).to_bytes(4, "big"))
-        digest.update(relative)
-        digest.update(len(content).to_bytes(8, "big"))
-        digest.update(content)
-    return len(files), total_bytes, digest.hexdigest()
 
 
 def validate_package(repo_root: Path, key: str) -> dict[str, Any]:

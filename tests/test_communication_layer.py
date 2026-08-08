@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import unittest
@@ -47,15 +47,15 @@ class CommunicationLayerTests(unittest.TestCase):
         for audit_id in ("honor-01", "honor-02", "honor-03", "honor-04", "honor-05", "honor-06", "honor-07", "honor-08"):
             self.assertIn(audit_id, core)
         self.assertIn("Phase 1", (COMMUNICATION_ROOT / "self-audit.md").read_text(encoding="utf-8"))
-        self.assertIn("八荣八耻", core)
+        self.assertIn(u"八荣八耻", core)
 
     def test_profiles_define_four_original_choices_and_reflection_boundary(self) -> None:
         profiles = (COMMUNICATION_ROOT / "profiles.md").read_text(encoding="utf-8")
         for profile in EXPECTED_PROFILES:
             self.assertIn(profile, profiles)
-        self.assertIn("不得模仿名人或作者", profiles)
+        self.assertIn(u"不得模仿名人或作者", profiles)
         self.assertIn("reflective-researcher", profiles)
-        self.assertIn("可证伪", profiles)
+        self.assertIn(u"可证伪性", profiles)
 
     def test_style_template_exposes_customization_contract(self) -> None:
         style = (PLUGIN_ROOT / "assets" / "templates" / "STYLE.md").read_text(encoding="utf-8")
@@ -75,7 +75,7 @@ class CommunicationLayerTests(unittest.TestCase):
             content = (PLUGIN_ROOT / "skills" / skill_name / "SKILL.md").read_text(encoding="utf-8")
             self.assertIn("references/communication/core.md", content)
             self.assertIn("STYLE.md", content)
-            self.assertIn("保护", content)
+            self.assertIn(u"保护", content)
             self.assertIn("Handoff", content)
             self.assertIn("references/communication/self-audit.md", content)
             self.assertIn("Phase 1", content)
@@ -95,7 +95,7 @@ class CommunicationLayerTests(unittest.TestCase):
         manifest = json.loads((PLUGIN_ROOT / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["hooks"], "./hooks/hooks.json")
         self.assertNotIn("mcpServers", manifest)
-        self.assertEqual(manifest["version"], "0.9.0-beta.1")
+        self.assertEqual(manifest["version"], "0.10.0-beta.2")
 
 
 if __name__ == "__main__":

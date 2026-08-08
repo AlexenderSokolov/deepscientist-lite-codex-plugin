@@ -418,6 +418,45 @@ def _load_context(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     return graph, work_unit
 
 
+def _ledger_projection(root: Path, work_unit_id: str) -> dict[str, Any]:
+    """Read-only, bounded projection of v6 ledgers for an iteration receipt."""
+    artifacts = root / "research" / "artifacts"
+    projection: dict[str, Any] = {
+        "signal_ledger_refs": [],
+        "active_signal_count": 0,
+        "claim_ledger_refs": [],
+        "claim_readiness": "unknown",
+        "frontier_refs": [],
+        "selected_candidate": None,
+    }
+    if not artifacts.is_dir():
+        return projection
+    for path in sorted(artifacts.glob("*.json")):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict) or payload.get("work_unit_id") != work_unit_id:
+            continue
+        schema = payload.get("schema_version")
+        ref = path.relative_to(root).as_posix()
+        if schema == "ds-lite.signal-ledger.v1":
+            projection["signal_ledger_refs"].append(ref)
+            projection["active_signal_count"] += sum(1 for item in payload.get("signals", []) if item.get("status") == "active")
+        elif schema == "ds-lite.claim-ledger.v1":
+            projection["claim_ledger_refs"].append(ref)
+            claims = payload.get("claims", [])
+            if claims:
+                statuses = {item.get("status") for item in claims}
+                projection["claim_readiness"] = "ready" if statuses <= {"supported"} else ("blocked" if "contested" in statuses else "draft")
+        elif schema == "ds-lite.frontier.v1":
+            projection["frontier_refs"].append(ref)
+            selected = next((item.get("candidate_id") for item in payload.get("candidates", []) if item.get("status") == "selected"), None)
+            if selected:
+                projection["selected_candidate"] = selected
+    return projection
+
+
 def _blank_reflection() -> dict[str, Any]:
     return {
         "observed_outcomes": [],
@@ -493,7 +532,7 @@ def initialize_iteration(
         "user_report": _blank_user_report(),
         "started_at": _utc_now(),
         "completed_at": "",
-        "extensions": {"iteration_ref": ref},
+        "extensions": {"iteration_ref": ref, "v6_projection": _ledger_projection(project_root, work_unit["work_unit_id"])},
     }
     validated = validate_iteration(payload)
     path = _resolve_iteration(project_root, ref)

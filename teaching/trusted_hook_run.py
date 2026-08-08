@@ -40,6 +40,11 @@ def evaluate_hook_continuation(receipt: dict[str, object]) -> dict[str, object]:
             event_counts.get("turn.started") == 1
             and [item.get("decision") for item in stops] == ["block", "allow"]
         ),
+        "same_hook_turn_identity": (
+            receipt.get("hook_identity_consistent") is True
+            if "hook_identity_consistent" in receipt
+            else True
+        ),
     }
     return {
         "schema_version": "ds-lite.phase5-hook-continuation-verifier.v1",

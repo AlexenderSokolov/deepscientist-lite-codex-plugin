@@ -77,18 +77,21 @@ def load_provider_route(codex_home: Path | str) -> dict[str, Any]:
     if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password:
         raise WireProbeError("provider base_url must be an HTTP(S) endpoint without user information")
     catalog_ref = config.get("model_catalog_json")
-    if not isinstance(catalog_ref, str) or "\\" in catalog_ref:
-        raise WireProbeError("model_catalog_json must be a relative POSIX path")
-    catalog_path = PurePosixPath(catalog_ref)
-    if catalog_path.is_absolute() or any(part in {"", ".", ".."} for part in catalog_path.parts):
-        raise WireProbeError("model_catalog_json must stay within CODEX_HOME")
+    catalog_path = None
+    if catalog_ref is not None:
+        if not isinstance(catalog_ref, str) or "\\" in catalog_ref:
+            raise WireProbeError("model_catalog_json must be a relative POSIX path")
+        catalog_path_obj = PurePosixPath(catalog_ref)
+        if catalog_path_obj.is_absolute() or any(part in {"", ".", ".."} for part in catalog_path_obj.parts):
+            raise WireProbeError("model_catalog_json must stay within CODEX_HOME")
+        catalog_path = home.joinpath(*catalog_path_obj.parts)
     return {
         "provider_name": provider_name,
         "base_url": base_url,
         "wire_api": provider["wire_api"],
         "requires_openai_auth": provider["requires_openai_auth"],
         "model": config.get("model", MODEL),
-        "catalog_path": home.joinpath(*catalog_path.parts),
+        "catalog_path": catalog_path,
     }
 
 

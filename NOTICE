@@ -3,7 +3,7 @@ Copyright 2026 DeepScientist Lite contributors
 
 This product includes software developed independently under the Apache License, Version 2.0.
 
-DeepScientist Lite is the official Codex plugin for the DeepScientist research workflow.
+DeepScientist Lite is an independent, non-official third-party Codex plugin for research workflows.
 "DeepScientist" identifies the upstream research workflow and platform developed by ResearAI.
 This plugin is maintained by the DeepScientist Lite maintainers and follows the DeepScientist
 naming and branding guidelines:
@@ -32,7 +32,7 @@ Third-party source snapshots used in the 0.6.0-beta.1 candidate:
    Source: https://github.com/Yuan1z0825/nature-skills
    Commit: 91862221b39f7ca16d52ae0e1e9cb6c2bb31a96b
    License: Apache-2.0
-   Use: complete 17-skill workflow snapshot, adapted with DS Lite lifecycle,
+   Use: complete 20-skill workflow snapshot, adapted with DS Lite lifecycle,
    dependency checks, workspace-only onboarding, and redacted evidence rules.
 
 2. codex-autoresearch

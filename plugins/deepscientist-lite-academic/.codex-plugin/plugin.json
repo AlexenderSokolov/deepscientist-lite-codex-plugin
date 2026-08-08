@@ -1,29 +1,29 @@
 {
-  "name": "deepscientist-lite-academic",
-  "version": "0.9.0-beta.1",
-  "description": "Optional academic search, reading, writing, review, data, figure, citation, and response workflows for DeepScientist Lite.",
-  "author": {
-    "name": "DeepScientist Lite maintainers"
-  },
-  "homepage": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
-  "repository": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
-  "license": "Apache-2.0",
-  "skills": "./skills/",
-  "interface": {
-    "displayName": "DeepScientist Lite Academic",
-    "shortDescription": "Add opt-in academic workflows to DS Lite Core.",
-    "longDescription": "The optional academic pack contains 17 adapted Nature workflows plus bounded citation, revision, and adversarial-review protocols. It requires DS Lite Core 0.9.0-beta.1, keeps external dependencies workspace-local, and does not silently register MCP servers or credentials.",
-    "developerName": "DeepScientist Lite maintainers",
-    "category": "Developer Tools",
-    "capabilities": [
-      "Interactive",
-      "Read",
-      "Write"
-    ],
-    "defaultPrompt": [
-      "Use the matching nature skill while preserving DS Lite evidence, authorization, and stop gates."
-    ],
-    "brandColor": "#356B4A",
-    "screenshots": []
-  }
+ "name": "deepscientist-lite-academic",
+ "version": "0.10.0-beta.2",
+ "description": "Optional academic search, reading, writing, review, data, figure, citation, and response workflows for DeepScientist Lite.",
+ "author": {
+   "name": "DeepScientist Lite maintainers"
+ },
+ "homepage": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+ "repository": "https://github.com/AlexenderSokolov/deepscientist-lite-codex-plugin",
+ "license": "Apache-2.0",
+ "skills": "./skills/",
+ "interface": {
+   "displayName": "DeepScientist Lite Academic",
+   "shortDescription": "Add opt-in academic workflows to DS Lite Core.",
+    "longDescription": "The optional academic pack contains 17 discoverable workflows, each deployed directly without routing aggregation. It requires DS Lite Core 0.10.0-beta.2, keeps external dependencies workspace-local, and does not silently register MCP servers or credentials.",
+   "developerName": "DeepScientist Lite maintainers",
+   "category": "Developer Tools",
+   "capabilities": [
+     "Interactive",
+     "Read",
+     "Write"
+   ],
+   "defaultPrompt": [
+     "Use the matching nature skill while preserving DS Lite evidence, authorization, and stop gates."
+   ],
+   "brandColor": "#356B4A",
+   "screenshots": []
+ }
 }

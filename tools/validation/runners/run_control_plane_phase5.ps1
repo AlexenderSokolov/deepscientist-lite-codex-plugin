@@ -19,7 +19,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $false
-$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 if ([IO.Path]::IsPathRooted($EvidenceRoot)) {
     $EvidenceRoot = [IO.Path]::GetFullPath($EvidenceRoot)
 } else {
@@ -62,7 +62,7 @@ if ((Get-FileHash -LiteralPath $Phase4Decision -Algorithm SHA256).Hash -ne $Phas
 if ((Get-FileHash -LiteralPath $Phase4Decision -Algorithm SHA256).Hash -ne $Phase4DecisionSha256) { throw "Authoritative Phase4 decision SHA-256 mismatch" }
 
 $env:PYTHONDONTWRITEBYTECODE = "1"
-$env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-core\controller") + ";" + $Root
+$env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller") + ";" + $Root
 & $PythonBin -c "import sys; from pathlib import Path; from ds_lite_control.runtime_pin import verify_runtime_selection; r=verify_runtime_selection(Path(sys.argv[1]),Path(sys.argv[2]),expected_version=sys.argv[3]); raise SystemExit(0 if r['valid'] else 2)" $CodexBin $SchemaRoot $CodexVersion
 if ($LASTEXITCODE -ne 0) { throw "Codex runtime or schema bundle is invalid" }
 

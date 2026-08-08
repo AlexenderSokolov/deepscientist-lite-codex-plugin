@@ -4,7 +4,7 @@ param(
     [string]$PythonBin = "C:\ProgramData\anaconda3\python.exe"
 )
 $ErrorActionPreference = "Stop"
-$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $EvidenceRoot = [IO.Path]::GetFullPath((Join-Path $Root $EvidenceRoot))
 $RepoRoot = [IO.Path]::GetFullPath($Root) + [IO.Path]::DirectorySeparatorChar
 if (-not $EvidenceRoot.StartsWith($RepoRoot, [StringComparison]::OrdinalIgnoreCase)) {
@@ -19,7 +19,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $DbosDependencyRoot "dbos-2.29.0.dis
 }
 New-Item -ItemType Directory -Path $EvidenceRoot | Out-Null
 $env:PYTHONDONTWRITEBYTECODE = "1"
-$env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-core\controller") + $(if ($env:PYTHONPATH) { ";" + $env:PYTHONPATH } else { "" })
+$env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller") + $(if ($env:PYTHONPATH) { ";" + $env:PYTHONPATH } else { "" })
 
 & $PythonBin (Join-Path $Root "plugins\deepscientist-lite-core\controller\phase1_fault_harness.py") `
     --dependency-root $DbosDependencyRoot --python-bin $PythonBin `

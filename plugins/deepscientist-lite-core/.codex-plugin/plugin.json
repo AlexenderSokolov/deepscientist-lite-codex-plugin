@@ -1,7 +1,7 @@
 {
-  "name": "deepscientist-lite",
-  "version": "0.9.0-beta.1",
-  "description": "A bounded, recoverable, evidence-aware worker protocol for small and medium research tasks.",
+ "name": "deepscientist-lite",
+ "version": "0.10.0-beta.2",
+ "description": "A bounded, recoverable, evidence-aware worker protocol for small and medium research tasks.",
   "author": {
     "name": "DeepScientist Lite maintainers"
   },
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "DeepScientist Lite Core",
     "shortDescription": "Keep bounded research work recoverable and reviewable.",
-    "longDescription": "DeepScientist Lite Core is the domain-neutral worker protocol. Nine skills preserve goals, routes, experiments, evidence, reviews, iterations, delegation, handoffs, and bounded foreground autonomy contracts in project files. It does not provide a daemon, scheduler, browser service, knowledge base, or academic tool bundle.",
+    "longDescription": "DeepScientist Lite Core is an independent third-party domain-neutral worker protocol. Nine skills preserve goals, routes, experiments, evidence, reviews, iterations, delegation, handoffs, and bounded foreground autonomy contracts in project files. It does not provide a daemon, scheduler, browser service, knowledge base, or academic tool bundle.",
     "developerName": "DeepScientist Lite maintainers",
     "category": "Developer Tools",
     "capabilities": [
@@ -29,7 +29,7 @@
       "Write"
     ],
     "defaultPrompt": [
-      "$ds-lite inspect this research or engineering project, explain why the core applies, route one bounded action, and stop",
+      "$ds-lite inspect this existing research or engineering project and advance approved ready gates within a finite contract",
       "$ds-lite-iterate advance one plan-execute-verify-reflect-report cycle and stop at a visible checkpoint",
       "$ds-lite-review check whether this experiment is ready to support an analysis"
     ],

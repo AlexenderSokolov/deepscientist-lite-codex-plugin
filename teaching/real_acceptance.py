@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -226,7 +227,15 @@ def prepare_roots(
 
 
 def _command_prefix(path: Path) -> list[str]:
-    return [sys.executable, str(path)] if path.suffix.lower() == ".py" else [str(path)]
+    """Build a command prefix that can execute the given CLI binary."""
+    suffix = path.suffix.lower()
+    if suffix == ".py":
+        return [sys.executable, str(path)]
+    if suffix == ".js":
+        node = shutil.which("node")
+        if node:
+            return [node, str(path)]
+    return [str(path)]
 
 
 def _run_cli(path: Path, args: list[str], *, home: Path, environment: dict[str, str], timeout: float = 15.0) -> dict[str, Any]:
@@ -263,6 +272,12 @@ def _contains_model(value: Any, model: str) -> bool:
     return value == model
 
 
+def _extract_cli_version(output: str) -> str | None:
+    """Extract the CLI version string from codex --version output."""
+    match = re.search(r"codex-cli\s+(\S+)", output)
+    return match.group(1) if match else None
+
+
 def preflight_round(
     windows_root: Path | str,
     *,
@@ -293,20 +308,23 @@ def preflight_round(
     required_features = all(term in features["output"] for term in ("hooks", "multi_agent", "plugins"))
     model_observed = _contains_model(catalog_payload, wire_probe.MODEL)
     auth_category = "environment-api-key" if env.get("OPENAI_API_KEY") else "not-observed"
+    cli_version = _extract_cli_version(version["output"])
+    catalog_configured = route_status.get("catalog_configured", False)
+    catalog_ok = route_status.get("catalog_copied", False) if catalog_configured else True
     passed = all(
         (
             actual_hash.lower() == expected_cli_sha256.lower(),
-            "0.144.5" in version["output"] and version["status"] == "passed",
+            cli_version is not None and version["status"] == "passed",
             required_features and features["status"] == "passed",
             models["status"] == "passed" and model_observed,
             route_status.get("status") == "copied",
             route_status.get("provider_route_copied") is True,
-            route_status.get("catalog_copied") is True,
+            catalog_ok,
             auth_category == "environment-api-key",
         )
     )
     observations = {
-        "cli_version": "0.144.5" if "0.144.5" in version["output"] else "unexpected",
+        "cli_version": cli_version or "unexpected",
         "cli_sha256_match": actual_hash.lower() == expected_cli_sha256.lower(),
         "feature_surface_observed": required_features,
         "catalog_model_observed": model_observed,

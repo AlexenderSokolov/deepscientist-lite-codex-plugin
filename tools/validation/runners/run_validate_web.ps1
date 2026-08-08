@@ -1,6 +1,6 @@
 param([string]$Output)
 $ErrorActionPreference = "Stop"
-$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $Python = if ($env:PYTHON_BIN) { $env:PYTHON_BIN } else { "python" }
 $TempRoot = if ($env:TEMP_ROOT) { $env:TEMP_ROOT } else { Join-Path $Root "research\.validation-tmp" }
 $RunTemp = Join-Path $TempRoot ("web-validation-" + $PID)

@@ -8,7 +8,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $false
-$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $EvidenceRoot = [IO.Path]::GetFullPath((Join-Path $Root $EvidenceRoot))
 $RepoPrefix = $Root + [IO.Path]::DirectorySeparatorChar
 if (-not $EvidenceRoot.StartsWith($RepoPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw "EvidenceRoot must stay inside repository" }
@@ -19,7 +19,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $DbosDependencyRoot "dbos-2.29.0.dis
 New-Item -ItemType Directory -Path $EvidenceRoot | Out-Null
 $env:PYTHONDONTWRITEBYTECODE = "1"
 $env:PYTHON_BIN = $PythonBin
-$env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-core\controller") + ";" + $Root
+$env:PYTHONPATH = ([IO.Path]::GetFullPath($DbosDependencyRoot)) + ";" + (Join-Path $Root "plugins\deepscientist-lite-control-plane\controller") + ";" + $Root
 $SchemaRoot = Join-Path $Root "plugins\deepscientist-lite-core\schemas\codex\$CodexVersion"
 $Previous = Join-Path $Root "research\.validation-tmp\control-plane-phase3-final-20260731-03\phase3-decision.json"
 $PreviousHash = "6fba9ca1417efa3a36faecf45d852b902ddc8a57481dfacc50be112b143a1341"

@@ -370,21 +370,31 @@ def _resume_state(output: Path, contract: dict[str, Any], gates: dict[str, dict[
     return sorted(set(completed)), sorted(set(blocked)), results, len(progress)
 
 
-def run(root: Path, contract_path: Path, output: Path, *, resume: bool = False) -> dict[str, Any]:
+def run(root: Path, contract_path: Path | dict[str, Any], output: Path, *, resume: bool = False) -> dict[str, Any]:
     root = root.resolve(strict=True)
-    contract = validate_contract(json.loads(contract_path.read_text(encoding="utf-8")))
+    if isinstance(contract_path, dict):
+        contract_payload = contract_path
+    else:
+        contract_payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract = validate_contract(contract_payload)
     if not _resolve(root, contract["authorization"]["ref"], "authorization.ref").is_file():
         raise AutonomyError("authorization receipt is missing")
     gates = {gate["id"]: gate for gate in contract["gates"]}
     if output.exists():
-        if not resume:
+        # A v2 adapter may pre-create an empty run directory before handing
+        # execution to the legacy bounded engine; only non-empty output is a
+        # replay/overwrite hazard.
+        if not resume and any(output.iterdir()):
             raise AutonomyError("autonomy output already exists")
-        completed, blocked, gate_results, progress_index = _resume_state(output, contract, gates)
-        latest_summary = _latest_summary_path(output)
-        if latest_summary is not None:
-            latest_payload = json.loads(latest_summary.read_text(encoding="utf-8"))
-            if latest_payload.get("status") == "completed":
-                return latest_payload
+        if resume:
+            completed, blocked, gate_results, progress_index = _resume_state(output, contract, gates)
+            latest_summary = _latest_summary_path(output)
+            if latest_summary is not None:
+                latest_payload = json.loads(latest_summary.read_text(encoding="utf-8"))
+                if latest_payload.get("status") == "completed":
+                    return latest_payload
+        else:
+            completed, blocked, gate_results, progress_index = [], [], {}, 0
     else:
         output.mkdir(parents=True)
         completed, blocked, gate_results, progress_index = [], [], {}, 0

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -12,7 +12,7 @@ from typing import Any
 
 
 SCHEMA = "ds-lite.engineering-analysis.v1"
-CORE = {"plugin": "deepscientist-lite", "version": "0.9.0-beta.1"}
+CORE = {"plugin": "deepscientist-lite", "version": "0.10.0-beta.2"}
 BACKEND_STATUSES = {"available", "unavailable", "not-observed"}
 CHECK_STATUSES = {"passed", "failed", "warning", "not-observed"}
 REQUIRED_CHECKS = {"units", "dimensions", "aliasing", "leakage", "figure_axes"}

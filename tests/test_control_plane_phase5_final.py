@@ -26,9 +26,24 @@ from teaching.control_plane_phase5_final import (  # noqa: E402
     build_package_manifest,
     _candidate_digest,
 )
+from tools.validation.phase5_release_package_builder import build_release_packages  # noqa: E402
 
 
 DIGEST = "a" * 64
+
+
+class ReleasePackageProjectionTests(unittest.TestCase):
+    def test_core_candidate_excludes_compatibility_controller_projection(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw) / "candidate"
+            result = build_release_packages(ROOT, output)
+            self.assertEqual(result["status"], "passed")
+            self.assertFalse((output / "plugins" / "deepscientist-lite-core" / "controller").exists())
+            self.assertTrue((output / "plugins" / "deepscientist-lite-control-plane" / "controller").is_dir())
+            self.assertIn({
+                "package": "deepscientist-lite-core",
+                "operation": "exclude-compatibility-control-plane-runtime",
+            }, result["transforms"])
 
 
 def write(path: Path, value: dict) -> Path:

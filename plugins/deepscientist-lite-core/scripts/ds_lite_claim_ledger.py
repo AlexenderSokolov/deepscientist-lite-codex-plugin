@@ -19,6 +19,11 @@ import time
 from pathlib import Path
 from typing import Any
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+from ds_lite_protocol import ProtocolError, validate_review_result
+
 CLAIM_LEDGER_SCHEMA = "ds-lite.claim-ledger.v1"
 CLAIM_SCHEMA = "ds-lite.claim.v1"
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,79}$")
@@ -200,6 +205,62 @@ def supersede_claim(ledger_path: str, old_claim_id: str, new_claim_id: str) -> d
     raise ClaimError(f"claim '{old_claim_id}' not found in ledger")
 
 
+def promote_claim_from_review(ledger_path: str, claim_id: str, review_path: str) -> dict[str, Any]:
+    """Promote a draft claim only after validating a typed review result.
+
+    The review must name the claim in ``extensions.claim_id`` and may only
+    inspect evidence already bound to that claim.  A passing/supportable
+    review yields ``supported``; a failing/refuted review yields ``contested``.
+    Human or inconclusive outcomes are intentionally non-promoting.
+    """
+    path = Path(ledger_path)
+    review_file = Path(review_path)
+    if not path.exists():
+        raise ClaimError(f"ledger not found: {path}")
+    if not review_file.exists():
+        raise ClaimError(f"review not found: {review_file}")
+    try:
+        ledger = json.loads(path.read_text(encoding="utf-8"))
+        review_payload = json.loads(review_file.read_text(encoding="utf-8"))
+        review = validate_review_result(review_payload)
+    except (OSError, UnicodeError, json.JSONDecodeError, ProtocolError) as exc:
+        raise ClaimError(f"invalid review: {exc}") from exc
+    if review.get("extensions", {}).get("claim_id") != claim_id:
+        raise ClaimError("review extensions.claim_id must match claim_id")
+
+    claim = next((item for item in ledger.get("claims", []) if item.get("claim_id") == claim_id), None)
+    if claim is None:
+        raise ClaimError(f"claim '{claim_id}' not found in ledger")
+    if claim.get("status") != "draft":
+        raise ClaimError("only draft claims can be promoted from review")
+    claim_refs = set(claim.get("evidence_refs", []))
+    reviewed_refs = set(review["reviewed_evidence_refs"])
+    if not reviewed_refs.issubset(claim_refs):
+        raise ClaimError("reviewed evidence refs must be a subset of claim evidence refs")
+
+    if review["verdict"] == "pass" and review["claim_assessment"] == "supportable":
+        target_status = "supported"
+    elif review["verdict"] == "fail" and review["claim_assessment"] == "refuted":
+        target_status = "contested"
+    else:
+        raise ClaimError("review outcome is non-promoting")
+
+    review_digest = hashlib.sha256(review_file.read_bytes()).hexdigest()
+    extensions = claim.setdefault("extensions", {})
+    extensions.update({
+        "review_ref": review["review_artifact_ref"],
+        "review_path": review_file.as_posix(),
+        "review_sha256": review_digest,
+        "review_verdict": review["verdict"],
+        "review_claim_assessment": review["claim_assessment"],
+    })
+    claim["status"] = target_status
+    claim["claim_digest"] = _claim_digest(claim)
+    ledger["updated_at"] = _now_iso()
+    path.write_text(json.dumps(ledger, ensure_ascii=True, indent=2), encoding="utf-8")
+    return claim
+
+
 def list_claims(ledger_path: str, status: str | None = None) -> list[dict[str, Any]]:
     """List claims in a ledger, optionally filtered by status."""
     path = Path(ledger_path)
@@ -232,6 +293,11 @@ def main() -> int:
     supersede_parser.add_argument("--old-id", required=True)
     supersede_parser.add_argument("--new-id", required=True)
 
+    promote_parser = sub.add_parser("promote-from-review")
+    promote_parser.add_argument("--ledger", required=True)
+    promote_parser.add_argument("--claim-id", required=True)
+    promote_parser.add_argument("--review", required=True)
+
     args = parser.parse_args()
     try:
         if args.command == "create":
@@ -243,6 +309,8 @@ def main() -> int:
             result = list_claims(args.ledger, getattr(args, "status", None))
         elif args.command == "supersede":
             result = supersede_claim(args.ledger, args.old_id, args.new_id)
+        elif args.command == "promote-from-review":
+            result = promote_claim_from_review(args.ledger, args.claim_id, args.review)
         else:
             print(json.dumps({"error": f"unknown command: {args.command}"}))
             return 1

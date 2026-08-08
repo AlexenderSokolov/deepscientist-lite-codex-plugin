@@ -172,12 +172,12 @@ def evaluate_control_plane(
         raise ValueError("v3 release profile does not exist")
 
     repo_root = Path(__file__).resolve().parents[2]
-    controller_root = repo_root / "plugins" / "deepscientist-lite-core" / "controller"
+    controller_root = repo_root / "plugins" / "deepscientist-lite-control-plane" / "controller"
     if str(controller_root) not in sys.path:
         sys.path.insert(0, str(controller_root))
 
-    # Keep the controller dependency lazy so the legacy v1/v2 entry remains
-    # usable even when the managed control-plane package is not on sys.path.
+    # Keep the optional dependency lazy: ordinary v1/v2 release aggregation
+    # remains usable without importing the control-plane extension.
     from ds_lite_control.release import StrictReleaseAggregate
     from ds_lite_control.store import ControlStore
 

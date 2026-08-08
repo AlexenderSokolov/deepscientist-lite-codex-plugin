@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -602,16 +603,18 @@ def _autonomy_context(root: Path) -> str:
         next_action = str(payload.get("next_action", "unknown"))
     except (OSError, UnicodeError, json.JSONDecodeError):
         return "Autonomy controller: progress receipt is unreadable; inspect the controller output."
-    summaries = []
-    if (run_dir / "summary.json").is_file():
-        summaries.append(run_dir / "summary.json")
-    summaries.extend(sorted(run_dir.glob("summary-resume-*.json")))
+    summaries = _autonomy_summary_candidates(run_dir)
     if not summaries:
         return (
             f"Autonomy controller: gate={gate}; status={status}; next_action={next_action}. "
             f"Do not conclude this task. Automatically continue with: {AUTONOMY_RESUME_COMMAND}."
         )
-    return f"Autonomy controller: gate={gate}; status={status}; next_action={next_action}."
+    try:
+        summary_payload = json.loads(summaries[-1].read_text(encoding="utf-8"))
+        summary_next_action = str(summary_payload.get("next_action", next_action))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        summary_next_action = next_action
+    return f"Autonomy controller: gate={gate}; status={status}; next_action={summary_next_action}."
 
 
 def _autonomy_stop_gaps(root: Path) -> list[str]:
@@ -619,10 +622,7 @@ def _autonomy_stop_gaps(root: Path) -> list[str]:
     if not contract.is_file():
         return []
     run_dir = root / AUTONOMY_RUN_REF
-    summaries = []
-    if (run_dir / "summary.json").is_file():
-        summaries.append(run_dir / "summary.json")
-    summaries.extend(sorted(run_dir.glob("summary-resume-*.json")))
+    summaries = _autonomy_summary_candidates(run_dir)
     if not summaries:
         return ["autonomy controller summary is missing"]
     summary = summaries[-1]
@@ -633,11 +633,32 @@ def _autonomy_stop_gaps(root: Path) -> list[str]:
         payload = json.loads(summary.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError):
         return ["autonomy controller summary is unreadable"]
-    if payload.get("schema_version") != "ds-lite.autonomy-summary.v1":
+    schema = payload.get("schema_version")
+    if schema not in {"ds-lite.autonomy-summary.v1", "ds-lite.autonomy-summary.v2"}:
         return ["autonomy controller summary schema is invalid"]
     if payload.get("status") != "completed":
         return [f"autonomy controller is not terminal: {payload.get('status', 'unknown')}"]
+    if schema == "ds-lite.autonomy-summary.v2" and payload.get("terminal_policy") == "release" and payload.get("release_authorized") is not True:
+        return ["autonomy v2 release formal gate is not authorized"]
     return []
+
+
+def _autonomy_summary_candidates(run_dir: Path) -> list[Path]:
+    """Return summaries with v2 projections taking precedence over v1 adapters.
+
+    The v2 runner intentionally reuses the bounded v1 executor and therefore
+    emits both ``summary.json`` (adapter output) and ``summary-v2.json``
+    (authoritative policy projection).  Reading v1 first could make Stop
+    incorrectly observe ``release`` or a stale terminal state.
+    """
+    candidates: list[Path] = []
+    if (run_dir / "summary.json").is_file():
+        candidates.append(run_dir / "summary.json")
+    candidates.extend(sorted(run_dir.glob("summary-resume-*.json")))
+    candidates.extend(sorted(run_dir.glob("summary-v2-resume-*.json")))
+    if (run_dir / "summary-v2.json").is_file():
+        candidates.append(run_dir / "summary-v2.json")
+    return candidates
 
 
 def _autonomy_is_active(root: Path) -> bool:
@@ -673,6 +694,12 @@ def _resume_autonomy_controller(root: Path) -> tuple[bool, str]:
     contract = root / AUTONOMY_CONTRACT_REF
     output = root / AUTONOMY_RUN_REF
     bundled_cli = Path(__file__).resolve().with_name("ds_lite_autonomy.py")
+    try:
+        contract_schema = json.loads(contract.read_text(encoding="utf-8")).get("schema_version")
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        contract_schema = None
+    if contract_schema == "ds-lite.autonomy-contract.v2":
+        bundled_cli = Path(__file__).resolve().with_name("ds_lite_autonomy_v2.py")
     configured_cli = os.environ.get("DS_LITE_AUTONOMY_CLI", "").strip()
     candidate_cli = Path(configured_cli).expanduser() if configured_cli else bundled_cli
     # A relative ambient override changes meaning once the Hook switches to the
@@ -884,6 +911,14 @@ def handle_event(event_name: str, payload: dict[str, Any]) -> dict[str, Any]:
     result["continue_once"] = False
     autonomy_was_active = _autonomy_is_active(root)
     autoresearch_was_active = bool(_autoresearch_stop_gaps(root))
+    # Stop-first is an explicit, foreground-only opt-in. It is the one path
+    # where a Stop event may execute the already-approved controller instead
+    # of merely telling the host to resume it on a later turn.
+    if autonomy_was_active and _stop_first_protocol(root):
+        resumed, resume_state = _resume_autonomy_controller(root)
+        result["autonomy_resume_observed"] = resumed
+        result["autonomy_resume_state"] = resume_state
+        autonomy_was_active = _autonomy_is_active(root)
     gaps = _stop_gaps(root)
     gaps.extend(_stop_quality_gaps(root))
     gaps.extend(_user_action_gaps(root))
@@ -957,6 +992,13 @@ def _write_host_acceptance_event(event_name: str, result: dict[str, Any], hook_i
         "stop_hook_active": hook_input.get("stop_hook_active") is True,
         "reason_present": bool(str(result.get("reason") or result.get("prompt") or "").strip()),
     }
+    # Host hook payloads vary by surface; retain only one-way identity proofs.
+    thread_id = hook_input.get("thread_id") or hook_input.get("threadId")
+    turn_id = hook_input.get("turn_id") or hook_input.get("turnId")
+    if isinstance(thread_id, str) and thread_id.strip():
+        payload["thread_id_sha256"] = hashlib.sha256(thread_id.encode("utf-8")).hexdigest()
+    if isinstance(turn_id, str) and turn_id.strip():
+        payload["turn_id_sha256"] = hashlib.sha256(turn_id.encode("utf-8")).hexdigest()
     path = directory / f"{uuid.uuid4().hex}-{event_name}.json"
     with path.open("x", encoding="utf-8") as handle:
         json.dump(payload, handle, ensure_ascii=True, sort_keys=True)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import tempfile
 import unittest
+import importlib.util
 from pathlib import Path
 
 
@@ -18,6 +19,8 @@ from ds_lite_control.store import ControlStore
 
 class Phase3DbosTests(unittest.TestCase):
     def test_real_dbos_cooldown_uses_action_identity_and_wakes_one_gate(self) -> None:
+        if importlib.util.find_spec("dbos") is None:
+            self.skipTest("DBOS optional dependency is not installed")
         with tempfile.TemporaryDirectory(prefix="ds-lite-phase3-dbos-") as directory:
             root = Path(directory)
             store = ControlStore(root / "control.sqlite3")

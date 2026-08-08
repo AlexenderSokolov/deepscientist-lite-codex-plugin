@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 : "${EVIDENCE_ROOT:?set EVIDENCE_ROOT}"
 : "${DBOS_DEPENDENCY_ROOT:?set DBOS_DEPENDENCY_ROOT}"
 : "${CODEX_BIN:?set CODEX_BIN to Codex 0.128.0}"
@@ -16,7 +16,7 @@ test "$(sha256sum "$PREVIOUS_DECISION" | cut -d' ' -f1)" = "9e3187a2f16e922a6e63
 mkdir "$EVIDENCE_ROOT"
 export PYTHONDONTWRITEBYTECODE=1
 export PYTHONPATH="$DBOS_DEPENDENCY_ROOT:$ROOT/plugins/deepscientist-lite-core/controller${PYTHONPATH:+:$PYTHONPATH}"
-"$PYTHON_BIN" "$ROOT/plugins/deepscientist-lite-core/controller/phase2_fault_harness.py" --workdir "$EVIDENCE_ROOT/fault-work" --output "$EVIDENCE_ROOT/fault-matrix.json" --seed 20260731 --trials 100
+"$PYTHON_BIN" "$ROOT/plugins/deepscientist-lite-control-plane/controller/phase2_fault_harness.py" --workdir "$EVIDENCE_ROOT/fault-work" --output "$EVIDENCE_ROOT/fault-matrix.json" --seed 20260731 --trials 100
 "$PYTHON_BIN" -m unittest tests.test_control_plane_phase2 tests.test_control_plane_phase2_app_server tests.test_control_plane_phase2_broker tests.test_control_plane_phase2_runner tests.test_control_plane_phase2_fault_harness tests.test_control_plane_phase2_evidence tests.test_control_plane_phase1 tests.test_control_plane_phase1_cli tests.test_control_plane_spike -v >"$EVIDENCE_ROOT/phase-tests.txt" 2>&1
 "$PYTHON_BIN" -m teaching.control_plane_phase_tests --output "$EVIDENCE_ROOT/phase0-phase05-tests.json"
 "$PYTHON_BIN" "$ROOT/teaching/controller_broker_smoke.py" --codex-bin "$CODEX_BIN" --schema-root "$ROOT/plugins/deepscientist-lite-core/schemas/codex/0.128.0" --workspace "$ROOT" --runtime "$EVIDENCE_ROOT/real-runtime" --output "$EVIDENCE_ROOT/real-fault-broker-smoke.json" --journal-summary "$EVIDENCE_ROOT/broker-journal-summary.json"

@@ -1,4 +1,4 @@
-﻿# DeepScientist Lite：科研小战斗群
+# DeepScientist Lite：科研小战斗群
 
 [English README](README.md) · [用户指南](docs/user-guide.zh.md) · [AI 示教区域](teaching/README.zh.md) · [维护文档](docs/README.md) · [感谢名单](ACKNOWLEDGMENTS.md)
 
@@ -6,16 +6,16 @@
 
 DeepScientist Lite 用一组 Codex 技能和普通项目文件来解决这些交接问题。它不替你判断科学结论；对于已冻结、已授权且可审计的验收任务，它可以通过前台控制器连续推进、自动续跑和生成进度凭证，但不创建后台守护进程。它负责把目标、路线、实验和审查结果留下来，让下一次会话或另一位合作者能够接着做。
 
-> **官方插件声明：** 这是 DeepScientist 的官方 Codex 插件。"DeepScientist" 用于说明上游研究工作流和平台。详见 [NOTICE](NOTICE)。
+> **第三方插件声明：** 这是独立的、非官方 DeepScientist Lite Codex 第三方插件。保留上游致谢、许可证和来源说明，详见 [NOTICE](NOTICE)。
 
 ## 插件概览
 
 ```mermaid
 graph LR
-    subgraph "Core · 0.9.0-beta.1 · 9 skills"
+    subgraph "Core · 0.10.0-beta.2 · 9 skills"
         A["目标保持 → 路线追踪 → 实验记录 → 证据打包 → 审查 → 迭代 → 委派 → 交接"]
     end
-    subgraph "Academic · 0.9.0-beta.1 · 17 skills"
+    subgraph "Academic · 0.10.0-beta.2 · 17 skills"
         B["文献检索 · 引用验证 · 论文阅读 · 写作 · 润色 · 审稿模拟 · 回复信 · 投稿辅助"]
     end
     subgraph "可选包 · 0.3.0-alpha.1 · 各 1 skill"
@@ -30,8 +30,9 @@ graph LR
 
 | 包 | 版本 | Skills 数 | 一句话说明 |
 | --- | --- | --- | --- |
-| Core | `0.9.0-beta.1` | 9 | 领域中立的工作协议：目标保持、路线追踪、实验、证据、审查、迭代、委派、交接 |
-| Academic | `0.9.0-beta.1` | 17 | Nature 级论文工作流：从文献检索到投稿辅助的完整链条 |
+| Core | `0.10.0-beta.2` | 9 | 领域中立的工作协议：目标保持、路线追踪、实验、证据、审查、迭代、委派、交接 |
+| Academic | `0.10.0-beta.2` | 17 | Nature 级论文工作流；17 个 skills 直接部署，无路由聚合层 |
+| Control Plane | `0.10.0-beta.2` | optional | DBOS/controller 扩展，缺失依赖不阻断 Core |
 | Web | `0.3.0-alpha.1` | 1 | 公共网页采集与来源记录 |
 | Knowledge | `0.3.0-alpha.1` | 1 | 审查门控的知识提案 |
 | Empirical | `0.3.0-alpha.1` | 1 | 有界实证研究规范与结果交接 |

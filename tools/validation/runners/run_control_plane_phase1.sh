@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 python_bin="${PYTHON_BIN:?set PYTHON_BIN to the verified Python 3.13.5 executable}"
 dependency_root="${DBOS_DEPENDENCY_ROOT:?set DBOS_DEPENDENCY_ROOT to the locked DBOS 2.29.0 target}"
 evidence_root="${EVIDENCE_ROOT:?set EVIDENCE_ROOT to a new repository-local directory}"
@@ -20,7 +20,7 @@ mkdir -p "$evidence_root"
 export PYTHONDONTWRITEBYTECODE=1
 export PYTHONPATH="$dependency_root:$root/plugins/deepscientist-lite-core/controller${PYTHONPATH:+:$PYTHONPATH}"
 
-"$python_bin" "$root/plugins/deepscientist-lite-core/controller/phase1_fault_harness.py" \
+"$python_bin" "$root/plugins/deepscientist-lite-control-plane/controller/phase1_fault_harness.py" \
   --dependency-root "$dependency_root" --python-bin "$python_bin" \
   --workdir "$evidence_root/fault-work" --output "$evidence_root/fault-matrix.json" \
   --seed 20260731 --trials 100
