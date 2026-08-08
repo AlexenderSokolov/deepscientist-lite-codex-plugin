@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -21,10 +22,16 @@ class CodexAcceptanceToolTests(unittest.TestCase):
     def setUp(self) -> None:
         self.parent = Path(tempfile.mkdtemp(prefix="ds-lite-验收 with spaces-"))
 
-    def run_tool(self, script: Path, *args: str, expected: int = 0) -> subprocess.CompletedProcess[str]:
+    def run_tool(
+        self, script: Path, *args: str, expected: int = 0, environment: dict[str, str] | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        env = os.environ.copy()
+        if environment:
+            env.update(environment)
         completed = subprocess.run(
             [sys.executable, str(script), *args],
             cwd=REPO_ROOT,
+            env=env,
             text=True,
             encoding="utf-8",
             errors="replace",
@@ -81,6 +88,19 @@ class CodexAcceptanceToolTests(unittest.TestCase):
         self.assertEqual(probed_payload["host_probes"][0]["status"], "unavailable")
         rendered_probe = json.dumps(probed_payload)
         self.assertNotIn(str(invalid_launcher), rendered_probe)
+
+    def test_prepare_tolerates_a_legacy_windows_console_encoding(self) -> None:
+        output = self.parent / "legacy-console-package"
+        self.run_tool(
+            PREPARE,
+            "--output",
+            str(output),
+            "--cachebuster",
+            "legacy-console",
+            "--without-fixtures",
+            environment={"PYTHONIOENCODING": "cp1252"},
+        )
+        self.assertTrue((output / "acceptance.json").is_file())
 
     def test_prepare_refuses_existing_output(self) -> None:
         output = self.parent / "existing"

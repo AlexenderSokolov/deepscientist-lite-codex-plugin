@@ -41,6 +41,14 @@ class LabError(RuntimeError):
     pass
 
 
+def configure_stdio() -> None:
+    """Keep machine-readable progress valid under legacy Windows code pages."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 def write_text(path: Path, value: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(value.rstrip() + "\n", encoding="utf-8", newline="\n")
@@ -1505,6 +1513,7 @@ def parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    configure_stdio()
     args = parser().parse_args()
     if args.lab != "evidence" and args.case != "clean":
         print("--case is only meaningful for the evidence lab", file=sys.stderr)
