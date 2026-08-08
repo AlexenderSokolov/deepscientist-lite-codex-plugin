@@ -38,9 +38,16 @@ def evaluate(root: Path) -> tuple[dict, int]:
             raw = b""; status = "blocked"; marker_ok = False
         passed = passed and status == "passed"
         records.append({"path": relative, "status": status, "sha256": hashlib.sha256(raw).hexdigest(), "required_markers_observed": marker_ok})
+    try:
+        package_set = json.loads((root / "release" / "package-set.json").read_text(encoding="utf-8"))
+        release_version = package_set["release_version"]
+        release_profile = f"ds-lite-{release_version}-complete"
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError):
+        release_profile = "not-observed"
+        passed = False
     result = {"schema_version": "ds-lite.docs-acceptance.v1", "status": "passed" if passed else "blocked",
               "failure_layer": "none" if passed else "documentation-completeness", "observed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-              "documents": records, "release_profile": "ds-lite-0.8.1-complete", "raw_document_content_persisted": False,
+              "documents": records, "release_profile": release_profile, "raw_document_content_persisted": False,
               "next_action": "formal release aggregation" if passed else "repair the blocked documentation surface"}
     return result, 0 if passed else 2
 

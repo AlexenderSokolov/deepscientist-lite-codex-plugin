@@ -10,6 +10,20 @@ from pathlib import Path
 from typing import Any
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _active_complete_profile() -> str:
+    try:
+        package_set = json.loads((REPO_ROOT / "release" / "package-set.json").read_text(encoding="utf-8"))
+        version = package_set["release_version"]
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        raise RuntimeError("active release package set is unavailable") from exc
+    if not isinstance(version, str) or not version:
+        raise RuntimeError("active release package set has no release version")
+    return f"ds-lite-{version}-complete"
+
+
 REQUIRED_GATES_V1 = (
     "source",
     "offline",
@@ -22,7 +36,9 @@ REQUIRED_GATES_V1 = (
     "docs",
 )
 REQUIRED_GATES_V2 = REQUIRED_GATES_V1 + ("provider", "openscience")
-COMPLETE_PROFILE = "ds-lite-0.8.1-complete"
+LEGACY_COMPLETE_PROFILE = "ds-lite-0.8.1-complete"
+COMPLETE_PROFILE = _active_complete_profile()
+ACCEPTED_COMPLETE_PROFILES = {COMPLETE_PROFILE, LEGACY_COMPLETE_PROFILE}
 SCHEMA_V1 = "ds-lite.formal-release-gate.v1"
 SCHEMA_V2 = "ds-lite.formal-release-gate.v2"
 SCHEMA_V3 = "ds-lite.formal-release-gate.v3"
@@ -74,7 +90,7 @@ def required_gates(schema_version: str, profile: str) -> tuple[str, ...]:
         return REQUIRED_GATES_V1
     if profile == "default":
         return REQUIRED_GATES_V2
-    if profile == COMPLETE_PROFILE:
+    if profile in ACCEPTED_COMPLETE_PROFILES:
         return COMPLETE_RELEASE_GATES_V2
     raise ValueError(f"unsupported release profile: {profile}")
 
@@ -101,7 +117,7 @@ def evaluate(
 ) -> tuple[dict[str, Any], int]:
     formal_schema_version = schema_version
     if candidate_digest is not None:
-        if profile != COMPLETE_PROFILE:
+        if profile not in ACCEPTED_COMPLETE_PROFILES:
             raise ValueError("candidate digest binding requires the complete profile")
         if len(candidate_digest) != 64 or any(
             character not in "0123456789abcdef" for character in candidate_digest.lower()
@@ -118,10 +134,10 @@ def evaluate(
             continue
         receipt_schema_version = payload.get("schema_version", "not-observed")
         status = payload.get("status", "not-verified")
-        if profile == COMPLETE_PROFILE and receipt_schema_version != COMPLETE_GATE_SCHEMAS[gate]:
+        if profile in ACCEPTED_COMPLETE_PROFILES and receipt_schema_version != COMPLETE_GATE_SCHEMAS[gate]:
             invalid_schema_gates.append(gate)
             status = "not-verified"
-        if profile == COMPLETE_PROFILE and not complete_gate_evidence_is_verifiable(gate, payload):
+        if profile in ACCEPTED_COMPLETE_PROFILES and not complete_gate_evidence_is_verifiable(gate, payload):
             status = "not-verified"
         observed[gate] = {
             "status": status,
@@ -196,7 +212,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Aggregate independent DS Lite release evidence without inference.")
     parser.add_argument("--evidence", action="append", default=[])
     parser.add_argument("--schema-version", choices=(SCHEMA_V1, SCHEMA_V2, SCHEMA_V3), default=SCHEMA_V1)
-    parser.add_argument("--profile", choices=("default", COMPLETE_PROFILE), default="default")
+    parser.add_argument("--profile", choices=("default", *sorted(ACCEPTED_COMPLETE_PROFILES)), default="default")
     parser.add_argument("--candidate-digest")
     parser.add_argument("--control-db", type=Path)
     parser.add_argument("--job-id")
