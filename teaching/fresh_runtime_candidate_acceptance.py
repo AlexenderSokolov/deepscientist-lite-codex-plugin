@@ -24,6 +24,8 @@ from teaching.formal_cache_acceptance import (
     _installed_skill_inventory,
     validate_receipt,
 )
+from teaching.runtime_identity import ROOT as REPO_ROOT
+from tools.validation.release_identity import load_package_set
 
 
 class FreshRuntimeCandidateError(RuntimeError):
@@ -339,7 +341,8 @@ def run(
     stop_observation = stop_event_summary(hook_events)
     try:
         transport = JsonRpcTransport(process)
-        initialize = transport.request("initialize", {"clientInfo": {"name": "ds-lite-fresh-runtime", "version": "0.10.0-beta.3"}})
+        release_version = load_package_set(REPO_ROOT)["release_version"]
+        initialize = transport.request("initialize", {"clientInfo": {"name": "ds-lite-fresh-runtime", "version": release_version}})
         if not isinstance(initialize.get("result"), dict):
             raise FreshRuntimeCandidateError("initialize response is invalid")
         allowed_notifications, notification_schema_source = client_notification_methods(schema_root.resolve())

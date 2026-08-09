@@ -8,8 +8,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.validation.runtime_identity_check import check_runtime_identity
+
+
 SKIP_PARTS = {
     "__pycache__",
     ".git",
@@ -48,6 +53,9 @@ def main(argv: list[str] | None = None) -> int:
     run([sys.executable, "tools/validation/release_identity.py", "--check", "--repo-root", str(root)], root)
     run([sys.executable, "tools/validation/generate_academic_contract.py", "--check", "--repo-root", str(root)], root)
     run([sys.executable, "tools/validation/validate_repo.py"], root)
+    runtime_issues = check_runtime_identity(root)
+    if runtime_issues:
+        raise SystemExit("active runtime identity check failed: " + ", ".join(runtime_issues))
     for path in active_python_files(root):
         py_compile.compile(str(path), doraise=True)
     run([sys.executable, "tools/validation/check_cross_system.py", "."], root)

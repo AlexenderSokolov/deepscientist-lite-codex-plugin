@@ -2,9 +2,51 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
+import re
 from pathlib import Path
 from typing import Any
+
+
+_SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$")
+
+
+def _version_key(value: str) -> tuple[int, int, int, int, str]:
+    match = _SEMVER_RE.fullmatch(value)
+    if not match:
+        raise ValueError(f"invalid Codex version: {value!r}")
+    return (
+        int(match.group(1)), int(match.group(2)), int(match.group(3)),
+        1 if match.group(4) is None else 0, match.group(4) or "",
+    )
+
+
+def schema_manifest_version(schema_root: Path) -> str | None:
+    """Read the Codex identity from a schema bundle, never from a code pin."""
+    manifest_path = schema_root / "SCHEMA-MANIFEST.json"
+    try:
+        value = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    version = value.get("codex_version") if isinstance(value, dict) else None
+    return version if isinstance(version, str) and _SEMVER_RE.fullmatch(version) else None
+
+
+def resolve_codex_version(schema_root: Path | None = None, *, explicit: str | None = None) -> str:
+    """Resolve runtime identity from explicit input, env override, or schema manifests."""
+    if explicit:
+        _version_key(explicit)
+        return explicit
+    env_version = os.environ.get("DS_LITE_CODEX_VERSION", "").strip()
+    if env_version:
+        _version_key(env_version)
+        return env_version
+    if schema_root is not None:
+        version = schema_manifest_version(schema_root)
+        if version:
+            return version
+    raise ValueError("Codex version is unavailable; pass --codex-version or a schema manifest")
 
 
 def _sha256(path: Path) -> str:
@@ -114,6 +156,7 @@ def verify_runtime_selection(
     codex_bin: Path, schema_root: Path, *, expected_version: str,
     expected_platform: str | None = None,
 ) -> dict[str, Any]:
+    expected_version = resolve_codex_version(schema_root, explicit=expected_version)
     observed_version = observe_codex_version(codex_bin)
     schema = verify_schema_bundle(
         schema_root, expected_version=expected_version,
@@ -128,4 +171,7 @@ def verify_runtime_selection(
     }
 
 
-__all__ = ["observe_codex_version", "verify_runtime_selection", "verify_schema_bundle"]
+__all__ = [
+    "observe_codex_version", "resolve_codex_version", "schema_manifest_version",
+    "verify_runtime_selection", "verify_schema_bundle",
+]

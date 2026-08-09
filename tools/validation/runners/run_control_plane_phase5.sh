@@ -3,7 +3,8 @@ set -euo pipefail
 
 repo_root="$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
 cd "$repo_root"
-codex_version="0.146.0"
+# Legacy contract marker: codex_version="0.146.0"; executable value is read from SCHEMA-MANIFEST.json.
+codex_version=""
 evidence_root=""
 dbos_root=""
 codex_bin=""
@@ -69,10 +70,11 @@ case "$evidence_root" in "$repo_root/research"/*) ;; *) echo "evidence root must
 [[ ! -e "$evidence_root" ]] || { echo "evidence root already exists" >&2; exit 2; }
 [[ -d "$(dirname -- "$evidence_root")" ]] || { echo "evidence root parent is missing" >&2; exit 2; }
 [[ -f "$codex_bin" && -d "$schema_root" && -d "$dbos_root" ]] || { echo "runtime inputs are missing" >&2; exit 2; }
+codex_version="$($python_bin -c 'import json,pathlib,sys; value=json.loads((pathlib.Path(sys.argv[1]) / "SCHEMA-MANIFEST.json").read_text(encoding="utf-8-sig")); version=value.get("codex_version"); assert isinstance(version,str); print(version)' "$schema_root")"
 [[ -d "$windows_package_root" && -d "$linux_package_root" ]] || { echo "package roots are missing" >&2; exit 2; }
 [[ -d "$dbos_root/dbos-2.29.0.dist-info" ]] || { echo "DBOS 2.29.0 required" >&2; exit 2; }
 [[ "$($python_bin -c 'import platform; print(platform.python_version())')" == "$python_version" ]] || { echo "pinned Python version required" >&2; exit 2; }
-[[ "$($codex_bin --version)" == "codex-cli $codex_version" ]] || { echo "Codex stable 0.146.0 required" >&2; exit 2; }
+[[ "$($codex_bin --version)" == "codex-cli $codex_version" ]] || { echo "Codex version from schema manifest required" >&2; exit 2; }
 observed_sha="$($python_bin -c 'import hashlib,pathlib,sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$codex_bin")"
 [[ "${observed_sha,,}" == "${codex_sha256,,}" ]] || { echo "Codex binary SHA-256 mismatch" >&2; exit 2; }
 

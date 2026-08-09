@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from teaching.trusted_host_prepare import _candidate_identity  # noqa: E402
+from teaching.runtime_identity import default_codex_version  # noqa: E402
 from tools.validation.release_identity import load_package_set  # noqa: E402
 
 
@@ -23,6 +24,7 @@ EXPECTED_PACKAGES = {
     package["name"]: package["version"]
     for package in load_package_set(ROOT)["packages"].values()
 }
+EXPECTED_CODEX_VERSION = default_codex_version()
 HOOK_CHECKS = {
     "runtime_pin_enforced", "one_cli_turn", "one_terminal_turn", "terminal_observed",
     "stop_block_then_allow", "nonempty_stop_reasons", "repair_budget_transition",
@@ -121,7 +123,7 @@ def build_hook_acceptance(
         "preparation_isolated_and_sanitized": (
             preparation.get("schema_version") == "ds-lite.trusted-host-preparation.v1"
             and preparation.get("status") == "prepared"
-            and preparation.get("codex_version") == "0.146.0"
+            and preparation.get("codex_version") == EXPECTED_CODEX_VERSION
             and preparation.get("config_validated") is True
             and preparation.get("workspace_trust_configured") is True
             and preparation.get("secret_material_persisted") is False
@@ -138,7 +140,7 @@ def build_hook_acceptance(
         ),
         "stable_runtime_pin": (
             isinstance(identity, dict) and identity.get("enforced") is True
-            and identity.get("expected_version") == "0.146.0" and identity.get("sha256_match") is True
+            and identity.get("expected_version") == EXPECTED_CODEX_VERSION and identity.get("sha256_match") is True
         ),
         "same_turn_stop_repair": (
             len(stops) == 2 and [item.get("decision") for item in stops] == ["block", "allow"]
@@ -157,7 +159,7 @@ def build_hook_acceptance(
     result = {
         "schema_version": "ds-lite.trusted-hook-acceptance.v1",
         "status": "passed", "candidate_digest": digest, "candidate_bound": True,
-        "codex_version": "0.146.0", "evidence_class": "real-codex-cli",
+        "codex_version": EXPECTED_CODEX_VERSION, "evidence_class": "real-codex-cli",
         "checks": checks,
         "input_sha256": {
             "preparation": _sha256(Path(preparation_path).resolve()),

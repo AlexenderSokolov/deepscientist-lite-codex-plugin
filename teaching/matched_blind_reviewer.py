@@ -21,12 +21,17 @@ except ModuleNotFoundError:  # pragma: no cover
     import pilot_runtime
     import transport_diagnostics
 
+try:
+    from teaching.runtime_identity import default_codex_version
+except ModuleNotFoundError:  # pragma: no cover
+    from runtime_identity import default_codex_version
+
 
 MODEL = "gpt-5.6-sol"
 REASONING_EFFORT = "low"
-CODEX_VERSION = "0.146.0"
+CODEX_VERSION = default_codex_version()
 ALLOWED_REVIEWER_CODEX_VERSIONS = {
-    "0.146.0",
+    CODEX_VERSION,
     "0.146.0-alpha.3.1",
     "0.146.0-alpha.9.2",
 }

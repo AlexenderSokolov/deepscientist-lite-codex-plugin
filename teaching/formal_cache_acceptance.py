@@ -13,7 +13,9 @@ from pathlib import Path
 from typing import Any
 
 
-STABLE_CODEX_VERSION = "0.146.0"
+from teaching.runtime_identity import default_codex_version  # noqa: E402
+
+STABLE_CODEX_VERSION = default_codex_version()
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))

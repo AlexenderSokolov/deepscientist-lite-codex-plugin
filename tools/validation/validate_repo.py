@@ -1267,7 +1267,10 @@ def validate_active_repo(repo_root: Path) -> int:
         if "fresh_runtime_candidate_acceptance.py" not in runner.read_text(encoding="utf-8"):
             fail(f"fresh-runtime candidate runner targets the wrong entry point: {runner.name}")
     forbidden = "plugins/deepscientist-lite-core/controller"
-    allowed = {"tests/test_control_plane_runtime_boundary.py", "tools/validation/validate_repo.py"}
+    allowed = {
+        "tests/test_control_plane_runtime_boundary.py", "tools/validation/validate_repo.py",
+        "tools/validation/runtime_identity_check.py",
+    }
     for root in (repo_root / "tests", repo_root / "teaching", repo_root / "tools", repo_root / ".github"):
         if not root.exists():
             continue

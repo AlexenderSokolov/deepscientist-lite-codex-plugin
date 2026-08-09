@@ -18,19 +18,28 @@ PHASE4_WORKFLOW_NAMES = PHASE3_WORKFLOW_NAMES + (
     "verify_gate_v1", "review_gate_v1", "aggregate_release_v1",
 )
 PHASE5_WORKFLOW_NAMES = PHASE4_WORKFLOW_NAMES + ("run_codex_action_v2",)
-PHASE5_CODEX_VERSION = "0.146.0"
+try:
+    from .runtime_pin import resolve_codex_version
+    _BUNDLED_SCHEMA_ROOT = Path(__file__).resolve().parents[2] / "schemas" / "codex"
+    _BUNDLED_SCHEMA_CANDIDATES = [
+        item for item in _BUNDLED_SCHEMA_ROOT.iterdir()
+        if item.is_dir() and (item / "SCHEMA-MANIFEST.json").is_file()
+        and "-" not in item.name
+    ] if _BUNDLED_SCHEMA_ROOT.is_dir() else []
+    _BUNDLED_SCHEMA = max(_BUNDLED_SCHEMA_CANDIDATES, key=lambda item: item.name) if _BUNDLED_SCHEMA_CANDIDATES else None
+    PHASE5_CODEX_VERSION = resolve_codex_version(_BUNDLED_SCHEMA) if _BUNDLED_SCHEMA else None
+except (ImportError, OSError, ValueError):
+    PHASE5_CODEX_VERSION = None
 
 
-def _resolve_codex_version() -> str:
-    """Resolve the Codex version at runtime instead of hardcoding.
-
-    Priority:
-      1. DS_LITE_CODEX_VERSION environment variable
-      2. PHASE5_CODEX_VERSION constant (default)
-    """
-    import os
-    env_version = os.environ.get("DS_LITE_CODEX_VERSION", "").strip()
-    return env_version if env_version else PHASE5_CODEX_VERSION
+def _resolve_codex_version(schema_root: Path | None = None) -> str:
+    """Resolve Codex identity from an explicit override or schema manifest."""
+    try:
+        return resolve_codex_version(schema_root)
+    except ValueError:
+        if PHASE5_CODEX_VERSION is None:
+            raise
+        return PHASE5_CODEX_VERSION
 
 
 def sqlite_url(path: Path) -> str:
@@ -324,7 +333,7 @@ def _run_codex_action_v2_body(
     from .runtime_pin import verify_runtime_selection
 
     pin = verify_runtime_selection(
-        Path(codex_bin), Path(schema_root), expected_version=_resolve_codex_version(),
+        Path(codex_bin), Path(schema_root), expected_version=_resolve_codex_version(Path(schema_root)),
         expected_platform=codex_platform,
     )
     if not pin["valid"]:

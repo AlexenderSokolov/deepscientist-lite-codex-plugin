@@ -29,11 +29,16 @@ try:
 except ModuleNotFoundError:  # Package import from repository tests and tools.
     from teaching import acceptance_gate, transport_diagnostics
 
+try:
+    from teaching.runtime_identity import default_codex_version
+except ModuleNotFoundError:  # pragma: no cover
+    from runtime_identity import default_codex_version
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MODEL = "gpt-5.6-sol"
 REASONING_EFFORT = "low"
-CODEX_VERSION = "0.146.0"
+CODEX_VERSION = default_codex_version()
 LEGACY_CODEX_VERSIONS = {"0.144.5"}
 FROZEN_PILOT_IDS = {"matched-pilot-20260717-01"}
 EXPECTED_SKILLS = (

@@ -10,6 +10,15 @@ import sys
 from pathlib import Path
 from typing import Any, Callable
 
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from teaching.runtime_identity import default_codex_version
+
+
+EXPECTED_CODEX_VERSION = default_codex_version()
+
 
 SCHEMAS = {
     "runtime-windows": "ds-lite.runtime-compatibility.v1",
@@ -76,7 +85,7 @@ def _runtime(name: str, value: dict[str, Any]) -> bool:
     expected_python = "3.13.5" if name.endswith("windows") else "3.12.3"
     return (
         value.get("platform") == PLATFORMS[name]
-        and value.get("codex_version") == "0.146.0"
+        and value.get("codex_version") == EXPECTED_CODEX_VERSION
         and value.get("dbos_version") == "2.29.0"
         and value.get("python_version") == expected_python
         and _all_checks(value.get("checks"), {
@@ -111,7 +120,7 @@ def _resource(name: str, value: dict[str, Any]) -> bool:
 
 def _v2_action(_: str, value: dict[str, Any]) -> bool:
     return (
-        value.get("codex_version") == "0.146.0"
+        value.get("codex_version") == EXPECTED_CODEX_VERSION
         and value.get("evidence_class") == "real-codex-ambient-provider"
         and value.get("controller_inspected_copied_or_modified_credentials") is False
         and value.get("raw_model_text_in_receipt") is False

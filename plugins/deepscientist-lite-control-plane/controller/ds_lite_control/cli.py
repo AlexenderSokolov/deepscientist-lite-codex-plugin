@@ -24,7 +24,7 @@ from .review import BrokerReviewRunner, ReviewCoordinator
 from .scheduler import DagScheduler
 from .store import ControlStore
 from .verification import DeterministicVerifier
-from .runtime_pin import verify_runtime_selection
+from .runtime_pin import _version_key, schema_manifest_version, verify_runtime_selection
 from .supervisor import (
     RepoSupervisor, read_supervisor_status, render_service_template,
     request_supervisor_stop,
@@ -99,20 +99,39 @@ def _dbos_version() -> str:
         return "not-installed"
 
 
-def resolve_schema_root(explicit: Path | None = None, *, codex_version: str = "0.128.0") -> Path:
+def resolve_schema_root(explicit: Path | None = None, *, codex_version: str | None = None) -> Path:
     """Choose explicit, bundled, then source-development schema roots."""
     if explicit is not None:
         candidate = explicit.expanduser().resolve()
         if not candidate.is_dir():
             raise ValueError("explicit schema root is unavailable")
         return candidate
-    bundled = Path(__file__).resolve().parents[2] / "schemas" / "codex" / codex_version
-    if bundled.is_dir():
-        return bundled
+    bundled_root = Path(__file__).resolve().parents[2] / "schemas" / "codex"
+    if codex_version is None:
+        candidates = [
+            path for path in bundled_root.iterdir()
+            if path.is_dir() and schema_manifest_version(path) is not None
+        ] if bundled_root.is_dir() else []
+        if candidates:
+            bundled = max(candidates, key=lambda path: _version_key(schema_manifest_version(path)))
+            return bundled
+    else:
+        bundled = bundled_root / codex_version
+        if bundled.is_dir():
+            return bundled
     if os.environ.get("DS_LITE_SOURCE_DEVELOPMENT") == "1":
-        fallback = Path(__file__).resolve().parents[3] / "deepscientist-lite-core" / "schemas" / "codex" / codex_version
-        if fallback.is_dir():
-            return fallback
+        fallback_root = Path(__file__).resolve().parents[3] / "deepscientist-lite-core" / "schemas" / "codex"
+        if codex_version is None:
+            candidates = [
+                path for path in fallback_root.iterdir()
+                if path.is_dir() and schema_manifest_version(path) is not None
+            ] if fallback_root.is_dir() else []
+            if candidates:
+                return max(candidates, key=lambda path: _version_key(schema_manifest_version(path)))
+        else:
+            fallback = fallback_root / codex_version
+            if fallback.is_dir():
+                return fallback
     raise ValueError("control-plane schema root is unavailable")
 
 

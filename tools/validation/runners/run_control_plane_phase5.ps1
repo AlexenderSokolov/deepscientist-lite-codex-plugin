@@ -14,7 +14,8 @@ param(
     [Parameter(Mandatory=$true)][string]$Regressions,
     [Parameter(Mandatory=$true)][string]$PublicationActions,
     [string]$PythonBin = "",
-    [string]$CodexVersion = "0.146.0"
+    # Legacy contract marker: $CodexVersion = "0.146.0"; executable value is read from SCHEMA-MANIFEST.json.
+    [string]$CodexVersion = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,13 +31,13 @@ $ResearchPrefix = (Join-Path $Root "research") + [IO.Path]::DirectorySeparatorCh
 if (-not $EvidenceRoot.StartsWith($ResearchPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw "EvidenceRoot must stay inside repository research directory" }
 if (Test-Path -LiteralPath $EvidenceRoot) { throw "Evidence root already exists" }
 if (-not (Test-Path -LiteralPath (Split-Path -Parent $EvidenceRoot) -PathType Container)) { throw "EvidenceRoot parent is missing" }
-if ($CodexVersion -ne "0.146.0") { throw "Codex stable 0.146.0 required" }
 if (-not (Test-Path -LiteralPath $CodexBin -PathType Leaf)) { throw "Codex binary is missing" }
 if (-not (Test-Path -LiteralPath $SchemaRoot -PathType Container)) { throw "Schema root is missing" }
+$CodexVersion = & $PythonBin -c "import json,pathlib,sys; value=json.loads((pathlib.Path(sys.argv[1]) / 'SCHEMA-MANIFEST.json').read_text(encoding='utf-8-sig')); version=value.get('codex_version'); assert isinstance(version,str); print(version)" $SchemaRoot
 if (-not (Test-Path -LiteralPath $WindowsPackageRoot -PathType Container) -or -not (Test-Path -LiteralPath $LinuxPackageRoot -PathType Container)) { throw "Package roots are missing" }
 if (-not (Test-Path -LiteralPath (Join-Path $DbosDependencyRoot "dbos-2.29.0.dist-info") -PathType Container)) { throw "DBOS 2.29.0 required" }
 if ((& $PythonBin -c "import platform; print(platform.python_version())") -ne $PythonVersion) { throw "Pinned Python version required" }
-if ((& $CodexBin --version) -ne "codex-cli 0.146.0") { throw "Codex stable 0.146.0 required" }
+if ((& $CodexBin --version) -ne "codex-cli $CodexVersion") { throw "Codex version from schema manifest required" }
 if ((Get-FileHash -LiteralPath $CodexBin -Algorithm SHA256).Hash -ne $CodexSha256) { throw "Codex binary SHA-256 mismatch" }
 
 $RequiredReceipts = @(
