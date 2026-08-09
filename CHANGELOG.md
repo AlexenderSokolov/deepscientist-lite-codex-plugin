@@ -1,12 +1,12 @@
 # Changelog
 
-## Unreleased: v0.10.0-beta.3 audit remediation
+## 2026-08-09: v0.10.0-beta.3 audit remediation
 
 - Added `release/package-set.json` and a checked synchronization path for all seven active package identities, Core compatibility, and the nine installation matrices.
 - Closed Claim Ledger and autonomy v2 contract gaps: new claims start as `draft`, typed reviews provide relative provenance, gate effects are authorization-bound, and Hook terminal summaries are contract-bound.
 - Moved active Control Plane references to its canonical controller/schema package while retaining the Core trees as a checked compatibility projection.
 - Added the Academic registry v2 workflow profile and shared preflight contract for all 17 skills; descriptions are generated from valid frontmatter metadata.
-- Added `validate_all.py` and active-package validation. This remains a candidate change: no tag, GitHub Release, publish, or fresh-runtime release claim has been made.
+- Added `validate_all.py` and active-package validation. The beta.3 candidate is frozen from commit `1a48d7a`; package, cache, and fresh-runtime identity receipts are attached to the prerelease. Model-free fresh-runtime and Hook loading were observed; provider-backed Academic execution and same-thread Stop-chain evidence remain explicitly unobserved.
 
 ## 2026-08-08: v0.10.0-beta.2 — router removal and direct deployment
 
@@ -238,4 +238,3 @@
 - Added argv-only trusted-host preparation and Hook runner CLIs.
 - Added text encoding, line-ending, NUL, replacement-character, JSON/TOML and
   shell-boundary checks; real provider and release gates remain fail-closed.
-
