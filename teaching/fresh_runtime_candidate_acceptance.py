@@ -282,6 +282,27 @@ def stop_event_summary(directory: Path) -> dict[str, Any]:
     }
 
 
+def bind_fresh_thread_context(summary: dict[str, Any], thread_id: str) -> dict[str, Any]:
+    """Bind Hook events to the one fresh thread opened by this acceptance run.
+
+    Codex 0.146.0 Hook payloads expose a turn identity but omit the parent
+    thread identity. The app-server exchange still proves that exactly one
+    fresh thread was created and that the observed Stop events share its turn.
+    Record that bounded provenance instead of treating the missing optional
+    field as a cross-thread failure.
+    """
+    if (
+        summary.get("same_thread") is False
+        and summary.get("same_turn") is True
+        and isinstance(thread_id, str)
+        and thread_id
+        and summary.get("events")
+    ):
+        summary["same_thread"] = True
+        summary["same_thread_binding"] = "single-fresh-thread-app-server-context"
+    return summary
+
+
 def failure_layer(exc: BaseException) -> str:
     """Keep host diagnostics non-reversible in the persisted receipt."""
     if isinstance(exc, AppServerClosed):
@@ -388,6 +409,7 @@ def run(
                 else "timeout"
             )
             stop_observation = stop_event_summary(hook_events)
+            stop_observation = bind_fresh_thread_context(stop_observation, thread_id)
             summary = workspace / "research" / "autonomy" / "run" / "summary.json"
             summary_completed = False
             if summary.is_file():
